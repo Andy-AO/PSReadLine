@@ -28,7 +28,7 @@ namespace Microsoft.PowerShell
 
     public partial class PSConsoleReadLine
     {
-        struct LineInfoForRendering
+        public struct LineInfoForRendering
         {
             public int CurrentLogicalLineIndex;
             public int CurrentPhysicalLineCount;
@@ -37,13 +37,13 @@ namespace Microsoft.PowerShell
             public int PseudoPhysicalLineOffset;
         }
 
-        struct RenderedLineData
+        public struct RenderedLineData
         {
             public string line;
             public int columns;
         }
 
-        class RenderData
+        public class RenderData
         {
             public int bufferWidth;
             public int bufferHeight;
@@ -51,23 +51,23 @@ namespace Microsoft.PowerShell
             public RenderedLineData[] lines;
         }
 
-        private const int COMMON_WIDEST_CONSOLE_WIDTH = 160;
-        private readonly List<StringBuilder> _consoleBufferLines = new List<StringBuilder>(1) {new StringBuilder(COMMON_WIDEST_CONSOLE_WIDTH)};
-        private static readonly string[] _spaces = new string[80];
-        private RenderData _previousRender;
-        private static readonly RenderData _initialPrevRender = new RenderData
+        public const int COMMON_WIDEST_CONSOLE_WIDTH = 160;
+        public readonly List<StringBuilder> _consoleBufferLines = new List<StringBuilder>(1) {new StringBuilder(COMMON_WIDEST_CONSOLE_WIDTH)};
+        public static readonly string[] _spaces = new string[80];
+        public RenderData _previousRender;
+        public static readonly RenderData _initialPrevRender = new RenderData
         {
             lines = new[] { new RenderedLineData{ columns = 0, line = ""}}
         };
-        private int _initialX;
-        private int _initialY;
-        private bool _waitingToRender;
+        public int _initialX;
+        public int _initialY;
+        public bool _waitingToRender;
 
-        private ConsoleColor _initialForeground;
-        private ConsoleColor _initialBackground;
-        private int _current;
-        private int _emphasisStart;
-        private int _emphasisLength;
+        public ConsoleColor _initialForeground;
+        public ConsoleColor _initialBackground;
+        public int _current;
+        public int _emphasisStart;
+        public int _emphasisLength;
 
         private class SavedTokenState
         {
