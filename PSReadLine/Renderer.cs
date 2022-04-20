@@ -43,5 +43,66 @@ namespace Microsoft.PowerShell
             {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
 
         public List<StringBuilder> ConsoleBufferLines => _consoleBufferLines;
+
+        public int EmphasisLength
+        {
+            get => _emphasisLength;
+            set => _emphasisLength = value;
+        }
+
+        public RenderData PreviousRender
+        {
+            get => _previousRender;
+            set => _previousRender = value;
+        }
+
+        public int InitialX
+        {
+            get => _initialX;
+            set => _initialX = value;
+        }
+
+        public int InitialY
+        {
+            get => _initialY;
+            set => _initialY = value;
+        }
+
+        public bool WaitingToRender
+        {
+            get => _waitingToRender;
+            set => _waitingToRender = value;
+        }
+
+        public int Current
+        {
+            get => _current;
+            set => _current = value;
+        }
+
+        public int EmphasisStart
+        {
+            get => _emphasisStart;
+            set => _emphasisStart = value;
+        }
+
+        public static RenderData InitialPrevRender => _initialPrevRender;
+
+        public static string[] SpacesArr => _spacesArr;
+
+        private static readonly string[] _spacesArr = new string[80];
+
+        private static readonly RenderData _initialPrevRender = new RenderData
+        {
+            lines = new[] { new RenderedLineData{ columns = 0, line = ""}}
+        };
+        private RenderData _previousRender;
+        private int _initialX; 
+        private int _initialY; 
+        private bool _waitingToRender;
+
+        private int _current;
+        private int _emphasisStart;
+        private int _emphasisLength;
     }
 }

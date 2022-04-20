@@ -17,70 +17,57 @@ namespace Microsoft.PowerShell
 {
     public partial class PSConsoleReadLine
     {
-        public static readonly Renderer _renderer = Renderer.Singleton;
+        private static readonly Renderer _renderer = Renderer.Singleton;
 
-        public List<StringBuilder> ConsoleBufferLines => _renderer.ConsoleBufferLines;
+        private List<StringBuilder> ConsoleBufferLines => _renderer.ConsoleBufferLines;
 
-        private static string[] _spaces => _spacesArr;
+        private static string[] _spaces => SpacesArr;
 
-        public RenderData PreviousRender
+        private RenderData PreviousRender
         {
-            get => _previousRender;
-            set => _previousRender = value;
+            get => _renderer.PreviousRender;
+            set => _renderer.PreviousRender = value;
         }
 
-        public static RenderData InitialPrevRender => _initialPrevRender;
+        private static RenderData InitialPrevRender => Renderer.InitialPrevRender;
 
-        public int InitialX
+        private int InitialX
         {
-            get => _initialX;
-            set => _initialX = value;
+            get => _renderer.InitialX;
+            set => _renderer.InitialX = value;
         }
 
-        public int InitialY
+        private int InitialY
         {
-            get => _initialY;
-            set => _initialY = value;
+            get => _renderer.InitialY;
+            set => _renderer.InitialY = value;
         }
 
-        public bool WaitingToRender
+        private bool WaitingToRender
         {
-            get => _waitingToRender;
-            set => _waitingToRender = value;
+            get => _renderer.WaitingToRender;
+            set => _renderer.WaitingToRender = value;
         }
 
-        public int Current
+        private int Current
         {
-            get => _current;
-            set => _current = value;
+            get => _renderer.Current;
+            set => _renderer.Current = value;
         }
 
-        public int EmphasisStart
+        private int EmphasisStart
         {
-            get => _emphasisStart;
-            set => _emphasisStart = value;
+            get => _renderer.EmphasisStart;
+            set => _renderer.EmphasisStart = value;
         }
 
-        public int EmphasisLength
+        private int EmphasisLength
         {
-            get => _emphasisLength;
-            set => _emphasisLength = value;
+            get => _renderer.EmphasisLength;
+            set => _renderer.EmphasisLength = value;
         }
 
-        private static readonly string[] _spacesArr = new string[80];
 
-        private RenderData _previousRender; //mul
-        private static readonly RenderData _initialPrevRender = new RenderData
-        {
-            lines = new[] { new RenderedLineData{ columns = 0, line = ""}}
-        }; //mul
-        private int _initialX;  //mul
-        private int _initialY;  //mul
-        private bool _waitingToRender;
-
-        private int _current; //mul
-        private int _emphasisStart; //mul
-        private int _emphasisLength; //mul
 
         private void MaybeParseInput()
         {
