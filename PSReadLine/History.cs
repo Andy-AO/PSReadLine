@@ -722,15 +722,15 @@ namespace Microsoft.PowerShell
             switch (moveCursor)
             {
                 case HistoryMoveCursor.ToEnd:
-                    _current = Math.Max(0, _buffer.Length + ViEndOfLineFactor);
+                    Current = Math.Max(0, _buffer.Length + ViEndOfLineFactor);
                     break;
                 case HistoryMoveCursor.ToBeginning:
-                    _current = 0;
+                    Current = 0;
                     break;
                 default:
-                    if (_current > _buffer.Length)
+                    if (Current > _buffer.Length)
                     {
-                        _current = Math.Max(0, _buffer.Length + ViEndOfLineFactor);
+                        Current = Math.Max(0, _buffer.Length + ViEndOfLineFactor);
                     }
                     break;
             }
@@ -858,9 +858,9 @@ namespace Microsoft.PowerShell
                     return;
                 }
 
-                _searchHistoryPrefix = _buffer.ToString(0, _current);
-                _emphasisStart = 0;
-                _emphasisLength = _current;
+                _searchHistoryPrefix = _buffer.ToString(0, Current);
+                EmphasisStart = 0;
+                EmphasisLength = Current;
                 if (Options.HistoryNoDuplicates)
                 {
                     _hashedHistory = new Dictionary<string, int>();
@@ -910,7 +910,7 @@ namespace Microsoft.PowerShell
             {
                 // Set '_current' back to where it was when starting the first search, because
                 // it might be changed during the rendering of the last matching history command.
-                _current = _emphasisLength;
+                Current = EmphasisLength;
                 _currentHistoryIndex = newHistoryIndex;
                 var moveCursor = InViCommandMode()
                     ? HistoryMoveCursor.ToBeginning
@@ -995,9 +995,9 @@ namespace Microsoft.PowerShell
                         }
                     }
                     _statusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
-                    _current = startIndex;
-                    _emphasisStart = startIndex;
-                    _emphasisLength = toMatch.Length;
+                    Current = startIndex;
+                    EmphasisStart = startIndex;
+                    EmphasisLength = toMatch.Length;
                     _currentHistoryIndex = searchFromPoint;
                     var moveCursor = Options.HistorySearchCursorMovesToEnd
                         ? HistoryMoveCursor.ToEnd
@@ -1014,8 +1014,8 @@ namespace Microsoft.PowerShell
             else if (searchFromPoint >= _history.Count)
                 searchFromPoint = _history.Count;
 
-            _emphasisStart = -1;
-            _emphasisLength = 0;
+            EmphasisStart = -1;
+            EmphasisLength = 0;
             _statusLinePrompt = direction > 0 ? _failedForwardISearchPrompt : _failedBackwardISearchPrompt;
             Render();
         }
@@ -1080,9 +1080,9 @@ namespace Microsoft.PowerShell
                         if (startIndex >= 0)
                         {
                             _statusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
-                            _current = startIndex;
-                            _emphasisStart = startIndex;
-                            _emphasisLength = toMatch.Length;
+                            Current = startIndex;
+                            EmphasisStart = startIndex;
+                            EmphasisLength = toMatch.Length;
                             Render();
                         }
                     }
@@ -1121,9 +1121,9 @@ namespace Microsoft.PowerShell
                     }
                     else
                     {
-                        _current = startIndex;
-                        _emphasisStart = startIndex;
-                        _emphasisLength = toMatch.Length;
+                        Current = startIndex;
+                        EmphasisStart = startIndex;
+                        EmphasisLength = toMatch.Length;
                         Render();
                     }
                     searchPositions.Push(_currentHistoryIndex);
@@ -1143,8 +1143,8 @@ namespace Microsoft.PowerShell
             Render(); // Render prompt
             InteractiveHistorySearchLoop(direction);
 
-            _emphasisStart = -1;
-            _emphasisLength = 0;
+            EmphasisStart = -1;
+            EmphasisLength = 0;
 
             // Remove our status line, this will render
             ClearStatusMessage(render: true);

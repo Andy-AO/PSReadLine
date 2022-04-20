@@ -79,9 +79,9 @@ namespace Microsoft.PowerShell
                 // GetDynamicHelpContent could scroll the screen, e.g. via Write-Progress. For example,
                 // Get-Help for unknown command under the CloudShell Azure drive will show the progress bar while searching for command.
                 // We need to update the _initialY in case the current cursor postion has changed.
-                if (Singleton._initialY > _console.CursorTop)
+                if (Singleton.InitialY > _console.CursorTop)
                 {
-                    Singleton._initialY = _console.CursorTop;
+                    Singleton.InitialY = _console.CursorTop;
                 }
             }
         }
@@ -147,7 +147,7 @@ namespace Microsoft.PowerShell
                 _pager ??= new Pager();
             }
 
-            int cursor = Singleton._current;
+            int cursor = Singleton.Current;
             string commandName = null;
             string parameterName = null;
 

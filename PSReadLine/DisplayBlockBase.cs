@@ -28,7 +28,7 @@ namespace Microsoft.PowerShell
                 if (scrollCnt > 0)
                 {
                     Top -= scrollCnt;
-                    PSConsoleReadLine.Singleton._initialY -= scrollCnt;
+                    PSConsoleReadLine.Singleton.InitialY -= scrollCnt;
                     _savedCursorTop -= scrollCnt;
                 }
             }
@@ -40,7 +40,7 @@ namespace Microsoft.PowerShell
                 if (scrollCnt > 0)
                 {
                     Top -= scrollCnt;
-                    PSConsoleReadLine.Singleton._initialY -= scrollCnt;
+                    PSConsoleReadLine.Singleton.InitialY -= scrollCnt;
                     _savedCursorTop -= scrollCnt;
                 }
             }

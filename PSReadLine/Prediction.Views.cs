@@ -675,7 +675,7 @@ namespace Microsoft.PowerShell
                 int totalLength = _suggestionText.Length;
 
                 // Get the maximum buffer cells that could be available to the current command line.
-                int maxBufferCells = _singleton._console.BufferHeight * _singleton._console.BufferWidth - _singleton._initialX;
+                int maxBufferCells = _singleton._console.BufferHeight * _singleton._console.BufferWidth - _singleton.InitialX;
                 bool skipRendering = false;
 
                 // Assuming the suggestion text contains wide characters only (1 character takes up 2 buffer cells),

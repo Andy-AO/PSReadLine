@@ -272,7 +272,7 @@ namespace Microsoft.PowerShell
                             ps.Invoke();
                             if (y != console.CursorTop)
                             {
-                                Singleton._initialY = console.CursorTop;
+                                Singleton.InitialY = console.CursorTop;
                                 Singleton.Render();
                             }
                         }
@@ -303,7 +303,7 @@ namespace Microsoft.PowerShell
                 // is called, clear the buffer and throw an exception so we can return an empty string.
                 Singleton.SaveCurrentLine();
                 Singleton._getNextHistoryIndex = Singleton._history.Count;
-                Singleton._current = 0;
+                Singleton.Current = 0;
                 Singleton._buffer.Clear();
                 Singleton.Render();
                 throw new OperationCanceledException();
@@ -485,13 +485,6 @@ namespace Microsoft.PowerShell
                             {
                                 return color >= ConsoleColor.Black && color <= ConsoleColor.White;
                             }
-
-                            if (IsValid(Singleton._initialForeground)) {
-                                console.ForegroundColor = Singleton._initialForeground;
-                            }
-                            if (IsValid(Singleton._initialBackground)) {
-                                console.BackgroundColor = Singleton._initialBackground;
-                            }
                             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                             {
                                 Console.TreatControlCAsInput = oldControlCAsInput;
@@ -560,8 +553,8 @@ namespace Microsoft.PowerShell
                 {
                     if (_searchHistoryCommandCount > 0)
                     {
-                        _emphasisStart = -1;
-                        _emphasisLength = 0;
+                        EmphasisStart = -1;
+                        EmphasisLength = 0;
                         RenderWithPredictionQueryPaused();
                     }
                     _searchHistoryCommandCount = 0;
@@ -722,26 +715,24 @@ namespace Microsoft.PowerShell
                 _delayedOneTimeInitCompleted = true;
             }
 
-            _previousRender = _initialPrevRender;
-            _previousRender.bufferWidth = _console.BufferWidth;
-            _previousRender.bufferHeight = _console.BufferHeight;
-            _previousRender.errorPrompt = false;
+            PreviousRender = InitialPrevRender;
+            PreviousRender.bufferWidth = _console.BufferWidth;
+            PreviousRender.bufferHeight = _console.BufferHeight;
+            PreviousRender.errorPrompt = false;
             _buffer.Clear();
             _edits = new List<EditItem>();
             _undoEditIndex = 0;
             _editGroupStart = -1;
-            _current = 0;
+            Current = 0;
             _mark = 0;
-            _emphasisStart = -1;
-            _emphasisLength = 0;
+            EmphasisStart = -1;
+            EmphasisLength = 0;
             _ast = null;
             _tokens = null;
             _parseErrors = null;
             _inputAccepted = false;
-            _initialX = _console.CursorLeft;
-            _initialY = _console.CursorTop;
-            _initialForeground = _console.ForegroundColor;
-            _initialBackground = _console.BackgroundColor;
+            InitialX = _console.CursorLeft;
+            InitialY = _console.CursorTop;
             _statusIsErrorMessage = false;
 
             _initialOutputEncoding = _console.OutputEncoding;
@@ -1026,7 +1017,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                newY = Singleton._initialY - Singleton._options.ExtraPromptLineCount;
+                newY = Singleton.InitialY - Singleton._options.ExtraPromptLineCount;
 
                 console.SetCursorPosition(0, newY);
 
@@ -1044,9 +1035,9 @@ namespace Microsoft.PowerShell
             string newPrompt = GetPrompt();
 
             console.Write(newPrompt);
-            Singleton._initialX = console.CursorLeft;
-            Singleton._initialY = console.CursorTop;
-            Singleton._previousRender = _initialPrevRender;
+            Singleton.InitialX = console.CursorLeft;
+            Singleton.InitialY = console.CursorTop;
+            Singleton.PreviousRender = InitialPrevRender;
 
             Singleton.Render();
             console.CursorVisible = true;

@@ -70,7 +70,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int i = Singleton._current;
+            int i = Singleton.Current;
             while (numericArg-- > 0)
             {
                 i = Singleton.ViFindPreviousGlob(i - 1);
@@ -88,14 +88,14 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int i = Singleton._current;
+            int i = Singleton.Current;
             while (numericArg-- > 0)
             {
                 i = Singleton.ViFindNextGlob(i);
             }
 
             int newPosition = Math.Min(i, Math.Max(0, Singleton._buffer.Length - 1));
-            if (newPosition != Singleton._current)
+            if (newPosition != Singleton.Current)
             {
                 Singleton.MoveCursor(newPosition);
             }
@@ -160,8 +160,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void MoveToEndOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var eol = GetEndOfLogicalLinePos(Singleton._current);
-            if (eol != Singleton._current)
+            var eol = GetEndOfLogicalLinePos(Singleton.Current);
+            if (eol != Singleton.Current)
             {
                 Singleton.MoveCursor(eol);
             }
@@ -177,7 +177,7 @@ namespace Microsoft.PowerShell
         public static void NextWordEnd(ConsoleKeyInfo? key = null, object arg = null)
         {
             int qty = arg as int? ?? 1;
-            for (; qty > 0 && Singleton._current < Singleton._buffer.Length - 1; qty--)
+            for (; qty > 0 && Singleton.Current < Singleton._buffer.Length - 1; qty--)
             {
                 Singleton.MoveCursor(Singleton.ViFindNextWordEnd(Singleton.Options.WordDelimiters));
             }
@@ -211,8 +211,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void GotoFirstNonBlankOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var newCurrent = GetFirstNonBlankOfLogicalLinePos(Singleton._current);
-            if (newCurrent != Singleton._current)
+            var newCurrent = GetFirstNonBlankOfLogicalLinePos(Singleton.Current);
+            if (newCurrent != Singleton.Current)
             {
                 Singleton.MoveCursor(newCurrent);
             }
@@ -223,8 +223,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViGotoBrace(ConsoleKeyInfo? key = null, object arg = null)
         {
-            int i = Singleton.ViFindBrace(Singleton._current);
-            if (i == Singleton._current)
+            int i = Singleton.ViFindBrace(Singleton.Current);
+            if (i == Singleton.Current)
             {
                 Ding();
                 return;

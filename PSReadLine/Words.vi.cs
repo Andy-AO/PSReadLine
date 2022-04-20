@@ -14,7 +14,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private int ViFindNextWordPoint(string wordDelimiters)
         {
-            return ViFindNextWordPoint(_current, wordDelimiters);
+            return ViFindNextWordPoint(Current, wordDelimiters);
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private int ViFindPreviousWordPoint(string wordDelimiters)
         {
-            return ViFindPreviousWordPoint(_current, wordDelimiters);
+            return ViFindPreviousWordPoint(Current, wordDelimiters);
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private int ViFindEndOfGlob()
         {
-            return ViFindGlobEnd(_current);
+            return ViFindGlobEnd(Current);
         }
 
         /// <summary>
@@ -330,7 +330,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private int ViFindNextWordEnd(string wordDelimiters)
         {
-            int i = _current;
+            int i = Current;
 
             return ViFindNextWordEnd(i, wordDelimiters);
         }
@@ -433,7 +433,7 @@ namespace Microsoft.PowerShell
 
         private int ViFindEndOfPreviousGlob()
         {
-            int i = _current;
+            int i = Current;
 
             return ViFindEndOfPreviousGlob(i);
         }

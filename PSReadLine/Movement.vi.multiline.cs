@@ -20,7 +20,7 @@ namespace Microsoft.PowerShell
 
             var currentLine =  GetLogicalLineNumber(); 
 
-            var pos = ConvertOffsetToPoint(Singleton._current);
+            var pos = ConvertOffsetToPoint(Singleton.Current);
 
             pos.Y -= currentLine -1;
 
@@ -47,7 +47,7 @@ namespace Microsoft.PowerShell
 
             var currentLine = GetLogicalLineNumber();
 
-            var pos = ConvertOffsetToPoint(Singleton._current);
+            var pos = ConvertOffsetToPoint(Singleton.Current);
 
             pos.Y += (count - currentLine);
 
@@ -85,14 +85,14 @@ namespace Microsoft.PowerShell
 
             if (_moveToLineCommandCount == 1 && _moveToLineDesiredColumn == -1)
             {
-                var startOfLine = GetBeginningOfLinePos(_current);
-                _moveToLineDesiredColumn = _current - startOfLine;
+                var startOfLine = GetBeginningOfLinePos(Current);
+                _moveToLineDesiredColumn = Current - startOfLine;
             }
 
             // Nothing needs to be done when:
             //  - actually not moving the line, or
             //  - moving the line down when it's at the end of the last logical line.
-            if (lineOffset == 0 || (lineOffset > 0 && _current == _buffer.Length))
+            if (lineOffset == 0 || (lineOffset > 0 && Current == _buffer.Length))
             {
                 return;
             }
