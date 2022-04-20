@@ -47,7 +47,7 @@ namespace Microsoft.PowerShell
 
                     Singleton = new PSConsoleReadLine();
                 }
-                
+
                 return _singleton;
             }
             private set => _singleton = value;

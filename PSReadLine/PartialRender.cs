@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
@@ -16,41 +15,16 @@ using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
 {
-    internal struct Point
-    {
-        public int X;
-        public int Y;
-
-        public override string ToString()
-        {
-            return String.Format(CultureInfo.InvariantCulture, "{0},{1}", X, Y);
-        }
-    }
-
     public partial class PSConsoleReadLine
     {
         public static readonly Renderer _renderer = Renderer.Singleton;
-        public struct LineInfoForRendering
-        {
-            public int CurrentLogicalLineIndex;
-            public int CurrentPhysicalLineCount;
-            public int PreviousLogicalLineIndex;
-            public int PreviousPhysicalLineCount;
-            public int PseudoPhysicalLineOffset;
-        }
-
-        public struct RenderedLineData
-        {
-            public string line;
-            public int columns;
-        }
 
         public class RenderData
         {
             public int bufferWidth;
             public int bufferHeight;
             public bool errorPrompt;
-            public RenderedLineData[] lines;
+            public Renderer.RenderedLineData[] lines;
         }
 
         public const int COMMON_WIDEST_CONSOLE_WIDTH = 160;
@@ -59,7 +33,7 @@ namespace Microsoft.PowerShell
         public RenderData _previousRender;
         public static readonly RenderData _initialPrevRender = new RenderData
         {
-            lines = new[] { new RenderedLineData{ columns = 0, line = ""}}
+            lines = new[] { new Renderer.RenderedLineData{ columns = 0, line = ""}}
         };
         public int _initialX;
         public int _initialY;
@@ -142,7 +116,7 @@ namespace Microsoft.PowerShell
             // Now write that out (and remember what we did so we can clear previous renders
             // and minimize writing more than necessary on the next render.)
 
-            var renderLines = new RenderedLineData[logicalLineCount];
+            var renderLines = new Renderer.RenderedLineData[logicalLineCount];
             var renderData = new RenderData {lines = renderLines};
             for (var i = 0; i < logicalLineCount; i++)
             {
@@ -519,16 +493,16 @@ namespace Microsoft.PowerShell
         /// We avoid re-rendering everything while editing if it's possible.
         /// This method attempts to find the first changed logical line and move the cursor to the right position for the subsequent rendering.
         /// </summary>
-        private void CalculateWhereAndWhatToRender(bool cursorMovedToInitialPos, RenderData renderData, out LineInfoForRendering lineInfoForRendering)
+        private void CalculateWhereAndWhatToRender(bool cursorMovedToInitialPos, RenderData renderData, out Renderer.LineInfoForRendering lineInfoForRendering)
         {
             int bufferWidth = _console.BufferWidth;
             int bufferHeight = _console.BufferHeight;
 
-            RenderedLineData[] previousRenderLines = _previousRender.lines;
+            Renderer.RenderedLineData[] previousRenderLines = _previousRender.lines;
             int previousLogicalLine = 0;
             int previousPhysicalLine = 0;
 
-            RenderedLineData[] renderLines = renderData.lines;
+            Renderer.RenderedLineData[] renderLines = renderData.lines;
             int logicalLine = 0;
             int physicalLine = 0;
             int pseudoPhysicalLineOffset = 0;
@@ -691,14 +665,14 @@ namespace Microsoft.PowerShell
             bool cursorMovedToInitialPos = RenderErrorPrompt(renderData, defaultColor);
 
             // Calculate what to render and where to start the rendering.
-            LineInfoForRendering lineInfoForRendering;
+            Renderer.LineInfoForRendering lineInfoForRendering;
             CalculateWhereAndWhatToRender(cursorMovedToInitialPos, renderData, out lineInfoForRendering);
 
-            RenderedLineData[] previousRenderLines = _previousRender.lines;
+            Renderer.RenderedLineData[] previousRenderLines = _previousRender.lines;
             int previousLogicalLine = lineInfoForRendering.PreviousLogicalLineIndex;
             int previousPhysicalLine = lineInfoForRendering.PreviousPhysicalLineCount;
 
-            RenderedLineData[] renderLines = renderData.lines;
+            Renderer.RenderedLineData[] renderLines = renderData.lines;
             int logicalLine = lineInfoForRendering.CurrentLogicalLineIndex;
             int physicalLine = lineInfoForRendering.CurrentPhysicalLineCount;
             int pseudoPhysicalLineOffset = lineInfoForRendering.PseudoPhysicalLineOffset;
