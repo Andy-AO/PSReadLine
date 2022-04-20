@@ -20,8 +20,7 @@ namespace Microsoft.PowerShell
     {
         public static readonly Renderer _renderer = Renderer.Singleton;
 
-        public const int COMMON_WIDEST_CONSOLE_WIDTH = 160;
-        public readonly List<StringBuilder> _consoleBufferLines = new List<StringBuilder>(1) {new StringBuilder(COMMON_WIDEST_CONSOLE_WIDTH)};
+        public readonly List<StringBuilder> _consoleBufferLines = new List<StringBuilder>(1) {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
         public static readonly string[] _spaces = new string[80];
         public Renderer.RenderData _previousRender;
         public static readonly Renderer.RenderData _initialPrevRender = new Renderer.RenderData
@@ -162,7 +161,7 @@ namespace Microsoft.PowerShell
                     currentLogicalLine += 1;
                     if (currentLogicalLine == _consoleBufferLines.Count)
                     {
-                        _consoleBufferLines.Add(new StringBuilder(COMMON_WIDEST_CONSOLE_WIDTH));
+                        _consoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
                     }
 
                     // Reset the color for continuation prompt so the color sequence will always be explicitly
@@ -326,7 +325,7 @@ namespace Microsoft.PowerShell
                 currentLogicalLine += 1;
                 if (currentLogicalLine > _consoleBufferLines.Count - 1)
                 {
-                    _consoleBufferLines.Add(new StringBuilder(COMMON_WIDEST_CONSOLE_WIDTH));
+                    _consoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
                 }
 
                 color = _statusIsErrorMessage ? Options._errorColor : defaultColor;

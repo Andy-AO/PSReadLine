@@ -483,7 +483,7 @@ namespace Microsoft.PowerShell
                     currentLogicalLine += 1;
                     if (currentLogicalLine == consoleBufferLines.Count)
                     {
-                        consoleBufferLines.Add(new StringBuilder(COMMON_WIDEST_CONSOLE_WIDTH));
+                        consoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
                     }
 
                     bool itemSelected = i == _selectedIndex;

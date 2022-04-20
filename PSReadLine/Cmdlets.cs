@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Reflection;
@@ -106,6 +107,7 @@ namespace Microsoft.PowerShell
             ? EditMode.Windows
             : EditMode.Emacs;
 
+        public const int CommonWidestConsoleWidth = 160;
         public const string DefaultContinuationPrompt = ">> ";
 
         /// <summary>
@@ -192,7 +194,7 @@ namespace Microsoft.PowerShell
             var historyFileName = hostName + "_history.txt";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                HistorySavePath = System.IO.Path.Combine(
+                HistorySavePath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "Microsoft",
                     "Windows",
@@ -207,7 +209,7 @@ namespace Microsoft.PowerShell
 
                 if (!String.IsNullOrEmpty(historyPath))
                 {
-                    HistorySavePath = System.IO.Path.Combine(
+                    HistorySavePath = Path.Combine(
                         historyPath,
                         "powershell",
                         "PSReadLine",
@@ -220,7 +222,7 @@ namespace Microsoft.PowerShell
 
                     if (!String.IsNullOrEmpty(home))
                     {
-                        HistorySavePath = System.IO.Path.Combine(
+                        HistorySavePath = Path.Combine(
                             home,
                             ".local",
                             "share",
@@ -581,6 +583,8 @@ namespace Microsoft.PowerShell
                 throw new ArgumentException(string.Format(CultureInfo.CurrentUICulture, PSReadLineResources.InvalidColorProperty, property));
             }
         }
+
+
     }
 
     [Cmdlet("Get", "PSReadLineOption", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=528808")]
