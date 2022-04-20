@@ -11,7 +11,6 @@ using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.PowerShell.Internal;
-using Microsoft.PowerShell.PSReadLine;
 using static Microsoft.PowerShell.Renderer;
 
 namespace Microsoft.PowerShell
@@ -20,12 +19,13 @@ namespace Microsoft.PowerShell
     {
         public static readonly Renderer _renderer = Renderer.Singleton;
 
-        public readonly List<StringBuilder> _consoleBufferLines = new List<StringBuilder>(1) {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
+        private List<StringBuilder> ConsoleBufferLines => _renderer.ConsoleBufferLines;
+
         public static readonly string[] _spaces = new string[80];
-        public Renderer.RenderData _previousRender;
-        public static readonly Renderer.RenderData _initialPrevRender = new Renderer.RenderData
+        public RenderData _previousRender;
+        public static readonly RenderData _initialPrevRender = new RenderData
         {
-            lines = new[] { new Renderer.RenderedLineData{ columns = 0, line = ""}}
+            lines = new[] { new RenderedLineData{ columns = 0, line = ""}}
         };
         public int _initialX;
         public int _initialY;
@@ -36,6 +36,7 @@ namespace Microsoft.PowerShell
         public int _current;
         public int _emphasisStart;
         public int _emphasisLength;
+
 
         private void MaybeParseInput()
         {
@@ -101,11 +102,11 @@ namespace Microsoft.PowerShell
             // Now write that out (and remember what we did so we can clear previous renders
             // and minimize writing more than necessary on the next render.)
 
-            var renderLines = new Renderer.RenderedLineData[logicalLineCount];
-            var renderData = new Renderer.RenderData {lines = renderLines};
+            var renderLines = new RenderedLineData[logicalLineCount];
+            var renderData = new RenderData {lines = renderLines};
             for (var i = 0; i < logicalLineCount; i++)
             {
-                var line = _consoleBufferLines[i].ToString();
+                var line = ConsoleBufferLines[i].ToString();
                 renderLines[i].line = line;
                 renderLines[i].columns = LengthInBufferCells(line);
             }
@@ -115,11 +116,11 @@ namespace Microsoft.PowerShell
             ReallyRender(renderData, defaultColor);
 
             // Cleanup some excess buffers, saving a few because we know we'll use them.
-            var bufferCount = _consoleBufferLines.Count;
+            var bufferCount = ConsoleBufferLines.Count;
             var excessBuffers = bufferCount - renderLines.Length;
             if (excessBuffers > 5)
             {
-                _consoleBufferLines.RemoveRange(renderLines.Length, excessBuffers);
+                ConsoleBufferLines.RemoveRange(renderLines.Length, excessBuffers);
             }
         }
 
@@ -136,11 +137,11 @@ namespace Microsoft.PowerShell
 
             void UpdateColorsIfNecessary(string newColor)
             {
-                if (!object.ReferenceEquals(newColor, activeColor))
+                if (!ReferenceEquals(newColor, activeColor))
                 {
                     if (!inSelectedRegion)
                     {
-                        _consoleBufferLines[currentLogicalLine]
+                        ConsoleBufferLines[currentLogicalLine]
                             .Append(VTColorUtils.AnsiReset)
                             .Append(newColor);
                     }
@@ -155,13 +156,13 @@ namespace Microsoft.PowerShell
                     if (inSelectedRegion)
                     {
                         // Turn off inverse before end of line, turn on after continuation prompt
-                        _consoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                        ConsoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
                     }
 
                     currentLogicalLine += 1;
-                    if (currentLogicalLine == _consoleBufferLines.Count)
+                    if (currentLogicalLine == ConsoleBufferLines.Count)
                     {
-                        _consoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
+                        ConsoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
                     }
 
                     // Reset the color for continuation prompt so the color sequence will always be explicitly
@@ -174,13 +175,13 @@ namespace Microsoft.PowerShell
                     if (Options.ContinuationPrompt.Length > 0)
                     {
                         UpdateColorsIfNecessary(Options._continuationPromptColor);
-                        _consoleBufferLines[currentLogicalLine].Append(Options.ContinuationPrompt);
+                        ConsoleBufferLines[currentLogicalLine].Append(Options.ContinuationPrompt);
                     }
 
                     if (inSelectedRegion)
                     {
                         // Turn off inverse before end of line, turn on after continuation prompt
-                        _consoleBufferLines[currentLogicalLine].Append(Options.SelectionColor);
+                        ConsoleBufferLines[currentLogicalLine].Append(Options.SelectionColor);
                     }
 
                     return;
@@ -190,16 +191,16 @@ namespace Microsoft.PowerShell
 
                 if (char.IsControl(charToRender))
                 {
-                    _consoleBufferLines[currentLogicalLine].Append('^');
-                    _consoleBufferLines[currentLogicalLine].Append((char)('@' + charToRender));
+                    ConsoleBufferLines[currentLogicalLine].Append('^');
+                    ConsoleBufferLines[currentLogicalLine].Append((char)('@' + charToRender));
                 }
                 else
                 {
-                    _consoleBufferLines[currentLogicalLine].Append(charToRender);
+                    ConsoleBufferLines[currentLogicalLine].Append(charToRender);
                 }
             }
 
-            foreach (var buf in _consoleBufferLines)
+            foreach (var buf in ConsoleBufferLines)
             {
                 buf.Clear();
             }
@@ -228,13 +229,13 @@ namespace Microsoft.PowerShell
             {
                 if (i == selectionStart)
                 {
-                    _consoleBufferLines[currentLogicalLine].Append(Options.SelectionColor);
+                    ConsoleBufferLines[currentLogicalLine].Append(Options.SelectionColor);
                     inSelectedRegion = true;
                 }
                 else if (i == selectionEnd)
                 {
-                    _consoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
-                    _consoleBufferLines[currentLogicalLine].Append(activeColor);
+                    ConsoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                    ConsoleBufferLines[currentLogicalLine].Append(activeColor);
                     inSelectedRegion = false;
                 }
 
@@ -313,19 +314,19 @@ namespace Microsoft.PowerShell
 
             if (inSelectedRegion)
             {
-                _consoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                ConsoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
                 inSelectedRegion = false;
             }
 
-            _prediction.ActiveView.RenderSuggestion(_consoleBufferLines, ref currentLogicalLine);
+            _prediction.ActiveView.RenderSuggestion(ConsoleBufferLines, ref currentLogicalLine);
             activeColor = string.Empty;
 
             if (_statusLinePrompt != null)
             {
                 currentLogicalLine += 1;
-                if (currentLogicalLine > _consoleBufferLines.Count - 1)
+                if (currentLogicalLine > ConsoleBufferLines.Count - 1)
                 {
-                    _consoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
+                    ConsoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
                 }
 
                 color = _statusIsErrorMessage ? Options._errorColor : defaultColor;
@@ -333,10 +334,10 @@ namespace Microsoft.PowerShell
 
                 foreach (char c in _statusLinePrompt)
                 {
-                    _consoleBufferLines[currentLogicalLine].Append(c);
+                    ConsoleBufferLines[currentLogicalLine].Append(c);
                 }
 
-                _consoleBufferLines[currentLogicalLine].Append(_statusBuffer);
+                ConsoleBufferLines[currentLogicalLine].Append(_statusBuffer);
             }
 
             return currentLogicalLine + 1;
@@ -349,7 +350,7 @@ namespace Microsoft.PowerShell
         /// A bool value indicating whether we need to flip the color,
         /// namely whether we moved cursor to the initial position.
         /// </returns>
-        private bool RenderErrorPrompt(Renderer.RenderData renderData, string defaultColor)
+        private bool RenderErrorPrompt(RenderData renderData, string defaultColor)
         {
             if (_initialY < 0
                 || _options.PromptText == null
@@ -478,16 +479,16 @@ namespace Microsoft.PowerShell
         /// We avoid re-rendering everything while editing if it's possible.
         /// This method attempts to find the first changed logical line and move the cursor to the right position for the subsequent rendering.
         /// </summary>
-        private void CalculateWhereAndWhatToRender(bool cursorMovedToInitialPos, Renderer.RenderData renderData, out Renderer.LineInfoForRendering lineInfoForRendering)
+        private void CalculateWhereAndWhatToRender(bool cursorMovedToInitialPos, RenderData renderData, out LineInfoForRendering lineInfoForRendering)
         {
             int bufferWidth = _console.BufferWidth;
             int bufferHeight = _console.BufferHeight;
 
-            Renderer.RenderedLineData[] previousRenderLines = _previousRender.lines;
+            RenderedLineData[] previousRenderLines = _previousRender.lines;
             int previousLogicalLine = 0;
             int previousPhysicalLine = 0;
 
-            Renderer.RenderedLineData[] renderLines = renderData.lines;
+            RenderedLineData[] renderLines = renderData.lines;
             int logicalLine = 0;
             int physicalLine = 0;
             int pseudoPhysicalLineOffset = 0;
@@ -623,7 +624,7 @@ namespace Microsoft.PowerShell
             lineInfoForRendering.PseudoPhysicalLineOffset = pseudoPhysicalLineOffset;
         }
 
-        private void ReallyRender(Renderer.RenderData renderData, string defaultColor)
+        private void ReallyRender(RenderData renderData, string defaultColor)
         {
             string activeColor = "";
             int bufferWidth = _console.BufferWidth;
@@ -631,7 +632,7 @@ namespace Microsoft.PowerShell
 
             void UpdateColorsIfNecessary(string newColor)
             {
-                if (!object.ReferenceEquals(newColor, activeColor))
+                if (!ReferenceEquals(newColor, activeColor))
                 {
                     _console.Write(newColor);
                     activeColor = newColor;
@@ -650,14 +651,14 @@ namespace Microsoft.PowerShell
             bool cursorMovedToInitialPos = RenderErrorPrompt(renderData, defaultColor);
 
             // Calculate what to render and where to start the rendering.
-            Renderer.LineInfoForRendering lineInfoForRendering;
+            LineInfoForRendering lineInfoForRendering;
             CalculateWhereAndWhatToRender(cursorMovedToInitialPos, renderData, out lineInfoForRendering);
 
-            Renderer.RenderedLineData[] previousRenderLines = _previousRender.lines;
+            RenderedLineData[] previousRenderLines = _previousRender.lines;
             int previousLogicalLine = lineInfoForRendering.PreviousLogicalLineIndex;
             int previousPhysicalLine = lineInfoForRendering.PreviousPhysicalLineCount;
 
-            Renderer.RenderedLineData[] renderLines = renderData.lines;
+            RenderedLineData[] renderLines = renderData.lines;
             int logicalLine = lineInfoForRendering.CurrentLogicalLineIndex;
             int physicalLine = lineInfoForRendering.CurrentPhysicalLineCount;
             int pseudoPhysicalLineOffset = lineInfoForRendering.PseudoPhysicalLineOffset;

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Management.Automation.Language;
+using System.Text;
 
 namespace Microsoft.PowerShell
 {
@@ -36,5 +38,10 @@ namespace Microsoft.PowerShell
             internal int Index { get; set; }
             internal string Color { get; set; }
         }
+
+        private readonly List<StringBuilder> _consoleBufferLines = new List<StringBuilder>(1)
+            {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
+
+        public List<StringBuilder> ConsoleBufferLines => _consoleBufferLines;
     }
 }
