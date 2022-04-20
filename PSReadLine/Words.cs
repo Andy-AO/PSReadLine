@@ -138,8 +138,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         private int FindNextWordPoint(string wordDelimiters)
         {
-            int i = _singleton._current;
-            if (i == _singleton._buffer.Length)
+            int i = Singleton._current;
+            if (i == Singleton._buffer.Length)
             {
                 return i;
             }
@@ -147,7 +147,7 @@ namespace Microsoft.PowerShell
             if (InWord(i, wordDelimiters))
             {
                 // Scan to end of current word region
-                while (i < _singleton._buffer.Length)
+                while (i < Singleton._buffer.Length)
                 {
                     if (!InWord(i, wordDelimiters))
                     {
@@ -157,7 +157,7 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            while (i < _singleton._buffer.Length)
+            while (i < Singleton._buffer.Length)
             {
                 if (InWord(i, wordDelimiters))
                 {

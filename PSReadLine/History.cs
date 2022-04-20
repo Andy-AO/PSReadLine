@@ -568,13 +568,13 @@ namespace Microsoft.PowerShell
             // The input contains at least one match of some sensitive patterns, so now we need to further
             // analyze the input using the ASTs to see if it should actually be considered sensitive.
             bool isSensitive = false;
-            ParseError[] parseErrors = _singleton._parseErrors;
+            ParseError[] parseErrors = Singleton._parseErrors;
 
             // We need to compare the text here, instead of simply checking whether or not '_ast' is null.
             // This is because we may need to update from history file in the middle of editing an input,
             // and in that case, the '_ast' may be not-null, but it was not parsed from 'line'.
-            Ast ast = string.Equals(_singleton._ast?.Extent.Text, line)
-                ? _singleton._ast
+            Ast ast = string.Equals(Singleton._ast?.Extent.Text, line)
+                ? Singleton._ast
                 : Parser.ParseInput(line, out _, out parseErrors);
 
             if (parseErrors != null && parseErrors.Length > 0)
@@ -676,7 +676,7 @@ namespace Microsoft.PowerShell
         {
             command = command.Replace("\r\n", "\n");
             var editItems = new List<EditItem> {EditItemInsertString.Create(command, 0)};
-            _singleton.MaybeAddToHistory(command, editItems, 1);
+            Singleton.MaybeAddToHistory(command, editItems, 1);
         }
 
         /// <summary>
@@ -684,9 +684,9 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ClearHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton._history?.Clear();
-            _singleton._recentHistory?.Clear();
-            _singleton._currentHistoryIndex = 0;
+            Singleton._history?.Clear();
+            Singleton._recentHistory?.Clear();
+            Singleton._currentHistoryIndex = 0;
         }
 
         /// <summary>
@@ -694,7 +694,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static HistoryItem[] GetHistoryItems()
         {
-            return _singleton._history.ToArray();
+            return Singleton._history.ToArray();
         }
 
         enum HistoryMoveCursor { ToEnd, ToBeginning, DontMove }
@@ -829,8 +829,8 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            _singleton.SaveCurrentLine();
-            _singleton.HistoryRecall(numericArg);
+            Singleton.SaveCurrentLine();
+            Singleton.HistoryRecall(numericArg);
         }
 
         /// <summary>
@@ -844,8 +844,8 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            _singleton.SaveCurrentLine();
-            _singleton.HistoryRecall(numericArg);
+            Singleton.SaveCurrentLine();
+            Singleton.HistoryRecall(numericArg);
         }
 
         private void HistorySearch(int direction)
@@ -926,9 +926,9 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BeginningOfHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.SaveCurrentLine();
-            _singleton._currentHistoryIndex = 0;
-            _singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);
+            Singleton.SaveCurrentLine();
+            Singleton._currentHistoryIndex = 0;
+            Singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);
         }
 
         /// <summary>
@@ -936,14 +936,14 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void EndOfHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.SaveCurrentLine();
+            Singleton.SaveCurrentLine();
             GoToEndOfHistory();
         }
 
         private static void GoToEndOfHistory()
         {
-            _singleton._currentHistoryIndex = _singleton._history.Count;
-            _singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);
+            Singleton._currentHistoryIndex = Singleton._history.Count;
+            Singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);
         }
 
         /// <summary>
@@ -958,8 +958,8 @@ namespace Microsoft.PowerShell
                 numericArg = -numericArg;
             }
 
-            _singleton.SaveCurrentLine();
-            _singleton.HistorySearch(numericArg);
+            Singleton.SaveCurrentLine();
+            Singleton.HistorySearch(numericArg);
         }
 
         /// <summary>
@@ -970,8 +970,8 @@ namespace Microsoft.PowerShell
         {
             TryGetArgAsInt(arg, out var numericArg, +1);
 
-            _singleton.SaveCurrentLine();
-            _singleton.HistorySearch(numericArg);
+            Singleton.SaveCurrentLine();
+            Singleton.HistorySearch(numericArg);
         }
 
         private void UpdateHistoryDuringInteractiveSearch(string toMatch, int direction, ref int searchFromPoint)
@@ -1155,7 +1155,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ForwardSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.InteractiveHistorySearch(+1);
+            Singleton.InteractiveHistorySearch(+1);
         }
 
         /// <summary>
@@ -1163,7 +1163,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.InteractiveHistorySearch(-1);
+            Singleton.InteractiveHistorySearch(-1);
         }
     }
 }

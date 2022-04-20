@@ -27,12 +27,12 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                int i = _singleton.ViFindNextWordPoint(_singleton.Options.WordDelimiters);
-                if (i >= _singleton._buffer.Length)
+                int i = Singleton.ViFindNextWordPoint(Singleton.Options.WordDelimiters);
+                if (i >= Singleton._buffer.Length)
                 {
                     i += ViEndOfLineFactor;
                 }
-                _singleton.MoveCursor(Math.Max(i, 0));
+                Singleton.MoveCursor(Math.Max(i, 0));
             }
         }
 
@@ -56,7 +56,7 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                _singleton.MoveCursor(_singleton.ViFindPreviousWordPoint(_singleton.Options.WordDelimiters));
+                Singleton.MoveCursor(Singleton.ViFindPreviousWordPoint(Singleton.Options.WordDelimiters));
             }
         }
 
@@ -70,12 +70,12 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int i = _singleton._current;
+            int i = Singleton._current;
             while (numericArg-- > 0)
             {
-                i = _singleton.ViFindPreviousGlob(i - 1);
+                i = Singleton.ViFindPreviousGlob(i - 1);
             }
-            _singleton.MoveCursor(i);
+            Singleton.MoveCursor(i);
         }
 
         /// <summary>
@@ -88,16 +88,16 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int i = _singleton._current;
+            int i = Singleton._current;
             while (numericArg-- > 0)
             {
-                i = _singleton.ViFindNextGlob(i);
+                i = Singleton.ViFindNextGlob(i);
             }
 
-            int newPosition = Math.Min(i, Math.Max(0, _singleton._buffer.Length - 1));
-            if (newPosition != _singleton._current)
+            int newPosition = Math.Min(i, Math.Max(0, Singleton._buffer.Length - 1));
+            if (newPosition != Singleton._current)
             {
-                _singleton.MoveCursor(newPosition);
+                Singleton.MoveCursor(newPosition);
             }
             else
             {
@@ -123,7 +123,7 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                _singleton.MoveCursor(_singleton.ViFindEndOfGlob());
+                Singleton.MoveCursor(Singleton.ViFindEndOfGlob());
             }
         }
 
@@ -145,7 +145,7 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                _singleton.MoveCursor(_singleton.ViFindEndOfPreviousGlob());
+                Singleton.MoveCursor(Singleton.ViFindEndOfPreviousGlob());
             }
         }
 
@@ -160,13 +160,13 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void MoveToEndOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var eol = GetEndOfLogicalLinePos(_singleton._current);
-            if (eol != _singleton._current)
+            var eol = GetEndOfLogicalLinePos(Singleton._current);
+            if (eol != Singleton._current)
             {
-                _singleton.MoveCursor(eol);
+                Singleton.MoveCursor(eol);
             }
-            _singleton._moveToEndOfLineCommandCount++;
-            _singleton._moveToLineDesiredColumn = int.MaxValue;
+            Singleton._moveToEndOfLineCommandCount++;
+            Singleton._moveToLineDesiredColumn = int.MaxValue;
         }
 
         /// <summary>
@@ -177,9 +177,9 @@ namespace Microsoft.PowerShell
         public static void NextWordEnd(ConsoleKeyInfo? key = null, object arg = null)
         {
             int qty = arg as int? ?? 1;
-            for (; qty > 0 && _singleton._current < _singleton._buffer.Length - 1; qty--)
+            for (; qty > 0 && Singleton._current < Singleton._buffer.Length - 1; qty--)
             {
-                _singleton.MoveCursor(_singleton.ViFindNextWordEnd(_singleton.Options.WordDelimiters));
+                Singleton.MoveCursor(Singleton.ViFindNextWordEnd(Singleton.Options.WordDelimiters));
             }
         }
 
@@ -195,13 +195,13 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            if (col < _singleton._buffer.Length + ViEndOfLineFactor)
+            if (col < Singleton._buffer.Length + ViEndOfLineFactor)
             {
-                _singleton.MoveCursor(Math.Min(col, _singleton._buffer.Length) - 1);
+                Singleton.MoveCursor(Math.Min(col, Singleton._buffer.Length) - 1);
             }
             else
             {
-                _singleton.MoveCursor(_singleton._buffer.Length + ViEndOfLineFactor);
+                Singleton.MoveCursor(Singleton._buffer.Length + ViEndOfLineFactor);
                 Ding();
             }
         }
@@ -211,10 +211,10 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void GotoFirstNonBlankOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var newCurrent = GetFirstNonBlankOfLogicalLinePos(_singleton._current);
-            if (newCurrent != _singleton._current)
+            var newCurrent = GetFirstNonBlankOfLogicalLinePos(Singleton._current);
+            if (newCurrent != Singleton._current)
             {
-                _singleton.MoveCursor(newCurrent);
+                Singleton.MoveCursor(newCurrent);
             }
         }
 
@@ -223,13 +223,13 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViGotoBrace(ConsoleKeyInfo? key = null, object arg = null)
         {
-            int i = _singleton.ViFindBrace(_singleton._current);
-            if (i == _singleton._current)
+            int i = Singleton.ViFindBrace(Singleton._current);
+            if (i == Singleton._current)
             {
                 Ding();
                 return;
             }
-            _singleton.MoveCursor(i);
+            Singleton.MoveCursor(i);
         }
 
         private int ViFindBrace(int i)

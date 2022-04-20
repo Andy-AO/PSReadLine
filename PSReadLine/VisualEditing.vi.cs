@@ -23,7 +23,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            if (!(_singleton._engineIntrinsics?.InvokeCommand.GetCommand(editor, CommandTypes.Application) is
+            if (!(Singleton._engineIntrinsics?.InvokeCommand.GetCommand(editor, CommandTypes.Application) is
                 ApplicationInfo editorCommand))
             {
                 Ding();
@@ -35,7 +35,7 @@ namespace Microsoft.PowerShell
             {
                 using (TextWriter tw = new StreamWriter(fs))
                 {
-                    tw.Write(_singleton._buffer.ToString());
+                    tw.Write(Singleton._buffer.ToString());
                 }
             }
 
@@ -47,12 +47,12 @@ namespace Microsoft.PowerShell
                 RedirectStandardInput = false,
                 RedirectStandardOutput = false
             };
-            var pi = _singleton.CallPossibleExternalApplication(() => Process.Start(si));
+            var pi = Singleton.CallPossibleExternalApplication(() => Process.Start(si));
             if (pi != null)
             {
                 pi.WaitForExit();
                 InvokePrompt();
-                _singleton.ProcessViVisualEditing(tempPowerShellFile);
+                Singleton.ProcessViVisualEditing(tempPowerShellFile);
             }
             else
             {

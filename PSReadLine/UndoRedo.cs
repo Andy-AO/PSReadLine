@@ -113,21 +113,21 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void Undo(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton._undoEditIndex > 0)
+            if (Singleton._undoEditIndex > 0)
             {
-                if (_singleton._statusIsErrorMessage)
+                if (Singleton._statusIsErrorMessage)
                 {
                     // After an edit, clear the error message
-                    _singleton.ClearStatusMessage(render: false);
+                    Singleton.ClearStatusMessage(render: false);
                 }
-                _singleton._edits[_singleton._undoEditIndex - 1].Undo();
-                _singleton._undoEditIndex--;
+                Singleton._edits[Singleton._undoEditIndex - 1].Undo();
+                Singleton._undoEditIndex--;
 
-                if (_singleton._options.EditMode == EditMode.Vi && _singleton._current >= _singleton._buffer.Length)
+                if (Singleton._options.EditMode == EditMode.Vi && Singleton._current >= Singleton._buffer.Length)
                 {
-                    _singleton._current = Math.Max(0, _singleton._buffer.Length + ViEndOfLineFactor);
+                    Singleton._current = Math.Max(0, Singleton._buffer.Length + ViEndOfLineFactor);
                 }
-                _singleton.Render();
+                Singleton.Render();
             }
             else
             {
@@ -140,11 +140,11 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void Redo(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton._undoEditIndex < _singleton._edits.Count)
+            if (Singleton._undoEditIndex < Singleton._edits.Count)
             {
-                _singleton._edits[_singleton._undoEditIndex].Redo();
-                _singleton._undoEditIndex++;
-                _singleton.Render();
+                Singleton._edits[Singleton._undoEditIndex].Redo();
+                Singleton._undoEditIndex++;
+                Singleton.Render();
             }
             else
             {
@@ -180,15 +180,15 @@ namespace Microsoft.PowerShell
 
             public override void Undo()
             {
-                Debug.Assert(_singleton._buffer[_insertStartPosition] == _insertedCharacter, "Character to undo is not what it should be");
-                _singleton._buffer.Remove(_insertStartPosition, 1);
-                _singleton._current = _insertStartPosition;
+                Debug.Assert(Singleton._buffer[_insertStartPosition] == _insertedCharacter, "Character to undo is not what it should be");
+                Singleton._buffer.Remove(_insertStartPosition, 1);
+                Singleton._current = _insertStartPosition;
             }
 
             public override void Redo()
             {
-                _singleton._buffer.Insert(_insertStartPosition, _insertedCharacter);
-                _singleton._current++;
+                Singleton._buffer.Insert(_insertStartPosition, _insertedCharacter);
+                Singleton._current++;
             }
         }
 
@@ -213,16 +213,16 @@ namespace Microsoft.PowerShell
 
             public override void Undo()
             {
-                Debug.Assert(_singleton._buffer.ToString(_insertStartPosition, _insertedString.Length).Equals(_insertedString),
+                Debug.Assert(Singleton._buffer.ToString(_insertStartPosition, _insertedString.Length).Equals(_insertedString),
                     "Character to undo is not what it should be");
-                _singleton._buffer.Remove(_insertStartPosition, _insertedString.Length);
-                _singleton._current = _insertStartPosition;
+                Singleton._buffer.Remove(_insertStartPosition, _insertedString.Length);
+                Singleton._current = _insertStartPosition;
             }
 
             public override void Redo()
             {
-                _singleton._buffer.Insert(_insertStartPosition, _insertedString);
-                _singleton._current += _insertedString.Length;
+                Singleton._buffer.Insert(_insertStartPosition, _insertedString);
+                Singleton._current += _insertedString.Length;
             }
         }
 
@@ -248,7 +248,7 @@ namespace Microsoft.PowerShell
             public override void Undo()
             {
                 base.Undo();
-                _singleton._current = _insertAnchor;
+                Singleton._current = _insertAnchor;
             }
         }
 
@@ -288,16 +288,16 @@ namespace Microsoft.PowerShell
 
             public override void Undo()
             {
-                _singleton._buffer.Insert(_deleteStartPosition, _deletedString);
-                _singleton._current = _moveCursorToEndWhenUndo
+                Singleton._buffer.Insert(_deleteStartPosition, _deletedString);
+                Singleton._current = _moveCursorToEndWhenUndo
                     ? _deleteStartPosition + _deletedString.Length
                     : _deleteStartPosition;
             }
 
             public override void Redo()
             {
-                _singleton._buffer.Remove(_deleteStartPosition, _deletedString.Length);
-                _singleton._current = _deleteStartPosition;
+                Singleton._buffer.Remove(_deleteStartPosition, _deletedString.Length);
+                Singleton._current = _deleteStartPosition;
             }
         }
 
@@ -323,7 +323,7 @@ namespace Microsoft.PowerShell
             public override void Undo()
             {
                 base.Undo();
-                _singleton._current = _deleteAnchor;
+                Singleton._current = _deleteAnchor;
             }
         }
 
@@ -344,12 +344,12 @@ namespace Microsoft.PowerShell
 
             public override void Redo()
             {
-                _singleton.SwapCharactersImpl(_swapPosition);
+                Singleton.SwapCharactersImpl(_swapPosition);
             }
 
             public override void Undo()
             {
-                _singleton.SwapCharactersImpl(_swapPosition);
+                Singleton.SwapCharactersImpl(_swapPosition);
             }
         }
 

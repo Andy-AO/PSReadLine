@@ -79,9 +79,9 @@ namespace Microsoft.PowerShell
                 // GetDynamicHelpContent could scroll the screen, e.g. via Write-Progress. For example,
                 // Get-Help for unknown command under the CloudShell Azure drive will show the progress bar while searching for command.
                 // We need to update the _initialY in case the current cursor postion has changed.
-                if (_singleton._initialY > _console.CursorTop)
+                if (Singleton._initialY > _console.CursorTop)
                 {
-                    _singleton._initialY = _console.CursorTop;
+                    Singleton._initialY = _console.CursorTop;
                 }
             }
         }
@@ -94,7 +94,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ShowCommandHelp(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton._console is PlatformWindows.LegacyWin32Console)
+            if (Singleton._console is PlatformWindows.LegacyWin32Console)
             {
                 Collection<string> helpBlock = new Collection<string>()
                 {
@@ -102,12 +102,12 @@ namespace Microsoft.PowerShell
                     PSReadLineResources.FullHelpNotSupportedInLegacyConsole
                 };
 
-                _singleton.WriteDynamicHelpBlock(helpBlock);
+                Singleton.WriteDynamicHelpBlock(helpBlock);
 
                 return;
             }
 
-            _singleton.DynamicHelpImpl(isFullHelp: true);
+            Singleton.DynamicHelpImpl(isFullHelp: true);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ShowParameterHelp(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.DynamicHelpImpl(isFullHelp: false);
+            Singleton.DynamicHelpImpl(isFullHelp: false);
         }
 
         private void WriteDynamicHelpContent(string commandName, string parameterName, bool isFullHelp)
@@ -147,14 +147,14 @@ namespace Microsoft.PowerShell
                 _pager ??= new Pager();
             }
 
-            int cursor = _singleton._current;
+            int cursor = Singleton._current;
             string commandName = null;
             string parameterName = null;
 
             // Simply return if nothing is rendered yet.
-            if (_singleton._tokens == null) { return; }
+            if (Singleton._tokens == null) { return; }
 
-            foreach(var token in _singleton._tokens)
+            foreach(var token in Singleton._tokens)
             {
                 var extent = token.Extent;
 
@@ -285,7 +285,7 @@ namespace Microsoft.PowerShell
 
             public void Clear()
             {
-                _singleton.WriteBlankLines(Top, ItemsToDisplay.Count + extraPhysicalLines);
+                PSConsoleReadLine.Singleton.WriteBlankLines(Top, ItemsToDisplay.Count + extraPhysicalLines);
             }
         }
     }

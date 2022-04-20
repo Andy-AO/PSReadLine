@@ -13,9 +13,9 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViTabCompleteNext(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton._editGroupStart >= 0)
+            if (Singleton._editGroupStart >= 0)
             {
-                _singleton._groupUndoHelper.EndGroup();
+                Singleton._groupUndoHelper.EndGroup();
             }
             TabCompleteNext(key, arg);
         }
@@ -25,9 +25,9 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViTabCompletePrevious(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton._editGroupStart >= 0)
+            if (Singleton._editGroupStart >= 0)
             {
-                _singleton._groupUndoHelper.EndGroup();
+                Singleton._groupUndoHelper.EndGroup();
             }
             TabCompletePrevious(key, arg);
         }

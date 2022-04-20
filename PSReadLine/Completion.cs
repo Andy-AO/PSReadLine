@@ -56,7 +56,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void TabCompleteNext(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.Complete(forward: true);
+            Singleton.Complete(forward: true);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void TabCompletePrevious(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.Complete(forward: false);
+            Singleton.Complete(forward: false);
         }
 
         private static bool IsSingleQuote(char c) => c == '\'' || c == (char)8216 || c == (char)8217 || c == (char)8218 || c == (char)8219;
@@ -121,7 +121,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void Complete(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.CompleteImpl(false);
+            Singleton.CompleteImpl(false);
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void MenuComplete(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.CompleteImpl(true);
+            Singleton.CompleteImpl(true);
         }
 
         private bool IsConsistentQuoting(Collection<CompletionResult> matches)
@@ -296,8 +296,8 @@ namespace Microsoft.PowerShell
                     // the replacement, we'll ignore the completions.
                     var start = _tabCompletions.ReplacementIndex;
                     var length = _tabCompletions.ReplacementLength;
-                    if (start < 0 || start > _singleton._buffer.Length) return null;
-                    if (length < 0 || length > (_singleton._buffer.Length - start)) return null;
+                    if (start < 0 || start > Singleton._buffer.Length) return null;
+                    if (length < 0 || length > (Singleton._buffer.Length - start)) return null;
 
                     if (_tabCompletions.CompletionMatches.Count > 1)
                     {
@@ -321,9 +321,9 @@ namespace Microsoft.PowerShell
                     // GetCompletions could scroll the screen, e.g. via Write-Progress. For example,
                     // cd <TAB> under the CloudShell Azure drive will show the progress bar while fetching data.
                     // We need to update the _initialY in case the current cursor postion has changed.
-                    if (_singleton._initialY > _console.CursorTop)
+                    if (Singleton._initialY > _console.CursorTop)
                     {
-                        _singleton._initialY = _console.CursorTop;
+                        Singleton._initialY = _console.CursorTop;
                     }
                 }
             }
@@ -407,8 +407,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void PossibleCompletions(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var completions = _singleton.GetCompletions();
-            _singleton.PossibleCompletionsImpl(completions, menuSelect: false);
+            var completions = Singleton.GetCompletions();
+            Singleton.PossibleCompletionsImpl(completions, menuSelect: false);
         }
 
         private static string HandleNewlinesForPossibleCompletions(string s)

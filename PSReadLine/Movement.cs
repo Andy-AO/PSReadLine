@@ -21,16 +21,16 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void EndOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            int i = _singleton._current;
-            for (; i < _singleton._buffer.Length; i++)
+            int i = Singleton._current;
+            for (; i < Singleton._buffer.Length; i++)
             {
-                if (_singleton._buffer[i] == '\n')
+                if (Singleton._buffer[i] == '\n')
                 {
                     break;
                 }
             }
 
-            _singleton.MoveCursor((i == _singleton._current) ? _singleton._buffer.Length : i);
+            Singleton.MoveCursor((i == Singleton._current) ? Singleton._buffer.Length : i);
         }
 
         /// <summary>
@@ -40,10 +40,10 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BeginningOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var newCurrent = GetBeginningOfLinePos(_singleton._current);
-            newCurrent = newCurrent == _singleton._current ? 0 : newCurrent;
+            var newCurrent = GetBeginningOfLinePos(Singleton._current);
+            newCurrent = newCurrent == Singleton._current ? 0 : newCurrent;
 
-            _singleton.MoveCursor(newCurrent);
+            Singleton.MoveCursor(newCurrent);
         }
 
         /// <summary>
@@ -54,13 +54,13 @@ namespace Microsoft.PowerShell
         {
             if (TryGetArgAsInt(arg, out var numericArg, 1))
             {
-                if (_singleton._current == _singleton._buffer.Length && numericArg > 0)
+                if (Singleton._current == Singleton._buffer.Length && numericArg > 0)
                 {
                     AcceptSuggestion(key, arg);
                 }
                 else
                 {
-                    SetCursorPosition(_singleton._current + numericArg);
+                    SetCursorPosition(Singleton._current + numericArg);
                 }
             }
         }
@@ -73,7 +73,7 @@ namespace Microsoft.PowerShell
         {
             if (TryGetArgAsInt(arg, out var numericArg, 1))
             {
-                SetCursorPosition(_singleton._current - numericArg);
+                SetCursorPosition(Singleton._current - numericArg);
             }
         }
 
@@ -84,7 +84,7 @@ namespace Microsoft.PowerShell
         {
             if (TryGetArgAsInt(arg, out var numericArg, 1))
             {
-                if (InViInsertMode() && _singleton._current == _singleton._buffer.Length && numericArg > 0)
+                if (InViInsertMode() && Singleton._current == Singleton._buffer.Length && numericArg > 0)
                 {
                     AcceptSuggestion(key, arg);
                 }
@@ -114,22 +114,22 @@ namespace Microsoft.PowerShell
         {
             if (count < 0)
             {
-                var start = GetBeginningOfLinePos(_singleton._current);
-                var newCurrent = Math.Max(start, _singleton._current + count);
-                if (_singleton._current != newCurrent)
+                var start = GetBeginningOfLinePos(Singleton._current);
+                var newCurrent = Math.Max(start, Singleton._current + count);
+                if (Singleton._current != newCurrent)
                 {
-                    _singleton.MoveCursor(newCurrent);
+                    Singleton.MoveCursor(newCurrent);
                 }
             }
-            else if (_singleton._current < _singleton._buffer.Length)
+            else if (Singleton._current < Singleton._buffer.Length)
             {
                 // when in the VI command mode, 'end' is the position of the last character;
                 // when in the VI insert mode, 'end' is 1 char beyond the last character.
-                var end = GetEndOfLogicalLinePos(_singleton._current) + 1 + ViEndOfLineFactor;
-                var newCurrent = Math.Min(end, _singleton._current + count);
-                if (_singleton._current != newCurrent)
+                var end = GetEndOfLogicalLinePos(Singleton._current) + 1 + ViEndOfLineFactor;
+                var newCurrent = Math.Min(end, Singleton._current + count);
+                if (Singleton._current != newCurrent)
                 {
-                    _singleton.MoveCursor(newCurrent);
+                    Singleton.MoveCursor(newCurrent);
                 }
             }
         }
@@ -240,7 +240,7 @@ namespace Microsoft.PowerShell
         {
             if (TryGetArgAsInt(arg, out var numericArg, 1))
             {
-                _singleton.MoveToLine(-numericArg);
+                Singleton.MoveToLine(-numericArg);
             }
         }
 
@@ -251,7 +251,7 @@ namespace Microsoft.PowerShell
         {
             if (TryGetArgAsInt(arg, out var numericArg, 1))
             {
-                _singleton.MoveToLine(numericArg);
+                Singleton.MoveToLine(numericArg);
             }
         }
 
@@ -274,7 +274,7 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                _singleton.MoveCursor(_singleton.FindNextWordPoint(_singleton.Options.WordDelimiters));
+                Singleton.MoveCursor(Singleton.FindNextWordPoint(Singleton.Options.WordDelimiters));
             }
         }
 
@@ -297,12 +297,12 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                var token = _singleton.FindToken(_singleton._current, FindTokenMode.Next);
+                var token = Singleton.FindToken(Singleton._current, FindTokenMode.Next);
 
                 Debug.Assert(token != null, "We'll always find EOF");
 
-                _singleton.MoveCursor(token.Kind == TokenKind.EndOfInput
-                    ? _singleton._buffer.Length
+                Singleton.MoveCursor(token.Kind == TokenKind.EndOfInput
+                    ? Singleton._buffer.Length
                     : token.Extent.StartOffset);
             }
         }
@@ -319,7 +319,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            if (_singleton._current == _singleton._buffer.Length && numericArg > 0)
+            if (Singleton._current == Singleton._buffer.Length && numericArg > 0)
             {
                 AcceptNextSuggestionWord(numericArg);
                 return;
@@ -333,7 +333,7 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                _singleton.MoveCursor(_singleton.FindForwardWordPoint(_singleton.Options.WordDelimiters));
+                Singleton.MoveCursor(Singleton.FindForwardWordPoint(Singleton.Options.WordDelimiters));
             }
         }
 
@@ -356,19 +356,19 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                var token = _singleton.FindToken(_singleton._current, FindTokenMode.CurrentOrNext);
+                var token = Singleton.FindToken(Singleton._current, FindTokenMode.CurrentOrNext);
 
                 Debug.Assert(token != null, "We'll always find EOF");
 
-                _singleton.MoveCursor(token.Kind == TokenKind.EndOfInput
-                    ? _singleton._buffer.Length
+                Singleton.MoveCursor(token.Kind == TokenKind.EndOfInput
+                    ? Singleton._buffer.Length
                     : token.Extent.EndOffset);
             }
         }
 
         private static bool CheckIsBound(Action<ConsoleKeyInfo?, object> action)
         {
-            foreach (var entry in _singleton._dispatchTable)
+            foreach (var entry in Singleton._dispatchTable)
             {
                 if (entry.Value.Action == action)
                     return true;
@@ -403,7 +403,7 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                _singleton.MoveCursor(_singleton.FindBackwardWordPoint(_singleton.Options.WordDelimiters));
+                Singleton.MoveCursor(Singleton.FindBackwardWordPoint(Singleton.Options.WordDelimiters));
             }
         }
 
@@ -433,8 +433,8 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                var token = _singleton.FindToken(_singleton._current, FindTokenMode.Previous);
-                _singleton.MoveCursor(token?.Extent.StartOffset ?? 0);
+                var token = Singleton.FindToken(Singleton._current, FindTokenMode.Previous);
+                Singleton.MoveCursor(token?.Extent.StartOffset ?? 0);
             }
         }
 
@@ -443,20 +443,20 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void GotoBrace(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton._current >= _singleton._buffer.Length)
+            if (Singleton._current >= Singleton._buffer.Length)
             {
                 Ding();
                 return;
             }
 
-            _singleton.MaybeParseInput();
+            Singleton.MaybeParseInput();
 
             Token token = null;
             var index = 0;
-            for (; index < _singleton._tokens.Length; index++)
+            for (; index < Singleton._tokens.Length; index++)
             {
-                token = _singleton._tokens[index];
-                if (token.Extent.StartOffset == _singleton._current)
+                token = Singleton._tokens[index];
+                if (token.Extent.StartOffset == Singleton._current)
                     break;
             }
 
@@ -479,10 +479,10 @@ namespace Microsoft.PowerShell
             }
 
             var matchCount = 0;
-            var limit = (direction > 0) ? _singleton._tokens.Length - 1 : -1;
+            var limit = (direction > 0) ? Singleton._tokens.Length - 1 : -1;
             for (; index != limit; index += direction)
             {
-                var t = _singleton._tokens[index];
+                var t = Singleton._tokens[index];
                 if (t.Kind == token.Kind)
                 {
                     matchCount++;
@@ -492,7 +492,7 @@ namespace Microsoft.PowerShell
                     matchCount--;
                     if (matchCount == 0)
                     {
-                        _singleton.MoveCursor(t.Extent.StartOffset);
+                        Singleton.MoveCursor(t.Extent.StartOffset);
                         return;
                     }
                 }
@@ -505,7 +505,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ClearScreen(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var console = _singleton._console;
+            var console = Singleton._console;
             console.Write("\x1b[2J");
             InvokePrompt(null, console.WindowTop);
         }
@@ -546,14 +546,14 @@ namespace Microsoft.PowerShell
                 // Should we prompt?
                 toFind = ReadKey().KeyChar;
             }
-            for (int i = _singleton._current + 1; i < _singleton._buffer.Length; i++)
+            for (int i = Singleton._current + 1; i < Singleton._buffer.Length; i++)
             {
-                if (_singleton._buffer[i] == toFind)
+                if (Singleton._buffer[i] == toFind)
                 {
                     occurence -= 1;
                     if (occurence == 0)
                     {
-                        _singleton.MoveCursor(i);
+                        Singleton.MoveCursor(i);
                         break;
                     }
                 }
@@ -584,14 +584,14 @@ namespace Microsoft.PowerShell
                 // Should we prompt?
                 toFind = ReadKey().KeyChar;
             }
-            for (int i = _singleton._current - 1; i >= 0; i--)
+            for (int i = Singleton._current - 1; i >= 0; i--)
             {
-                if (_singleton._buffer[i] == toFind)
+                if (Singleton._buffer[i] == toFind)
                 {
                     occurence -= 1;
                     if (occurence == 0)
                     {
-                        _singleton.MoveCursor(i);
+                        Singleton.MoveCursor(i);
                         return;
                     }
                 }

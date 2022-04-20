@@ -221,7 +221,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SetOptions(SetPSReadLineOption options)
         {
-            _singleton.SetOptionsInternal(options);
+            Singleton.SetOptionsInternal(options);
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace Microsoft.PowerShell
         {
             // Should we copy?  It doesn't matter much, everything can be tweaked from
             // the cmdlet anyway.
-            return _singleton._options;
+            return Singleton._options;
         }
 
         class CustomHandlerException : Exception
@@ -267,7 +267,7 @@ namespace Microsoft.PowerShell
             {
                 longDescription = PSReadLineResources.CustomActionDescription;
             }
-            _singleton.SetKeyHandlerInternal(key, HandlerWrapper, briefDescription, longDescription, scriptBlock);
+            Singleton.SetKeyHandlerInternal(key, HandlerWrapper, briefDescription, longDescription, scriptBlock);
         }
 
         /// <summary>
@@ -276,7 +276,7 @@ namespace Microsoft.PowerShell
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         public static void SetKeyHandler(string[] key, Action<ConsoleKeyInfo?, object> handler, string briefDescription, string longDescription)
         {
-            _singleton.SetKeyHandlerInternal(key, handler, briefDescription, longDescription, null);
+            Singleton.SetKeyHandlerInternal(key, handler, briefDescription, longDescription, null);
         }
 
         /// <summary>
@@ -284,7 +284,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void RemoveKeyHandler(string[] key)
         {
-            _singleton.RemoveKeyHandlerInternal(key);
+            Singleton.RemoveKeyHandlerInternal(key);
         }
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace Microsoft.PowerShell
         {
             var boundFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var entry in _singleton._dispatchTable)
+            foreach (var entry in Singleton._dispatchTable)
             {
                 if (entry.Value.BriefDescription == "Ignore"
                     || entry.Value.BriefDescription == "ChordFirstKey")
@@ -324,7 +324,7 @@ namespace Microsoft.PowerShell
             }
 
             // Added to support vi command mode mappings
-            if (_singleton._options.EditMode == EditMode.Vi)
+            if (Singleton._options.EditMode == EditMode.Vi)
             {
                 foreach (var entry in _viCmdKeyMap)
                 {
@@ -347,7 +347,7 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            foreach( var entry in _singleton._chordDispatchTable )
+            foreach( var entry in Singleton._chordDispatchTable )
             {
                 foreach( var secondEntry in entry.Value )
                 {
@@ -366,7 +366,7 @@ namespace Microsoft.PowerShell
             }
 
             // Added to support vi command mode chorded mappings
-            if (_singleton._options.EditMode == EditMode.Vi)
+            if (Singleton._options.EditMode == EditMode.Vi)
             {
                 foreach (var entry in _viCmdChordTable)
                 {
@@ -439,7 +439,7 @@ namespace Microsoft.PowerShell
                 ConsoleKeyInfo[] consoleKeyChord = ConsoleKeyChordConverter.Convert(Key);
                 PSKeyInfo firstKey = PSKeyInfo.FromConsoleKeyInfo(consoleKeyChord[0]);
 
-                if (_singleton._dispatchTable.TryGetValue(firstKey, out KeyHandler entry))
+                if (Singleton._dispatchTable.TryGetValue(firstKey, out KeyHandler entry))
                 {
                     if (consoleKeyChord.Length == 1)
                     {
@@ -454,7 +454,7 @@ namespace Microsoft.PowerShell
                     else
                     {
                         PSKeyInfo secondKey = PSKeyInfo.FromConsoleKeyInfo(consoleKeyChord[1]);
-                        if (_singleton._chordDispatchTable.TryGetValue(firstKey, out var secondDispatchTable) &&
+                        if (Singleton._chordDispatchTable.TryGetValue(firstKey, out var secondDispatchTable) &&
                             secondDispatchTable.TryGetValue(secondKey, out entry))
                         {
                             yield return new PowerShell.KeyHandler
@@ -469,7 +469,7 @@ namespace Microsoft.PowerShell
                 }
 
                 // If in Vi mode, also check Vi's command mode list.
-                if (_singleton._options.EditMode == EditMode.Vi)
+                if (Singleton._options.EditMode == EditMode.Vi)
                 {
                     if (_viCmdKeyMap.TryGetValue(firstKey, out entry))
                     {

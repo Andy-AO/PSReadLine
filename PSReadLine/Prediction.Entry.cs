@@ -72,7 +72,7 @@ namespace Microsoft.PowerShell
                 // Calculate the remaining width after deducting the ' [SOURCE]' portion and the leading '> ' part.
                 // 5 is the length of the decoration characters: "> ", " [", and ']'.
                 int textWidth = width - sourceWidth - 5;
-                string textMetadataColor = _singleton._options._listPredictionColor;
+                string textMetadataColor = Singleton._options._listPredictionColor;
 
                 StringBuilder line = new StringBuilder(capacity: width)
                     .Append(selectionHighlighting)
@@ -95,7 +95,7 @@ namespace Microsoft.PowerShell
                             int start = InputMatchIndex + input.Length;
                             int length = SuggestionText.Length - start;
                             line.Append(SuggestionText, 0, InputMatchIndex)
-                                .Append(_singleton._options.EmphasisColor)
+                                .Append(Singleton._options.EmphasisColor)
                                 .Append(SuggestionText, InputMatchIndex, input.Length)
                                 .EndColorSection(selectionHighlighting)
                                 .Append(SuggestionText, start, length);
@@ -132,7 +132,7 @@ namespace Microsoft.PowerShell
                                 // If the user input portion takes less than half of the text width,
                                 // then we just truncate the suggestion text at the end.
                                 int length = SubstringLengthByCells(SuggestionText, textWidth - ellipsisLength);
-                                line.Append(_singleton._options.EmphasisColor)
+                                line.Append(Singleton._options.EmphasisColor)
                                     .Append(SuggestionText, 0, input.Length)
                                     .EndColorSection(selectionHighlighting)
                                     .Append(SuggestionText, input.Length, length - input.Length)
@@ -148,7 +148,7 @@ namespace Microsoft.PowerShell
                                     // will be rendered as '...LLLLLRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR'
                                     int remainingLenInCells = textWidth - ellipsisLength - rightLenInCells;
                                     int length = SubstringLengthByCellsFromEnd(SuggestionText, input.Length - 1, remainingLenInCells);
-                                    line.Append(_singleton._options.EmphasisColor)
+                                    line.Append(Singleton._options.EmphasisColor)
                                         .Append(ellipsis)
                                         .Append(SuggestionText, input.Length - length, length)
                                         .EndColorSection(selectionHighlighting)
@@ -161,7 +161,7 @@ namespace Microsoft.PowerShell
                                     int leftStrLen = SubstringLengthByCellsFromEnd(SuggestionText, input.Length - 1, 5);
                                     int startIndex = input.Length - leftStrLen;
                                     int totalStrLen = SubstringLengthByCells(SuggestionText, startIndex, textWidth - ellipsisLength * 2);
-                                    line.Append(_singleton._options.EmphasisColor)
+                                    line.Append(Singleton._options.EmphasisColor)
                                         .Append(ellipsis)
                                         .Append(SuggestionText, startIndex, leftStrLen)
                                         .EndColorSection(selectionHighlighting)
@@ -188,7 +188,7 @@ namespace Microsoft.PowerShell
                                 // If the (left+mid) portions take up to 2/3 of the text width, we just truncate the suggestion text at the end.
                                 int rightStrLen = SubstringLengthByCells(SuggestionText, rightStartindex, textWidth - leftMidLenInCells - ellipsisLength);
                                 line.Append(SuggestionText, 0, InputMatchIndex)
-                                    .Append(_singleton._options.EmphasisColor)
+                                    .Append(Singleton._options.EmphasisColor)
                                     .Append(SuggestionText, InputMatchIndex, input.Length)
                                     .EndColorSection(selectionHighlighting)
                                     .Append(SuggestionText, rightStartindex, rightStrLen)
@@ -203,7 +203,7 @@ namespace Microsoft.PowerShell
                                 int leftStrLen = SubstringLengthByCellsFromEnd(SuggestionText, InputMatchIndex - 1, textWidth - midRightLenInCells - ellipsisLength);
                                 line.Append(ellipsis)
                                     .Append(SuggestionText, InputMatchIndex - leftStrLen, leftStrLen)
-                                    .Append(_singleton._options.EmphasisColor)
+                                    .Append(Singleton._options.EmphasisColor)
                                     .Append(SuggestionText, InputMatchIndex, input.Length)
                                     .EndColorSection(selectionHighlighting)
                                     .Append(SuggestionText, rightStartindex, SuggestionText.Length - rightStartindex);
@@ -225,7 +225,7 @@ namespace Microsoft.PowerShell
 
                                 line.Append(ellipsis)
                                     .Append(SuggestionText, InputMatchIndex - leftStrLen, leftStrLen)
-                                    .Append(_singleton._options.EmphasisColor)
+                                    .Append(Singleton._options.EmphasisColor)
                                     .Append(SuggestionText, InputMatchIndex, input.Length)
                                     .EndColorSection(selectionHighlighting)
                                     .Append(SuggestionText, rightStartindex, rightStrLen)
@@ -247,7 +247,7 @@ namespace Microsoft.PowerShell
                                 int midRightStrLen = SubstringLengthByCellsFromEnd(SuggestionText, rightStartindex - 1, midRightCellLen);
 
                                 line.Append(SuggestionText, 0, InputMatchIndex)
-                                    .Append(_singleton._options.EmphasisColor)
+                                    .Append(Singleton._options.EmphasisColor)
                                     .Append(SuggestionText, InputMatchIndex, midLeftStrLen)
                                     .Append(ellipsis)
                                     .Append(SuggestionText, rightStartindex - midRightStrLen, midRightStrLen)
@@ -275,7 +275,7 @@ namespace Microsoft.PowerShell
                                 int rightStrLen = SubstringLengthByCells(SuggestionText, rightStartindex, midRemainingLenInCells);
 
                                 line.Append(SuggestionText, 0, InputMatchIndex)
-                                    .Append(_singleton._options.EmphasisColor)
+                                    .Append(Singleton._options.EmphasisColor)
                                     .Append(SuggestionText, InputMatchIndex, midLeftStrLen)
                                     .Append(ellipsis)
                                     .Append(SuggestionText, rightStartindex - midRightStrLen, midRightStrLen)
@@ -300,7 +300,7 @@ namespace Microsoft.PowerShell
 
                                 line.Append(ellipsis)
                                     .Append(SuggestionText, InputMatchIndex - leftStrLen, leftStrLen)
-                                    .Append(_singleton._options.EmphasisColor)
+                                    .Append(Singleton._options.EmphasisColor)
                                     .Append(SuggestionText, InputMatchIndex, midLeftStrLen)
                                     .Append(ellipsis)
                                     .Append(SuggestionText, rightStartindex - midRightStrLen, midRightStrLen)
@@ -326,7 +326,7 @@ namespace Microsoft.PowerShell
 
                                 line.Append(ellipsis)
                                     .Append(SuggestionText, InputMatchIndex - leftStrLen, leftStrLen)
-                                    .Append(_singleton._options.EmphasisColor)
+                                    .Append(Singleton._options.EmphasisColor)
                                     .Append(SuggestionText, InputMatchIndex, midLeftStrLen)
                                     .Append(ellipsis)
                                     .Append(SuggestionText, rightStartindex - midRightStrLen, midRightStrLen)

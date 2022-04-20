@@ -20,14 +20,14 @@ namespace Microsoft.PowerShell
 
             var currentLine =  GetLogicalLineNumber(); 
 
-            var pos = ConvertOffsetToPoint(_singleton._current);
+            var pos = ConvertOffsetToPoint(Singleton._current);
 
             pos.Y -= currentLine -1;
 
             var newCurrent = ConvertLineAndColumnToOffset(pos);
             var position = GetBeginningOfLinePos(newCurrent);
 
-            _singleton.MoveCursor(position);
+            Singleton.MoveCursor(position);
         }
 
         /// <summary>
@@ -47,14 +47,14 @@ namespace Microsoft.PowerShell
 
             var currentLine = GetLogicalLineNumber();
 
-            var pos = ConvertOffsetToPoint(_singleton._current);
+            var pos = ConvertOffsetToPoint(Singleton._current);
 
             pos.Y += (count - currentLine);
 
             var newCurrent = ConvertLineAndColumnToOffset(pos);
             var position = GetBeginningOfLinePos(newCurrent);
 
-            _singleton.MoveCursor(position);
+            Singleton.MoveCursor(position);
         }
 
         private void ViMoveToLine(int lineOffset)
@@ -99,7 +99,7 @@ namespace Microsoft.PowerShell
 
             int targetLineOffset;
 
-            var currentLineIndex = _singleton.GetLogicalLineNumber() - 1;
+            var currentLineIndex = Singleton.GetLogicalLineNumber() - 1;
 
             if (lineOffset < 0)
             {
@@ -107,7 +107,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                var lastLineIndex = _singleton.GetLogicalLineCount() - 1;
+                var lastLineIndex = Singleton.GetLogicalLineCount() - 1;
                 targetLineOffset = Math.Min(lastLineIndex, currentLineIndex + lineOffset);
             }
 

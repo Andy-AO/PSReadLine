@@ -12,6 +12,7 @@ using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.PowerShell.Internal;
+using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
 {
@@ -28,6 +29,7 @@ namespace Microsoft.PowerShell
 
     public partial class PSConsoleReadLine
     {
+        public static readonly Renderer _renderer = Renderer.Singleton;
         public struct LineInfoForRendering
         {
             public int CurrentLogicalLineIndex;
@@ -1196,7 +1198,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void Ding()
         {
-            _singleton._mockableMethods.Ding();
+            Singleton._mockableMethods.Ding();
         }
 
         private bool PromptYesOrNo(string s)
@@ -1217,7 +1219,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayUp(ConsoleKeyInfo? key = null, object arg = null)
         {
             TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = _singleton._console;
+            var console = Singleton._console;
             var newTop = console.WindowTop - (numericArg * console.WindowHeight);
             if (newTop < 0)
             {
@@ -1232,7 +1234,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayUpLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = _singleton._console;
+            var console = Singleton._console;
             var newTop = console.WindowTop - numericArg;
             if (newTop < 0)
             {
@@ -1247,7 +1249,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayDown(ConsoleKeyInfo? key = null, object arg = null)
         {
             TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = _singleton._console;
+            var console = Singleton._console;
             var newTop = console.WindowTop + (numericArg * console.WindowHeight);
             if (newTop > (console.BufferHeight - console.WindowHeight))
             {
@@ -1262,7 +1264,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayDownLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = _singleton._console;
+            var console = Singleton._console;
             var newTop = console.WindowTop + numericArg;
             if (newTop > (console.BufferHeight - console.WindowHeight))
             {
@@ -1276,7 +1278,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ScrollDisplayTop(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton._console.SetWindowPosition(0, 0);
+            Singleton._console.SetWindowPosition(0, 0);
         }
 
         /// <summary>
@@ -1285,9 +1287,9 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayToCursor(ConsoleKeyInfo? key = null, object arg = null)
         {
             // Ideally, we'll put the last input line at the bottom of the window
-            var point = _singleton.ConvertOffsetToPoint(_singleton._buffer.Length);
+            var point = Singleton.ConvertOffsetToPoint(Singleton._buffer.Length);
 
-            var console = _singleton._console;
+            var console = Singleton._console;
             var newTop = point.Y - console.WindowHeight + 1;
 
             // If the cursor is already visible, and we're on the first

@@ -14,7 +14,7 @@ namespace Microsoft.PowerShell
             int i = Math.Max(0, current);
             while (i > 0)
             {
-                if (_singleton._buffer[--i] == '\n')
+                if (Singleton._buffer[--i] == '\n')
                 {
                     i += 1;
                     break;
@@ -30,13 +30,13 @@ namespace Microsoft.PowerShell
         /// </summary>
         private static int GetBeginningOfNthLinePos(int lineIndex)
         {
-            System.Diagnostics.Debug.Assert(lineIndex >= 0 || lineIndex < _singleton.GetLogicalLineCount());
+            System.Diagnostics.Debug.Assert(lineIndex >= 0 || lineIndex < Singleton.GetLogicalLineCount());
 
             var nth = 0;
             var index = 0;
             var result = 0;
 
-            for (; index < _singleton._buffer.Length; index++)
+            for (; index < Singleton._buffer.Length; index++)
             {
                 if (nth == lineIndex)
                 {
@@ -44,7 +44,7 @@ namespace Microsoft.PowerShell
                     break;
                 }
 
-                if (_singleton._buffer[index] == '\n')
+                if (Singleton._buffer[index] == '\n')
                 {
                     nth++;
                 }
@@ -69,9 +69,9 @@ namespace Microsoft.PowerShell
         {
             var newCurrent = current;
 
-            for (var position = current; position < _singleton._buffer.Length; position++)
+            for (var position = current; position < Singleton._buffer.Length; position++)
             {
-                if (_singleton._buffer[position] == '\n')
+                if (Singleton._buffer[position] == '\n')
                 {
                     break;
                 }
@@ -103,7 +103,7 @@ namespace Microsoft.PowerShell
 
             var newCurrent = beginningOfLine;
 
-            while (newCurrent < _singleton._buffer.Length && IsVisibleBlank(newCurrent))
+            while (newCurrent < Singleton._buffer.Length && IsVisibleBlank(newCurrent))
             {
                 newCurrent++;
             }
@@ -113,7 +113,7 @@ namespace Microsoft.PowerShell
 
         private static bool IsVisibleBlank(int newCurrent)
         {
-            var c = _singleton._buffer[newCurrent];
+            var c = Singleton._buffer[newCurrent];
 
             // [:blank:] of vim's pattern matching behavior
             // defines blanks as SPACE and TAB characters.

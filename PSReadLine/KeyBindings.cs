@@ -621,7 +621,7 @@ namespace Microsoft.PowerShell
         {
             var buffer = new StringBuilder();
             var boundKeys = GetKeyHandlers(includeBound: true, includeUnbound: false);
-            var console = _singleton._console;
+            var console = Singleton._console;
             foreach (var group in boundKeys.GroupBy(k => k.Group).OrderBy(k => k.Key))
             {
                 var groupDescription = PowerShell.KeyHandler.GetGroupingDescription(group.Key);
@@ -653,12 +653,12 @@ namespace Microsoft.PowerShell
             }
 
             // Don't overwrite any of the line - so move to first line after the end of our buffer.
-            var point = _singleton.ConvertOffsetToPoint(_singleton._buffer.Length);
+            var point = Singleton.ConvertOffsetToPoint(Singleton._buffer.Length);
             console.SetCursorPosition(point.X, point.Y);
             console.Write("\n");
 
             console.WriteLine(buffer.ToString());
-            InvokePrompt(key: null, arg: _singleton._console.CursorTop);
+            InvokePrompt(key: null, arg: Singleton._console.CursorTop);
         }
 
         /// <summary>
@@ -666,17 +666,17 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void WhatIsKey(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton._statusLinePrompt = "what-is-key: ";
-            _singleton.Render();
+            Singleton._statusLinePrompt = "what-is-key: ";
+            Singleton.Render();
             var toLookup = ReadKey();
             var buffer = new StringBuilder();
-            _singleton._dispatchTable.TryGetValue(toLookup, out var keyHandler);
+            Singleton._dispatchTable.TryGetValue(toLookup, out var keyHandler);
             buffer.Append(toLookup.KeyStr);
             if (keyHandler != null)
             {
                 if (keyHandler.BriefDescription == "ChordFirstKey")
                 {
-                    if (_singleton._chordDispatchTable.TryGetValue(toLookup, out var secondKeyDispatchTable))
+                    if (Singleton._chordDispatchTable.TryGetValue(toLookup, out var secondKeyDispatchTable))
                     {
                         toLookup = ReadKey();
                         secondKeyDispatchTable.TryGetValue(toLookup, out keyHandler);
@@ -706,11 +706,11 @@ namespace Microsoft.PowerShell
                 buffer.Append(PSReadLineResources.KeyIsUnbound);
             }
 
-            _singleton.ClearStatusMessage(render: false);
+            Singleton.ClearStatusMessage(render: false);
 
-            var console = _singleton._console;
+            var console = Singleton._console;
             // Don't overwrite any of the line - so move to first line after the end of our buffer.
-            var point = _singleton.ConvertOffsetToPoint(_singleton._buffer.Length);
+            var point = Singleton.ConvertOffsetToPoint(Singleton._buffer.Length);
             console.SetCursorPosition(point.X, point.Y);
             console.Write("\n");
 

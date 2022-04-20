@@ -25,7 +25,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            _singleton.PasteAfterImpl();
+            Singleton.PasteAfterImpl();
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Microsoft.PowerShell
                 Ding();
                 return;
             }
-            _singleton.PasteBeforeImpl();
+            Singleton.PasteBeforeImpl();
         }
 
         private void PasteAfterImpl()
@@ -90,14 +90,14 @@ namespace Microsoft.PowerShell
             object arg = null,
             bool moveCursorToEndWhenUndoDelete = false)
         {
-            _singleton.SaveToClipboard(start, count);
-            _singleton.SaveEditItem(EditItemDelete.Create(
+            Singleton.SaveToClipboard(start, count);
+            Singleton.SaveEditItem(EditItemDelete.Create(
                 _viRegister.RawText,
                 start,
                 instigator,
                 arg,
                 moveCursorToEndWhenUndoDelete));
-            _singleton._buffer.Remove(start, count);
+            Singleton._buffer.Remove(start, count);
         }
 
         /// <summary>
@@ -106,8 +106,8 @@ namespace Microsoft.PowerShell
         public static void ViYankLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             TryGetArgAsInt(arg, out var lineCount, 1);
-            var lineIndex = _singleton.GetLogicalLineNumber() - 1;
-            _singleton.SaveLinesToClipboard(lineIndex, lineCount);
+            var lineIndex = Singleton.GetLogicalLineNumber() - 1;
+            Singleton.SaveLinesToClipboard(lineIndex, lineCount);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int start = _singleton._current;
+            int start = Singleton._current;
             int length = 0;
 
             while (numericArg-- > 0)
@@ -128,7 +128,7 @@ namespace Microsoft.PowerShell
                 length++;
             }
 
-            _singleton.SaveToClipboard(start, length);
+            Singleton.SaveToClipboard(start, length);
         }
 
         /// <summary>
@@ -141,10 +141,10 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int start = _singleton._current;
+            int start = Singleton._current;
             if (start == 0)
             {
-                _singleton.SaveToClipboard(start, 1);
+                Singleton.SaveToClipboard(start, 1);
                 return;
             }
 
@@ -159,7 +159,7 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            _singleton.SaveToClipboard(start, length);
+            Singleton.SaveToClipboard(start, length);
         }
 
         /// <summary>
@@ -167,12 +167,12 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViYankToEndOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var start = _singleton._current;
-            var end = GetEndOfLogicalLinePos(_singleton._current);
+            var start = Singleton._current;
+            var end = GetEndOfLogicalLinePos(Singleton._current);
             var length = end - start + 1;
             if (length > 0)
             {
-                _singleton.SaveToClipboard(start, length);
+                Singleton.SaveToClipboard(start, length);
             }
         }
 
@@ -186,17 +186,17 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int start = _singleton._current;
+            int start = Singleton._current;
 
             while (numericArg-- > 0)
             {
-                start = _singleton.ViFindPreviousWordPoint(start, _singleton.Options.WordDelimiters);
+                start = Singleton.ViFindPreviousWordPoint(start, Singleton.Options.WordDelimiters);
             }
 
-            int length = _singleton._current - start;
+            int length = Singleton._current - start;
             if (length > 0)
             {
-                _singleton.SaveToClipboard(start, length);
+                Singleton.SaveToClipboard(start, length);
             }
         }
 
@@ -210,21 +210,21 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int end = _singleton._current;
+            int end = Singleton._current;
 
             while (numericArg-- > 0)
             {
-                end = _singleton.ViFindNextWordPoint(end, _singleton.Options.WordDelimiters);
+                end = Singleton.ViFindNextWordPoint(end, Singleton.Options.WordDelimiters);
             }
 
-            int length = end - _singleton._current;
+            int length = end - Singleton._current;
             //if (_singleton.IsAtEndOfLine(end))
             //{
             //    length++;
             //}
             if (length > 0)
             {
-                _singleton.SaveToClipboard(_singleton._current, length);
+                Singleton.SaveToClipboard(Singleton._current, length);
             }
         }
 
@@ -238,17 +238,17 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int end = _singleton._current;
+            int end = Singleton._current;
 
             while (numericArg-- > 0)
             {
-                end = _singleton.ViFindNextWordEnd(end, _singleton.Options.WordDelimiters);
+                end = Singleton.ViFindNextWordEnd(end, Singleton.Options.WordDelimiters);
             }
 
-            int length = 1 + end - _singleton._current;
+            int length = 1 + end - Singleton._current;
             if (length > 0)
             {
-                _singleton.SaveToClipboard(_singleton._current, length);
+                Singleton.SaveToClipboard(Singleton._current, length);
             }
         }
 
@@ -262,17 +262,17 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int end = _singleton._current;
+            int end = Singleton._current;
 
             while (numericArg-- > 0)
             {
-                end = _singleton.ViFindGlobEnd(end);
+                end = Singleton.ViFindGlobEnd(end);
             }
 
-            int length = 1 + end - _singleton._current;
+            int length = 1 + end - Singleton._current;
             if (length > 0)
             {
-                _singleton.SaveToClipboard(_singleton._current, length);
+                Singleton.SaveToClipboard(Singleton._current, length);
             }
         }
 
@@ -281,12 +281,12 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViYankBeginningOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var start = GetBeginningOfLinePos(_singleton._current);
-            var length = _singleton._current - start; 
+            var start = GetBeginningOfLinePos(Singleton._current);
+            var length = Singleton._current - start; 
             if (length > 0)
             {
-                _singleton.SaveToClipboard(start, length);
-                _singleton.MoveCursor(start);
+                Singleton.SaveToClipboard(start, length);
+                Singleton.MoveCursor(start);
             }
         }
 
@@ -295,12 +295,12 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViYankToFirstChar(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var start = GetFirstNonBlankOfLogicalLinePos(_singleton._current);
-            var length = _singleton._current - start;
+            var start = GetFirstNonBlankOfLogicalLinePos(Singleton._current);
+            var length = Singleton._current - start;
             if (length > 0)
             {
-                _singleton.SaveToClipboard(start, length);
-                _singleton.MoveCursor(start);
+                Singleton.SaveToClipboard(start, length);
+                Singleton.MoveCursor(start);
             }
         }
 
@@ -309,14 +309,14 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViYankPercent(ConsoleKeyInfo? key = null, object arg = null)
         {
-            int start = _singleton.ViFindBrace(_singleton._current);
-            if (_singleton._current < start)
+            int start = Singleton.ViFindBrace(Singleton._current);
+            if (Singleton._current < start)
             {
-                _singleton.SaveToClipboard(_singleton._current, start - _singleton._current + 1);
+                Singleton.SaveToClipboard(Singleton._current, start - Singleton._current + 1);
             }
-            else if (start < _singleton._current)
+            else if (start < Singleton._current)
             {
-                _singleton.SaveToClipboard(start, _singleton._current - start + 1);
+                Singleton.SaveToClipboard(start, Singleton._current - start + 1);
             }
             else
             {
@@ -334,14 +334,14 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int start = _singleton._current;
+            int start = Singleton._current;
             while (numericArg-- > 0)
             {
-                start = _singleton.ViFindPreviousGlob(start - 1);
+                start = Singleton.ViFindPreviousGlob(start - 1);
             }
-            if (start < _singleton._current)
+            if (start < Singleton._current)
             {
-                _singleton.SaveToClipboard(start, _singleton._current - start);
+                Singleton.SaveToClipboard(start, Singleton._current - start);
             }
             else
             {
@@ -359,12 +359,12 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int end = _singleton._current;
+            int end = Singleton._current;
             while (numericArg-- > 0)
             {
-                end = _singleton.ViFindNextGlob(end);
+                end = Singleton.ViFindNextGlob(end);
             }
-            _singleton.SaveToClipboard(_singleton._current, end - _singleton._current);
+            Singleton.SaveToClipboard(Singleton._current, end - Singleton._current);
         }
     }
 }

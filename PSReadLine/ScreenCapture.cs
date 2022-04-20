@@ -351,10 +351,10 @@ namespace Microsoft.PowerShell
 
         internal static void CaptureScreenImpl()
         {
-            int selectionTop = _singleton._console.CursorTop;
+            int selectionTop = Singleton._console.CursorTop;
             int selectionHeight = 1;
             int currentY = selectionTop;
-            IConsole console = _singleton._console;
+            IConsole console = Singleton._console;
 
             // We'll keep the current selection line (currentY) at least 4 lines
             // away from the top or bottom of the window.

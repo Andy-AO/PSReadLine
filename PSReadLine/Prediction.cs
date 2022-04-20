@@ -66,18 +66,18 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void AcceptSuggestion(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Prediction prediction = _singleton._prediction;
+            Prediction prediction = Singleton._prediction;
             if (prediction.ActiveView is PredictionInlineView inlineView && inlineView.HasActiveSuggestion)
             {
                 // Ignore the visual selection.
-                _singleton._visualSelectionCommandCount = 0;
+                Singleton._visualSelectionCommandCount = 0;
 
                 inlineView.OnSuggestionAccepted();
 
                 using var _ = prediction.DisableScoped();
 
-                _singleton._current = _singleton._buffer.Length;
-                Insert(inlineView.SuggestionText.Substring(_singleton._current));
+                Singleton._current = Singleton._buffer.Length;
+                Insert(inlineView.SuggestionText.Substring(Singleton._current));
             }
         }
 
@@ -102,21 +102,21 @@ namespace Microsoft.PowerShell
         /// </summary>
         private static void AcceptNextSuggestionWord(int numericArg)
         {
-            if (_singleton._prediction.ActiveView is PredictionInlineView inlineView && inlineView.HasActiveSuggestion)
+            if (Singleton._prediction.ActiveView is PredictionInlineView inlineView && inlineView.HasActiveSuggestion)
             {
                 // Ignore the visual selection.
-                _singleton._visualSelectionCommandCount = 0;
+                Singleton._visualSelectionCommandCount = 0;
 
-                int start = _singleton._buffer.Length;
+                int start = Singleton._buffer.Length;
                 int index = start;
                 while (numericArg-- > 0 && index < inlineView.SuggestionText.Length)
                 {
-                    index = inlineView.FindForwardSuggestionWordPoint(index, _singleton.Options.WordDelimiters);
+                    index = inlineView.FindForwardSuggestionWordPoint(index, Singleton.Options.WordDelimiters);
                 }
 
                 inlineView.OnSuggestionAccepted();
 
-                _singleton._current = start;
+                Singleton._current = start;
                 Insert(inlineView.SuggestionText.Substring(start, index - start));
             }
         }
@@ -149,10 +149,10 @@ namespace Microsoft.PowerShell
         /// </summary>
         private static bool UpdateListSelection(int numericArg)
         {
-            if (_singleton._prediction.ActiveView is PredictionListView listView && listView.HasActiveSuggestion)
+            if (Singleton._prediction.ActiveView is PredictionListView listView && listView.HasActiveSuggestion)
             {
                 // Ignore the visual selection.
-                _singleton._visualSelectionCommandCount = 0;
+                Singleton._visualSelectionCommandCount = 0;
 
                 listView.UpdateListSelection(move: numericArg);
                 ReplaceSelection(listView.SelectedItemText);
@@ -174,35 +174,35 @@ namespace Microsoft.PowerShell
             var insertStringItem = EditItemInsertString.Create(selectedItemText, position: 0);
             insertStringItem.Replaceable = true;
 
-            if (_singleton.IsLastEditItemReplaceable)
+            if (Singleton.IsLastEditItemReplaceable)
             {
-                _singleton.SaveEditItem(insertStringItem);
-                _singleton._buffer.Clear();
-                _singleton._buffer.Append(selectedItemText);
-                _singleton._current = selectedItemText.Length;
+                Singleton.SaveEditItem(insertStringItem);
+                Singleton._buffer.Clear();
+                Singleton._buffer.Append(selectedItemText);
+                Singleton._current = selectedItemText.Length;
 
-                _singleton.Render();
+                Singleton.Render();
                 return;
             }
 
-            bool useEditGroup = _singleton._editGroupStart == -1;
+            bool useEditGroup = Singleton._editGroupStart == -1;
             if (useEditGroup)
             {
-                _singleton.StartEditGroup();
+                Singleton.StartEditGroup();
             }
 
-            var str = _singleton._buffer.ToString();
-            _singleton.SaveEditItem(EditItemDelete.Create(str, position: 0));
-            _singleton._buffer.Clear();
+            var str = Singleton._buffer.ToString();
+            Singleton.SaveEditItem(EditItemDelete.Create(str, position: 0));
+            Singleton._buffer.Clear();
 
-            _singleton.SaveEditItem(insertStringItem);
-            _singleton._buffer.Append(selectedItemText);
-            _singleton._current = selectedItemText.Length;
+            Singleton.SaveEditItem(insertStringItem);
+            Singleton._buffer.Append(selectedItemText);
+            Singleton._current = selectedItemText.Length;
 
             if (useEditGroup)
             {
-                _singleton.EndEditGroup(); // Instigator is needed for VI undo
-                _singleton.Render();
+                Singleton.EndEditGroup(); // Instigator is needed for VI undo
+                Singleton.Render();
             }
         }
 
@@ -212,12 +212,12 @@ namespace Microsoft.PowerShell
         public static void SwitchPredictionView(ConsoleKeyInfo? key = null, object arg = null)
         {
             int count = Enum.GetNames(typeof(PredictionViewStyle)).Length;
-            int value = (int)_singleton._options.PredictionViewStyle;
+            int value = (int)Singleton._options.PredictionViewStyle;
             var style = (PredictionViewStyle)((value + 1) % count);
 
-            _singleton._options.PredictionViewStyle = style;
-            _singleton._prediction.SetViewStyle(style);
-            _singleton.Render();
+            Singleton._options.PredictionViewStyle = style;
+            Singleton._prediction.SetViewStyle(style);
+            Singleton.Render();
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            var console = _singleton._console;
+            var console = Singleton._console;
             var minWidth = PredictionListView.MinWindowWidth;
             var minHeight = PredictionListView.MinWindowHeight;
 

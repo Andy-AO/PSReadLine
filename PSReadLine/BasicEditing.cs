@@ -37,9 +37,9 @@ namespace Microsoft.PowerShell
                 count = 1;
             }
 
-            if (_singleton._visualSelectionCommandCount > 0)
+            if (Singleton._visualSelectionCommandCount > 0)
             {
-                _singleton.GetRegion(out var start, out var length);
+                Singleton.GetRegion(out var start, out var length);
                 Replace(start, length, new string(keyChar, count));
             }
             else if (count > 1)
@@ -57,23 +57,23 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void RevertLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton._prediction.RevertSuggestion())
+            if (Singleton._prediction.RevertSuggestion())
             {
                 return;
             }
 
-            if (_singleton._statusIsErrorMessage)
+            if (Singleton._statusIsErrorMessage)
             {
                 // After an edit, clear the error message
-                _singleton.ClearStatusMessage(render: false);
+                Singleton.ClearStatusMessage(render: false);
             }
 
-            while (_singleton._undoEditIndex > 0)
+            while (Singleton._undoEditIndex > 0)
             {
-                _singleton._edits[_singleton._undoEditIndex - 1].Undo();
-                _singleton._undoEditIndex--;
+                Singleton._edits[Singleton._undoEditIndex - 1].Undo();
+                Singleton._undoEditIndex--;
             }
-            _singleton.Render();
+            Singleton.Render();
         }
 
         /// <summary>
@@ -82,18 +82,18 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void CancelLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.ClearStatusMessage(false);
-            _singleton._current = _singleton._buffer.Length;
+            Singleton.ClearStatusMessage(false);
+            Singleton._current = Singleton._buffer.Length;
 
-            using var _ = _singleton._prediction.DisableScoped();
-            _singleton.ForceRender();
+            using var _ = Singleton._prediction.DisableScoped();
+            Singleton.ForceRender();
 
-            _singleton._console.Write("\x1b[91m^C\x1b[0m");
+            Singleton._console.Write("\x1b[91m^C\x1b[0m");
 
-            _singleton._buffer.Clear(); // Clear so we don't actually run the input
-            _singleton._current = 0; // If Render is called, _current must be correct.
-            _singleton._currentHistoryIndex = _singleton._history.Count;
-            _singleton._inputAccepted = true;
+            Singleton._buffer.Clear(); // Clear so we don't actually run the input
+            Singleton._current = 0; // If Render is called, _current must be correct.
+            Singleton._currentHistoryIndex = Singleton._history.Count;
+            Singleton._inputAccepted = true;
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ForwardDeleteInput(ConsoleKeyInfo? key = null, object arg = null)
         {
-            ForwardDeleteImpl(_singleton._buffer.Length, ForwardDeleteInput);
+            ForwardDeleteImpl(Singleton._buffer.Length, ForwardDeleteInput);
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ForwardDeleteLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            ForwardDeleteImpl(GetEndOfLogicalLinePos(_singleton._current) + 1, ForwardDeleteLine);
+            ForwardDeleteImpl(GetEndOfLogicalLinePos(Singleton._current) + 1, ForwardDeleteLine);
         }
 
         /// <summary>
@@ -121,15 +121,15 @@ namespace Microsoft.PowerShell
         /// <param name="endPosition">0-based offset to one character past the end of the text.</param>
         private static void ForwardDeleteImpl(int endPosition, Action<ConsoleKeyInfo?, object> instigator)
         {
-            var current = _singleton._current;
-            var buffer = _singleton._buffer;
+            var current = Singleton._current;
+            var buffer = Singleton._buffer;
 
             if (buffer.Length > 0 && current < endPosition)
             {
                 int length = endPosition - current;
                 var str = buffer.ToString(current, length);
 
-                _singleton.SaveEditItem(
+                Singleton.SaveEditItem(
                     EditItemDelete.Create(
                         str,
                         current,
@@ -138,7 +138,7 @@ namespace Microsoft.PowerShell
                         !InViEditMode()));
 
                 buffer.Remove(current, length);
-                _singleton.Render();
+                Singleton.Render();
             }
         }
 
@@ -156,19 +156,19 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BackwardDeleteLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var position = GetBeginningOfLinePos(_singleton._current);
+            var position = GetBeginningOfLinePos(Singleton._current);
             BackwardDeleteSubstring(position, BackwardDeleteLine);
         }
 
         private static void BackwardDeleteSubstring(int position, Action<ConsoleKeyInfo?, object> instigator)
         {
-            if (_singleton._current > position)
+            if (Singleton._current > position)
             {
-                var count = _singleton._current - position;
+                var count = Singleton._current - position;
 
-                _singleton.RemoveTextToViRegister(position, count, instigator, arg: null, !InViEditMode());
-                _singleton._current = position;
-                _singleton.Render();
+                Singleton.RemoveTextToViRegister(position, count, instigator, arg: null, !InViEditMode());
+                Singleton._current = position;
+                Singleton.Render();
             }
         }
 
@@ -177,24 +177,24 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BackwardDeleteChar(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton._visualSelectionCommandCount > 0)
+            if (Singleton._visualSelectionCommandCount > 0)
             {
-                _singleton.GetRegion(out var start, out var length);
+                Singleton.GetRegion(out var start, out var length);
                 Delete(start, length);
                 return;
             }
 
-            if (_singleton._buffer.Length > 0 && _singleton._current > 0)
+            if (Singleton._buffer.Length > 0 && Singleton._current > 0)
             {
                 int qty = arg as int? ?? 1;
                 if (qty < 1) return; // Ignore useless counts
-                qty = Math.Min(qty, _singleton._current);
+                qty = Math.Min(qty, Singleton._current);
 
-                int startDeleteIndex = _singleton._current - qty;
+                int startDeleteIndex = Singleton._current - qty;
 
-                _singleton.RemoveTextToViRegister(startDeleteIndex, qty, BackwardDeleteChar, arg, !InViEditMode());
-                _singleton._current = startDeleteIndex;
-                _singleton.Render();
+                Singleton.RemoveTextToViRegister(startDeleteIndex, qty, BackwardDeleteChar, arg, !InViEditMode());
+                Singleton._current = startDeleteIndex;
+                Singleton.Render();
             }
         }
 
@@ -211,7 +211,7 @@ namespace Microsoft.PowerShell
             {
                 if (_current < _buffer.Length)
                 {
-                    qty = Math.Min(qty, _singleton._buffer.Length - _singleton._current);
+                    qty = Math.Min(qty, Singleton._buffer.Length - Singleton._current);
 
                     RemoveTextToViRegister(_current, qty, DeleteChar, qty, !InViEditMode());
                     if (_current >= _buffer.Length)
@@ -235,7 +235,7 @@ namespace Microsoft.PowerShell
             int qty = arg as int? ?? 1;
             if (qty < 1) return; // Ignore useless counts
 
-            _singleton.DeleteCharImpl(qty, orExit: false);
+            Singleton.DeleteCharImpl(qty, orExit: false);
         }
 
         /// <summary>
@@ -243,7 +243,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void DeleteCharOrExit(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.DeleteCharImpl(1, orExit: true);
+            Singleton.DeleteCharImpl(1, orExit: true);
         }
 
         private bool AcceptLineImpl(bool validate)
@@ -340,12 +340,12 @@ namespace Microsoft.PowerShell
                 var commandName = commandAst.GetCommandName();
                 if (commandName != null)
                 {
-                    if (_singleton._engineIntrinsics != null)
+                    if (Singleton._engineIntrinsics != null)
                     {
-                        var commandInfo = _singleton._engineIntrinsics.InvokeCommand.GetCommand(commandName, CommandTypes.All);
-                        if (commandInfo == null && !_singleton.UnresolvedCommandCouldSucceed(commandName, _rootAst))
+                        var commandInfo = Singleton._engineIntrinsics.InvokeCommand.GetCommand(commandName, CommandTypes.All);
+                        if (commandInfo == null && !Singleton.UnresolvedCommandCouldSucceed(commandName, _rootAst))
                         {
-                            _singleton._current = commandAst.CommandElements[0].Extent.EndOffset;
+                            Singleton._current = commandAst.CommandElements[0].Extent.EndOffset;
                             detectedError = string.Format(CultureInfo.CurrentCulture, PSReadLineResources.CommandNotFoundError, commandName);
                             return AstVisitAction.StopVisit;
                         }
@@ -353,19 +353,19 @@ namespace Microsoft.PowerShell
 
                     if (commandAst.CommandElements.Any(e => e is ScriptBlockExpressionAst))
                     {
-                        if (_singleton._options.CommandsToValidateScriptBlockArguments == null ||
-                            !_singleton._options.CommandsToValidateScriptBlockArguments.Contains(commandName))
+                        if (Singleton._options.CommandsToValidateScriptBlockArguments == null ||
+                            !Singleton._options.CommandsToValidateScriptBlockArguments.Contains(commandName))
                         {
                             return AstVisitAction.SkipChildren;
                         }
                     }
                 }
 
-                if (_singleton._options.CommandValidationHandler != null)
+                if (Singleton._options.CommandValidationHandler != null)
                 {
                     try
                     {
-                        _singleton._options.CommandValidationHandler(commandAst);
+                        Singleton._options.CommandValidationHandler(commandAst);
                     }
                     catch (Exception e)
                     {
@@ -469,7 +469,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void AcceptLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.AcceptLineImpl(false);
+            Singleton.AcceptLineImpl(false);
         }
 
         /// <summary>
@@ -480,7 +480,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ValidateAndAcceptLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.AcceptLineImpl(true);
+            Singleton.AcceptLineImpl(true);
         }
 
         /// <summary>
@@ -489,11 +489,11 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void AcceptAndGetNext(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton.AcceptLineImpl(false))
+            if (Singleton.AcceptLineImpl(false))
             {
-                if (_singleton._currentHistoryIndex < (_singleton._history.Count - 1))
+                if (Singleton._currentHistoryIndex < (Singleton._history.Count - 1))
                 {
-                    _singleton._getNextHistoryIndex = _singleton._currentHistoryIndex + 1;
+                    Singleton._getNextHistoryIndex = Singleton._currentHistoryIndex + 1;
                 }
                 else
                 {
@@ -519,7 +519,7 @@ namespace Microsoft.PowerShell
         public static void InsertLineAbove(ConsoleKeyInfo? key = null, object arg = null)
         {
             // Move the current position to the beginning of the current line and only the current line.
-            _singleton._current = GetBeginningOfLinePos(_singleton._current);
+            Singleton._current = GetBeginningOfLinePos(Singleton._current);
             Insert('\n');
             PreviousLine();
         }
@@ -530,16 +530,16 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void InsertLineBelow(ConsoleKeyInfo? key = null, object arg = null)
         {
-            int i = _singleton._current;
-            for (; i < _singleton._buffer.Length; i++)
+            int i = Singleton._current;
+            for (; i < Singleton._buffer.Length; i++)
             {
-                if (_singleton._buffer[i] == '\n')
+                if (Singleton._buffer[i] == '\n')
                 {
                     break;
                 }
             }
 
-            _singleton._current = i;
+            Singleton._current = i;
 
             Insert('\n');
         }

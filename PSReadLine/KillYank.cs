@@ -34,7 +34,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SetMark(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton._mark = _singleton._current;
+            Singleton._mark = Singleton._current;
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ExchangePointAndMark(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var tmp = _singleton._mark;
-            _singleton._mark = _singleton._current;
-            _singleton.MoveCursor(Math.Min(tmp, _singleton._buffer.Length));
+            var tmp = Singleton._mark;
+            Singleton._mark = Singleton._current;
+            Singleton.MoveCursor(Math.Min(tmp, Singleton._buffer.Length));
         }
 
         /// <summary>
@@ -53,8 +53,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ClearKillRing()
         {
-            _singleton._killRing?.Clear();
-            _singleton._killIndex = -1;    // So first add indexes 0.
+            Singleton._killRing?.Clear();
+            Singleton._killIndex = -1;    // So first add indexes 0.
         }
 
         private void Kill(int start, int length, bool prepend)
@@ -111,7 +111,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void KillLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.Kill(_singleton._current, _singleton._buffer.Length - _singleton._current, false);
+            Singleton.Kill(Singleton._current, Singleton._buffer.Length - Singleton._current, false);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BackwardKillInput(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.Kill(0, _singleton._current, true);
+            Singleton.Kill(0, Singleton._current, true);
         }
 
         /// <summary>
@@ -129,8 +129,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BackwardKillLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var start = GetBeginningOfLinePos(_singleton._current);
-            _singleton.Kill(start, _singleton._current, true);
+            var start = GetBeginningOfLinePos(Singleton._current);
+            Singleton.Kill(start, Singleton._current, true);
         }
 
         /// <summary>
@@ -140,8 +140,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void KillWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            int i = _singleton.FindForwardWordPoint(_singleton.Options.WordDelimiters);
-            _singleton.Kill(_singleton._current, i - _singleton._current, false);
+            int i = Singleton.FindForwardWordPoint(Singleton.Options.WordDelimiters);
+            Singleton.Kill(Singleton._current, i - Singleton._current, false);
         }
 
         /// <summary>
@@ -151,11 +151,11 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ShellKillWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var token = _singleton.FindToken(_singleton._current, FindTokenMode.CurrentOrNext);
+            var token = Singleton.FindToken(Singleton._current, FindTokenMode.CurrentOrNext);
             var end = (token.Kind == TokenKind.EndOfInput)
-                ? _singleton._buffer.Length
+                ? Singleton._buffer.Length
                 : token.Extent.EndOffset;
-            _singleton.Kill(_singleton._current, end - _singleton._current, false);
+            Singleton.Kill(Singleton._current, end - Singleton._current, false);
         }
 
         /// <summary>
@@ -165,8 +165,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BackwardKillWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            int i = _singleton.FindBackwardWordPoint(_singleton.Options.WordDelimiters);
-            _singleton.Kill(i, _singleton._current - i, true);
+            int i = Singleton.FindBackwardWordPoint(Singleton.Options.WordDelimiters);
+            Singleton.Kill(i, Singleton._current - i, true);
         }
 
         /// <summary>
@@ -176,8 +176,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void UnixWordRubout(ConsoleKeyInfo? key = null, object arg = null)
         {
-            int i = _singleton.FindBackwardWordPoint("");
-            _singleton.Kill(i, _singleton._current - i, true);
+            int i = Singleton.FindBackwardWordPoint("");
+            Singleton.Kill(i, Singleton._current - i, true);
         }
 
         /// <summary>
@@ -187,9 +187,9 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ShellBackwardKillWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var token = _singleton.FindToken(_singleton._current, FindTokenMode.Previous);
+            var token = Singleton.FindToken(Singleton._current, FindTokenMode.Previous);
             var start = token?.Extent.StartOffset ?? 0;
-            _singleton.Kill(start, _singleton._current - start, true);
+            Singleton.Kill(start, Singleton._current - start, true);
         }
 
         /// <summary>
@@ -197,8 +197,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void KillRegion(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.GetRegion(out var start, out var length);
-            _singleton.Kill(start, length, true);
+            Singleton.GetRegion(out var start, out var length);
+            Singleton.Kill(start, length, true);
         }
 
         private void YankImpl()
@@ -219,7 +219,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void Yank(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.YankImpl();
+            Singleton.YankImpl();
         }
 
         private void YankPopImpl()
@@ -243,7 +243,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void YankPop(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.YankPopImpl();
+            Singleton.YankPopImpl();
         }
 
         void YankArgImpl(YankLastArgState yankLastArgState)
@@ -288,9 +288,9 @@ namespace Microsoft.PowerShell
             var yankLastArgState = new YankLastArgState
             {
                 argument = arg as int? ?? 1,
-                historyIndex = _singleton._currentHistoryIndex - 1,
+                historyIndex = Singleton._currentHistoryIndex - 1,
             };
-            _singleton.YankArgImpl(yankLastArgState);
+            Singleton.YankArgImpl(yankLastArgState);
         }
 
         /// <summary>
@@ -307,22 +307,22 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            _singleton._yankLastArgCommandCount += 1;
+            Singleton._yankLastArgCommandCount += 1;
 
-            if (_singleton._yankLastArgCommandCount == 1)
+            if (Singleton._yankLastArgCommandCount == 1)
             {
-                _singleton._yankLastArgState = new YankLastArgState
+                Singleton._yankLastArgState = new YankLastArgState
                 {
                     argument = (int?) arg ?? -1,
                     historyIncrement = -1,
-                    historyIndex = _singleton._currentHistoryIndex - 1
+                    historyIndex = Singleton._currentHistoryIndex - 1
                 };
 
-                _singleton.YankArgImpl(_singleton._yankLastArgState);
+                Singleton.YankArgImpl(Singleton._yankLastArgState);
                 return;
             }
 
-            var yankLastArgState = _singleton._yankLastArgState;
+            var yankLastArgState = Singleton._yankLastArgState;
 
             if ((int?) arg < 0)
             {
@@ -337,26 +337,26 @@ namespace Microsoft.PowerShell
                 Ding();
                 yankLastArgState.historyIndex = 0;
             }
-            else if (yankLastArgState.historyIndex >= _singleton._history.Count)
+            else if (yankLastArgState.historyIndex >= Singleton._history.Count)
             {
                 Ding();
-                yankLastArgState.historyIndex = _singleton._history.Count - 1;
+                yankLastArgState.historyIndex = Singleton._history.Count - 1;
             }
             else
             {
-                _singleton.YankArgImpl(yankLastArgState);
+                Singleton.YankArgImpl(yankLastArgState);
             }
         }
 
         private void VisualSelectionCommon(Action action, bool forceSetMark = false)
         {
-            if (_singleton._visualSelectionCommandCount == 0 || forceSetMark)
+            if (Singleton._visualSelectionCommandCount == 0 || forceSetMark)
             {
                 SetMark();
             }
-            _singleton._visualSelectionCommandCount += 1;
+            Singleton._visualSelectionCommandCount += 1;
             action();
-            _singleton.RenderWithPredictionQueryPaused();
+            Singleton.RenderWithPredictionQueryPaused();
         }
 
         /// <summary>
@@ -364,7 +364,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectBackwardChar(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.VisualSelectionCommon(() => BackwardChar(key, arg));
+            Singleton.VisualSelectionCommon(() => BackwardChar(key, arg));
         }
 
         /// <summary>
@@ -372,7 +372,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectForwardChar(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.VisualSelectionCommon(() => ForwardChar(key, arg));
+            Singleton.VisualSelectionCommon(() => ForwardChar(key, arg));
         }
 
         /// <summary>
@@ -380,7 +380,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectBackwardWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.VisualSelectionCommon(() => BackwardWord(key, arg));
+            Singleton.VisualSelectionCommon(() => BackwardWord(key, arg));
         }
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectNextWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.VisualSelectionCommon(() => NextWord(key, arg));
+            Singleton.VisualSelectionCommon(() => NextWord(key, arg));
         }
 
         /// <summary>
@@ -396,7 +396,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectForwardWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.VisualSelectionCommon(() => ForwardWord(key, arg));
+            Singleton.VisualSelectionCommon(() => ForwardWord(key, arg));
         }
 
         /// <summary>
@@ -404,7 +404,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectShellForwardWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.VisualSelectionCommon(() => ShellForwardWord(key, arg));
+            Singleton.VisualSelectionCommon(() => ShellForwardWord(key, arg));
         }
 
         /// <summary>
@@ -412,7 +412,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectShellNextWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.VisualSelectionCommon(() => ShellNextWord(key, arg));
+            Singleton.VisualSelectionCommon(() => ShellNextWord(key, arg));
         }
 
         /// <summary>
@@ -420,7 +420,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectShellBackwardWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.VisualSelectionCommon(() => ShellBackwardWord(key, arg));
+            Singleton.VisualSelectionCommon(() => ShellBackwardWord(key, arg));
         }
 
         /// <summary>
@@ -428,10 +428,10 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectAll(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton._visualSelectionCommandCount += 1;
-            _singleton._mark = 0;
-            _singleton._current = _singleton._buffer.Length;
-            _singleton.RenderWithPredictionQueryPaused();
+            Singleton._visualSelectionCommandCount += 1;
+            Singleton._mark = 0;
+            Singleton._current = Singleton._buffer.Length;
+            Singleton.RenderWithPredictionQueryPaused();
         }
 
         /// <summary>
@@ -439,7 +439,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.VisualSelectionCommon(() => EndOfLine(key, arg));
+            Singleton.VisualSelectionCommon(() => EndOfLine(key, arg));
         }
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SelectBackwardsLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _singleton.VisualSelectionCommon(() => BeginningOfLine(key, arg));
+            Singleton.VisualSelectionCommon(() => BeginningOfLine(key, arg));
         }
 
         /// <summary>
@@ -460,11 +460,11 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            _singleton.MaybeParseInput();
+            Singleton.MaybeParseInput();
 
-            int cursor = _singleton._current;
+            int cursor = Singleton._current;
             int prev = -1, curr = -1, next = -1;
-            var sbAsts = _singleton._ast.FindAll(GetScriptBlockAst, searchNestedScriptBlocks: true).ToList();
+            var sbAsts = Singleton._ast.FindAll(GetScriptBlockAst, searchNestedScriptBlocks: true).ToList();
             var arguments = new List<ExpressionAst>();
 
             // We start searching for command arguments from the most nested script block.
@@ -526,7 +526,7 @@ namespace Microsoft.PowerShell
             if (curr == -1) { curr = numericArg > 0 ? prev : next; }
 
             int newStartCursor, newEndCursor;
-            int selectCount = _singleton._visualSelectionCommandCount;
+            int selectCount = Singleton._visualSelectionCommandCount;
 
             // When an argument is already visually selected by the previous run of this function, the cursor would have past the selected argument.
             // In this case, if a user wants to move backward to an argument that is before the currently selected argument by having numericArg < 0,
@@ -538,7 +538,7 @@ namespace Microsoft.PowerShell
             if (count > 1 && numericArg < 0 && curr == next && selectCount > 0)
             {
                 var prevArg = arguments[prev];
-                if (_singleton._mark == prevArg.Extent.StartOffset && cursor == prevArg.Extent.EndOffset)
+                if (Singleton._mark == prevArg.Extent.StartOffset && cursor == prevArg.Extent.EndOffset)
                 {
                     numericArg--;
                 }
@@ -599,7 +599,7 @@ namespace Microsoft.PowerShell
                 //    arguments, so it's possible that the same argument gets chosen.
                 // In this case, we should select the next argument.
                 if (numericArg == 0 && count > 1 && selectCount > 0 &&
-                    _singleton._mark == newStartCursor && cursor == newEndCursor)
+                    Singleton._mark == newStartCursor && cursor == newEndCursor)
                 {
                     curr = next;
                     continue;
@@ -611,7 +611,7 @@ namespace Microsoft.PowerShell
             // Move cursor to the start of the argument.
             SetCursorPosition(newStartCursor);
             // Make the intended range visually selected.
-            _singleton.VisualSelectionCommon(() => SetCursorPosition(newEndCursor), forceSetMark: true);
+            Singleton.VisualSelectionCommon(() => SetCursorPosition(newEndCursor), forceSetMark: true);
 
 
             // Get the script block AST's whose extent contains the cursor.
@@ -652,9 +652,9 @@ namespace Microsoft.PowerShell
             {
                 textToPaste = textToPaste.Replace("\r", "");
                 textToPaste = textToPaste.Replace("\t", "    ");
-                if (_singleton._visualSelectionCommandCount > 0)
+                if (Singleton._visualSelectionCommandCount > 0)
                 {
-                    _singleton.GetRegion(out var start, out var length);
+                    Singleton.GetRegion(out var start, out var length);
                     Replace(start, length, textToPaste);
                 }
                 else
@@ -670,14 +670,14 @@ namespace Microsoft.PowerShell
         public static void Copy(ConsoleKeyInfo? key = null, object arg = null)
         {
             string textToSet;
-            if (_singleton._visualSelectionCommandCount > 0)
+            if (Singleton._visualSelectionCommandCount > 0)
             {
-                _singleton.GetRegion(out var start, out var length);
-                textToSet = _singleton._buffer.ToString(start, length);
+                Singleton.GetRegion(out var start, out var length);
+                textToSet = Singleton._buffer.ToString(start, length);
             }
             else
             {
-                textToSet = _singleton._buffer.ToString();
+                textToSet = Singleton._buffer.ToString();
             }
             if (!string.IsNullOrEmpty(textToSet))
             {
@@ -690,7 +690,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void CopyOrCancelLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton._visualSelectionCommandCount > 0)
+            if (Singleton._visualSelectionCommandCount > 0)
             {
                 Copy(key, arg);
             }
@@ -705,10 +705,10 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void Cut(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (_singleton._visualSelectionCommandCount > 0)
+            if (Singleton._visualSelectionCommandCount > 0)
             {
-                _singleton.GetRegion(out var start, out var length);
-                Clipboard.SetText(_singleton._buffer.ToString(start, length));
+                Singleton.GetRegion(out var start, out var length);
+                Clipboard.SetText(Singleton._buffer.ToString(start, length));
                 Delete(start, length);
             }
         }
