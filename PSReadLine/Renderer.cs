@@ -19,5 +19,13 @@ namespace Microsoft.PowerShell
             public string line;
             public int columns;
         }
+
+        public class RenderData
+        {
+            public int bufferWidth;
+            public int bufferHeight;
+            public bool errorPrompt;
+            public Renderer.RenderedLineData[] lines;
+        }
     }
 }

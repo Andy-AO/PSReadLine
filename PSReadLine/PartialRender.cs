@@ -19,19 +19,11 @@ namespace Microsoft.PowerShell
     {
         public static readonly Renderer _renderer = Renderer.Singleton;
 
-        public class RenderData
-        {
-            public int bufferWidth;
-            public int bufferHeight;
-            public bool errorPrompt;
-            public Renderer.RenderedLineData[] lines;
-        }
-
         public const int COMMON_WIDEST_CONSOLE_WIDTH = 160;
         public readonly List<StringBuilder> _consoleBufferLines = new List<StringBuilder>(1) {new StringBuilder(COMMON_WIDEST_CONSOLE_WIDTH)};
         public static readonly string[] _spaces = new string[80];
-        public RenderData _previousRender;
-        public static readonly RenderData _initialPrevRender = new RenderData
+        public Renderer.RenderData _previousRender;
+        public static readonly Renderer.RenderData _initialPrevRender = new Renderer.RenderData
         {
             lines = new[] { new Renderer.RenderedLineData{ columns = 0, line = ""}}
         };
@@ -117,7 +109,7 @@ namespace Microsoft.PowerShell
             // and minimize writing more than necessary on the next render.)
 
             var renderLines = new Renderer.RenderedLineData[logicalLineCount];
-            var renderData = new RenderData {lines = renderLines};
+            var renderData = new Renderer.RenderData {lines = renderLines};
             for (var i = 0; i < logicalLineCount; i++)
             {
                 var line = _consoleBufferLines[i].ToString();
@@ -364,7 +356,7 @@ namespace Microsoft.PowerShell
         /// A bool value indicating whether we need to flip the color,
         /// namely whether we moved cursor to the initial position.
         /// </returns>
-        private bool RenderErrorPrompt(RenderData renderData, string defaultColor)
+        private bool RenderErrorPrompt(Renderer.RenderData renderData, string defaultColor)
         {
             if (_initialY < 0
                 || _options.PromptText == null
@@ -493,7 +485,7 @@ namespace Microsoft.PowerShell
         /// We avoid re-rendering everything while editing if it's possible.
         /// This method attempts to find the first changed logical line and move the cursor to the right position for the subsequent rendering.
         /// </summary>
-        private void CalculateWhereAndWhatToRender(bool cursorMovedToInitialPos, RenderData renderData, out Renderer.LineInfoForRendering lineInfoForRendering)
+        private void CalculateWhereAndWhatToRender(bool cursorMovedToInitialPos, Renderer.RenderData renderData, out Renderer.LineInfoForRendering lineInfoForRendering)
         {
             int bufferWidth = _console.BufferWidth;
             int bufferHeight = _console.BufferHeight;
@@ -638,7 +630,7 @@ namespace Microsoft.PowerShell
             lineInfoForRendering.PseudoPhysicalLineOffset = pseudoPhysicalLineOffset;
         }
 
-        private void ReallyRender(RenderData renderData, string defaultColor)
+        private void ReallyRender(Renderer.RenderData renderData, string defaultColor)
         {
             string activeColor = "";
             int bufferWidth = _console.BufferWidth;
