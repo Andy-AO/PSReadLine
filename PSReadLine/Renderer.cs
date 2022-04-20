@@ -1,3 +1,5 @@
+using System.Management.Automation.Language;
+
 namespace Microsoft.PowerShell
 {
     public class Renderer
@@ -25,7 +27,14 @@ namespace Microsoft.PowerShell
             public int bufferWidth;
             public int bufferHeight;
             public bool errorPrompt;
-            public Renderer.RenderedLineData[] lines;
+            public RenderedLineData[] lines;
+        }
+
+        public class SavedTokenState
+        {
+            internal Token[] Tokens { get; set; }
+            internal int Index { get; set; }
+            internal string Color { get; set; }
         }
     }
 }

@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.PowerShell.Internal;
 using Microsoft.PowerShell.PSReadLine;
+using static Microsoft.PowerShell.Renderer;
 
 namespace Microsoft.PowerShell
 {
@@ -36,13 +37,6 @@ namespace Microsoft.PowerShell
         public int _current;
         public int _emphasisStart;
         public int _emphasisLength;
-
-        private class SavedTokenState
-        {
-            internal Token[] Tokens { get; set; }
-            internal int Index { get; set; }
-            internal string Color { get; set; }
-        }
 
         private void MaybeParseInput()
         {
