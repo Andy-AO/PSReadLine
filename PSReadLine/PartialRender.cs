@@ -19,24 +19,23 @@ namespace Microsoft.PowerShell
     {
         public static readonly Renderer _renderer = Renderer.Singleton;
 
-        private List<StringBuilder> ConsoleBufferLines => _renderer.ConsoleBufferLines;
+        public List<StringBuilder> ConsoleBufferLines => _renderer.ConsoleBufferLines;
 
         public static readonly string[] _spaces = new string[80];
-        public RenderData _previousRender;
+        public RenderData _previousRender; //mul
         public static readonly RenderData _initialPrevRender = new RenderData
         {
             lines = new[] { new RenderedLineData{ columns = 0, line = ""}}
-        };
-        public int _initialX;
-        public int _initialY;
+        }; //mul
+        public int _initialX;  //mul
+        public int _initialY;  //mul
         public bool _waitingToRender;
 
-        public ConsoleColor _initialForeground;
-        public ConsoleColor _initialBackground;
-        public int _current;
-        public int _emphasisStart;
-        public int _emphasisLength;
-
+        public ConsoleColor _initialForeground; //delete
+        public ConsoleColor _initialBackground; //delete
+        public int _current; //mul
+        public int _emphasisStart; //mul
+        public int _emphasisLength; //mul
 
         private void MaybeParseInput()
         {
