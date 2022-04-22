@@ -152,9 +152,9 @@ namespace Microsoft.PowerShell
             string parameterName = null;
 
             // Simply return if nothing is rendered yet.
-            if (Singleton._tokens == null) { return; }
+            if (Singleton.Tokens == null) { return; }
 
-            foreach(var token in Singleton._tokens)
+            foreach(var token in Singleton.Tokens)
             {
                 var extent = token.Extent;
 

@@ -85,7 +85,7 @@ namespace Microsoft.PowerShell
         private Token FindToken(int current, FindTokenMode mode)
         {
             MaybeParseInput();
-            return FindNestedToken(current, _tokens, mode);
+            return FindNestedToken(current, Tokens, mode);
         }
 
         private bool InWord(int index, string wordDelimiters)

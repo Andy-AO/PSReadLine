@@ -53,6 +53,12 @@ namespace Microsoft.PowerShell
             private set => _singleton = value;
         }
 
+        private Token[] Tokens
+        {
+            get => _tokens;
+            set => _tokens = value;
+        }
+
         private static readonly CancellationToken _defaultCancellationToken = new CancellationTokenSource().Token;
 
         // This is used by PowerShellEditorServices (the backend of the PowerShell VSCode extension)
@@ -96,6 +102,7 @@ namespace Microsoft.PowerShell
         private static PSConsoleReadLine _singleton;
 
         // Tokens etc.
+        // private List<Token> _tokens;
         private Token[] _tokens;
         private Ast _ast;
         private ParseError[] _parseErrors;
@@ -728,7 +735,7 @@ namespace Microsoft.PowerShell
             EmphasisStart = -1;
             EmphasisLength = 0;
             _ast = null;
-            _tokens = null;
+            Tokens = null;
             _parseErrors = null;
             _inputAccepted = false;
             InitialX = _console.CursorLeft;

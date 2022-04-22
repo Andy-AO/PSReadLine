@@ -182,7 +182,7 @@ namespace Microsoft.PowerShell
             /// </summary>
             protected void PredictInput()
             {
-                _predictionTask = _singleton._mockableMethods.PredictInputAsync(_singleton._ast, _singleton._tokens);
+                _predictionTask = _singleton._mockableMethods.PredictInputAsync(_singleton._ast, _singleton.Tokens);
             }
 
             /// <summary>
