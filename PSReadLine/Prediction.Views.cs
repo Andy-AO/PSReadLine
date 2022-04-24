@@ -4,6 +4,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 
 using System;
 using System.Collections.Generic;
+using System.Management.Automation.Language;
 using System.Text;
 using System.Threading.Tasks;
 using System.Management.Automation.Subsystem.Prediction;
@@ -182,7 +183,7 @@ namespace Microsoft.PowerShell
             /// </summary>
             protected void PredictInput()
             {
-                _predictionTask = _singleton._mockableMethods.PredictInputAsync(_singleton._ast, _singleton.GetCloneTokens());
+                _predictionTask = _singleton._mockableMethods.PredictInputAsync(_singleton._ast, _singleton.Tokens);
             }
 
             /// <summary>

@@ -180,7 +180,8 @@ namespace Microsoft.PowerShell
         {
             Singleton.ParseInput();
             ast = Singleton._ast;
-            tokens = Singleton.GetCloneTokens();
+            PSConsoleReadLine tempQualifier = Singleton;
+            tokens = tempQualifier.Tokens;
             parseErrors = Singleton._parseErrors;
             cursor = Singleton.Current;
         }

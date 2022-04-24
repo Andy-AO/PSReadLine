@@ -52,17 +52,15 @@ namespace Microsoft.PowerShell
             }
             private set => _singleton = value;
         }
-        public Token[] GetCloneTokens()
-        {
-            if (Tokens != null)
-            {
-                return (Token[])Tokens.Clone();
-            }
-            return null;
-        }
+
         private Token[] Tokens
         {
-            get => _tokens;
+            get {
+                if (_tokens != null)
+                {
+                    return (Token[])_tokens.Clone();
+                }
+                return null;}
             set => _tokens = value;
         }
 
