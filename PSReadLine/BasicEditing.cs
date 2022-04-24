@@ -251,7 +251,7 @@ namespace Microsoft.PowerShell
             using var _ = _prediction.DisableScoped();
 
             ParseInput();
-            if (_parseErrors.Any(e => e.IncompleteInput))
+            if (ParseErrors.Any(e => e.IncompleteInput))
             {
                 Insert('\n');
                 return false;
@@ -281,7 +281,7 @@ namespace Microsoft.PowerShell
             // can report an error as it normally does.
             if (validate && !_statusIsErrorMessage)
             {
-                var errorMessage = Validate(_ast);
+                var errorMessage = Validate(RLAst);
                 if (!string.IsNullOrWhiteSpace(errorMessage))
                 {
                     // If there are more keys, assume the user pasted with a right click and
@@ -381,11 +381,11 @@ namespace Microsoft.PowerShell
 
         private string Validate(Ast rootAst)
         {
-            if (_parseErrors != null && _parseErrors.Length > 0)
+            if (ParseErrors != null && ParseErrors.Length > 0)
             {
                 // Move the cursor to the point of error
-                Current = _parseErrors[0].Extent.EndOffset;
-                return _parseErrors[0].Message;
+                Current = ParseErrors[0].Extent.EndOffset;
+                return ParseErrors[0].Message;
             }
 
             var validationVisitor = new CommandValidationVisitor(rootAst);

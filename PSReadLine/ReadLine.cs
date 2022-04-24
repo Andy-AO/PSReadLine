@@ -58,13 +58,30 @@ namespace Microsoft.PowerShell
         {
             get
             {
-                if (_tokens != null)
-                {
-                    _ast = Parser.ParseInput(_buffer.ToString(), out _tokens, out _parseErrors);
-                    return (Token[]) _tokens.Clone();
-                }
-                return null;
+
+                Parser.ParseInput(_buffer.ToString(), out _tokens, out _parseErrors);
+                return (Token[])_tokens.Clone();
             }
+        }
+
+        private Ast RLAst
+        {
+            get
+            {
+                _rlAst = Parser.ParseInput(_buffer.ToString(), out _tokens, out _parseErrors);
+                return _rlAst;
+            }
+            set => _rlAst = value;
+        }
+
+        private ParseError[] ParseErrors
+        {
+            get
+            {
+                Parser.ParseInput(_buffer.ToString(), out _tokens, out _parseErrors);
+                return _parseErrors;
+            }
+            set => _parseErrors = value;
         }
 
         private static readonly CancellationToken _defaultCancellationToken = new CancellationTokenSource().Token;
@@ -112,7 +129,7 @@ namespace Microsoft.PowerShell
         // Tokens etc.
         // private List<Token> _tokens;
         private Token[] _tokens;
-        private Ast _ast;
+        private Ast _rlAst;
         private ParseError[] _parseErrors;
 
         bool IPSConsoleReadLineMockableMethods.RunspaceIsRemote(Runspace runspace)
@@ -772,9 +789,9 @@ namespace Microsoft.PowerShell
             _mark = 0;
             EmphasisStart = -1;
             EmphasisLength = 0;
-            _ast = null;
+            RLAst = null;
             _tokens = null;
-            _parseErrors = null;
+            ParseErrors = null;
             _inputAccepted = false;
             InitialX = _console.CursorLeft;
             InitialY = _console.CursorTop;
@@ -875,7 +892,7 @@ namespace Microsoft.PowerShell
 
                         if (i >= 0)
                         {
-                            _options.PromptText = new[] {evaluatedPrompt.Substring(i)};
+                            _options.PromptText = new[] { evaluatedPrompt.Substring(i) };
                         }
                     }
                 }
@@ -938,7 +955,7 @@ namespace Microsoft.PowerShell
             }
 
             Singleton._readKeyThread = new Thread(Singleton.ReadKeyThreadProc)
-                {IsBackground = true, Name = "PSReadLine ReadKey Thread"};
+            { IsBackground = true, Name = "PSReadLine ReadKey Thread" };
             Singleton._readKeyThread.Start();
         }
 

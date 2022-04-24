@@ -79,9 +79,7 @@ namespace Microsoft.PowerShell
 
         private string ParseInput()
         {
-            var text = _buffer.ToString();
-            _ast = Parser.ParseInput(text, out _tokens, out _parseErrors);
-            return text;
+            return _buffer.ToString();
         }
 
         private void ClearStatusMessage(bool render)
@@ -114,8 +112,8 @@ namespace Microsoft.PowerShell
                 // We won't render, but most likely the tokens will be different, so make
                 // sure we don't use old tokens, also allow garbage to get collected.
                 _tokens = null;
-                _ast = null;
-                _parseErrors = null;
+                RLAst = null;
+                ParseErrors = null;
                 WaitingToRender = true;
                 return;
             }
@@ -395,7 +393,7 @@ namespace Microsoft.PowerShell
 
             // We may need to flip the color on the prompt if the error state changed.
 
-            renderData.errorPrompt = (_parseErrors != null && _parseErrors.Length > 0);
+            renderData.errorPrompt = (ParseErrors != null && ParseErrors.Length > 0);
             if (renderData.errorPrompt == PreviousRender.errorPrompt)
             {
                 // No need to flip the prompt color if the error state didn't change.

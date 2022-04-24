@@ -464,7 +464,7 @@ namespace Microsoft.PowerShell
 
             int cursor = Singleton.Current;
             int prev = -1, curr = -1, next = -1;
-            var sbAsts = Singleton._ast.FindAll(GetScriptBlockAst, searchNestedScriptBlocks: true).ToList();
+            var sbAsts = Singleton.RLAst.FindAll(GetScriptBlockAst, searchNestedScriptBlocks: true).ToList();
             var arguments = new List<ExpressionAst>();
 
             // We start searching for command arguments from the most nested script block.

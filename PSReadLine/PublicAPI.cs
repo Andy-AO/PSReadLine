@@ -179,9 +179,9 @@ namespace Microsoft.PowerShell
         public static void GetBufferState(out Ast ast, out Token[] tokens, out ParseError[] parseErrors, out int cursor)
         {
             Singleton.ParseInput();
-            ast = Singleton._ast;
+            ast = Singleton.RLAst;
             tokens = Singleton.Tokens;
-            parseErrors = Singleton._parseErrors;
+            parseErrors = Singleton.ParseErrors;
             cursor = Singleton.Current;
         }
 

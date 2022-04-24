@@ -568,13 +568,13 @@ namespace Microsoft.PowerShell
             // The input contains at least one match of some sensitive patterns, so now we need to further
             // analyze the input using the ASTs to see if it should actually be considered sensitive.
             bool isSensitive = false;
-            ParseError[] parseErrors = Singleton._parseErrors;
+            ParseError[] parseErrors = Singleton.ParseErrors;
 
             // We need to compare the text here, instead of simply checking whether or not '_ast' is null.
             // This is because we may need to update from history file in the middle of editing an input,
             // and in that case, the '_ast' may be not-null, but it was not parsed from 'line'.
-            Ast ast = string.Equals(Singleton._ast?.Extent.Text, line)
-                ? Singleton._ast
+            Ast ast = string.Equals(Singleton.RLAst?.Extent.Text, line)
+                ? Singleton.RLAst
                 : Parser.ParseInput(line, out _, out parseErrors);
 
             if (parseErrors != null && parseErrors.Length > 0)
