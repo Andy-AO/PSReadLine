@@ -54,7 +54,11 @@ namespace Microsoft.PowerShell
         }
         public Token[] GetCloneTokens()
         {
-            return (Token[])Tokens.Clone();
+            if (Tokens != null)
+            {
+                return (Token[])Tokens.Clone();
+            }
+            return null;
         }
         private Token[] Tokens
         {

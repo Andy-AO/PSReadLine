@@ -152,7 +152,7 @@ namespace Microsoft.PowerShell
             string parameterName = null;
 
             // Simply return if nothing is rendered yet.
-            if (Singleton.Tokens == null) { return; }
+            if (Singleton.GetCloneTokens() == null) { return; }
 
             foreach(var token in Singleton.GetCloneTokens())
             {
