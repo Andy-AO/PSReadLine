@@ -71,7 +71,7 @@ namespace Microsoft.PowerShell
 
         private void MaybeParseInput()
         {
-            if (_tokens == null)
+            if (Tokens == null)
             {
                 ParseInput();
             }
@@ -239,7 +239,7 @@ namespace Microsoft.PowerShell
             var tokenStack = new Stack<SavedTokenState>();
             tokenStack.Push(new SavedTokenState
             {
-                Tokens = _tokens,
+                Tokens = Tokens,
                 Index = 0,
                 Color = defaultColor
             });
