@@ -154,7 +154,7 @@ namespace Microsoft.PowerShell
             // Simply return if nothing is rendered yet.
             if (Singleton.Tokens == null) { return; }
 
-            foreach(var token in Singleton.Tokens)
+            foreach(var token in Singleton.GetCloneTokens())
             {
                 var extent = token.Extent;
 

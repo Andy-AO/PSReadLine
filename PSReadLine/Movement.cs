@@ -453,9 +453,9 @@ namespace Microsoft.PowerShell
 
             Token token = null;
             var index = 0;
-            for (; index < Singleton.Tokens.Length; index++)
+            for (; index < Singleton.GetCloneTokens().Length; index++)
             {
-                token = Singleton.Tokens[index];
+                token = Singleton.GetCloneTokens()[index];
                 if (token.Extent.StartOffset == Singleton.Current)
                     break;
             }
@@ -479,10 +479,10 @@ namespace Microsoft.PowerShell
             }
 
             var matchCount = 0;
-            var limit = (direction > 0) ? Singleton.Tokens.Length - 1 : -1;
+            var limit = (direction > 0) ? Singleton.GetCloneTokens().Length - 1 : -1;
             for (; index != limit; index += direction)
             {
-                var t = Singleton.Tokens[index];
+                var t = Singleton.GetCloneTokens()[index];
                 if (t.Kind == token.Kind)
                 {
                     matchCount++;
