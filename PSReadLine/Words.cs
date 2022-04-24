@@ -84,7 +84,6 @@ namespace Microsoft.PowerShell
 
         private Token FindToken(int current, FindTokenMode mode)
         {
-            MaybeParseInput();
             return FindNestedToken(current, Tokens, mode);
         }
 

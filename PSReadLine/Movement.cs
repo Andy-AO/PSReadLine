@@ -449,8 +449,6 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            Singleton.MaybeParseInput();
-
             Token token = null;
             var index = 0;
             for (; index < Singleton.Tokens.Length; index++)

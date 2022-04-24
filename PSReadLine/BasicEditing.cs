@@ -250,7 +250,7 @@ namespace Microsoft.PowerShell
         {
             using var _ = _prediction.DisableScoped();
 
-            ParseInput();
+            _buffer.ToString();
             if (ParseErrors.Any(e => e.IncompleteInput))
             {
                 Insert('\n');

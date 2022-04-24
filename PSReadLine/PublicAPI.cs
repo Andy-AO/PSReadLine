@@ -178,7 +178,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void GetBufferState(out Ast ast, out Token[] tokens, out ParseError[] parseErrors, out int cursor)
         {
-            Singleton.ParseInput();
+            PSConsoleReadLine tempQualifier = Singleton;
+            tempQualifier._buffer.ToString();
             ast = Singleton.RLAst;
             tokens = Singleton.Tokens;
             parseErrors = Singleton.ParseErrors;

@@ -460,8 +460,6 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            Singleton.MaybeParseInput();
-
             int cursor = Singleton.Current;
             int prev = -1, curr = -1, next = -1;
             var sbAsts = Singleton.RLAst.FindAll(GetScriptBlockAst, searchNestedScriptBlocks: true).ToList();

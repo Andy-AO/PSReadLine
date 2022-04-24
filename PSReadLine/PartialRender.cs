@@ -68,20 +68,6 @@ namespace Microsoft.PowerShell
         }
 
 
-
-        private void MaybeParseInput()
-        {
-            if (Tokens == null)
-            {
-                ParseInput();
-            }
-        }
-
-        private string ParseInput()
-        {
-            return _buffer.ToString();
-        }
-
         private void ClearStatusMessage(bool render)
         {
             _statusBuffer.Clear();
@@ -155,7 +141,7 @@ namespace Microsoft.PowerShell
 
         private int GenerateRender(string defaultColor)
         {
-            var text = ParseInput();
+            var text = _buffer.ToString();
             _prediction.QueryForSuggestion(text);
 
             string color = defaultColor;
