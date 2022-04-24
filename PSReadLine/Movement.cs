@@ -480,12 +480,10 @@ namespace Microsoft.PowerShell
             }
 
             var matchCount = 0;
-            PSConsoleReadLine tempQualifier1 = Singleton;
-            var limit = (direction > 0) ? tempQualifier1.Tokens.Length - 1 : -1;
+            var limit = (direction > 0) ? Singleton.Tokens.Length - 1 : -1;
             for (; index != limit; index += direction)
             {
-                PSConsoleReadLine tempQualifier = Singleton;
-                var t = tempQualifier.Tokens[index];
+                var t = Singleton.Tokens[index];
                 if (t.Kind == token.Kind)
                 {
                     matchCount++;

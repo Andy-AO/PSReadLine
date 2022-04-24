@@ -151,12 +151,9 @@ namespace Microsoft.PowerShell
             string commandName = null;
             string parameterName = null;
 
-            // Simply return if nothing is rendered yet.
-            PSConsoleReadLine tempQualifier = Singleton;
-            if (tempQualifier.Tokens == null) { return; }
+            if (Singleton.Tokens == null) { return; }
 
-            PSConsoleReadLine tempQualifier1 = Singleton;
-            foreach(var token in tempQualifier1.Tokens)
+             foreach(var token in Singleton.Tokens)
             {
                 var extent = token.Extent;
 
