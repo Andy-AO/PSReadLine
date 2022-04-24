@@ -59,7 +59,7 @@ namespace Microsoft.PowerShell
             get
             {
 
-                Parser.ParseInput(_buffer.ToString(), out _tokens, out _parseErrors);
+                Parser.ParseInput(_buffer.ToString(), out _tokens, out _);
                 return (Token[])_tokens.Clone();
             }
         }
@@ -68,7 +68,7 @@ namespace Microsoft.PowerShell
         {
             get
             {
-                _rlAst = Parser.ParseInput(_buffer.ToString(), out _tokens, out _parseErrors);
+                _rlAst = Parser.ParseInput(_buffer.ToString(), out _, out _);
                 return _rlAst;
             }
             set => _rlAst = value;
@@ -78,7 +78,7 @@ namespace Microsoft.PowerShell
         {
             get
             {
-                Parser.ParseInput(_buffer.ToString(), out _tokens, out _parseErrors);
+                Parser.ParseInput(_buffer.ToString(), out _, out _parseErrors);
                 return _parseErrors;
             }
             set => _parseErrors = value;
