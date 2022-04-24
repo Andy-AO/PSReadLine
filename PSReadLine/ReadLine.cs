@@ -60,9 +60,9 @@ namespace Microsoft.PowerShell
             {
                 if (_tokens != null)
                 {
+                    _ast = Parser.ParseInput(_buffer.ToString(), out _tokens, out _parseErrors);
                     return (Token[]) _tokens.Clone();
                 }
-
                 return null;
             }
         }
