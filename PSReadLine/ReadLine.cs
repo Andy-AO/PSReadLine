@@ -116,6 +116,17 @@ namespace Microsoft.PowerShell
         private static readonly HistoryQueue<PSKeyInfo> _lastNKeys = new HistoryQueue<PSKeyInfo>(200);
         private static PSConsoleReadLine _singleton;
 
+        private void ClearStatusMessage(bool render)
+        {
+            _statusBuffer.Clear();
+            _statusLinePrompt = null;
+            _statusIsErrorMessage = false;
+            if (render)
+            {
+                RenderWithPredictionQueryPaused();
+            }
+        }
+
         bool IPSConsoleReadLineMockableMethods.RunspaceIsRemote(Runspace runspace)
         {
             return runspace?.ConnectionInfo != null;

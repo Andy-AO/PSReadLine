@@ -68,17 +68,6 @@ namespace Microsoft.PowerShell
         }
 
 
-        private void ClearStatusMessage(bool render)
-        {
-            _statusBuffer.Clear();
-            _statusLinePrompt = null;
-            _statusIsErrorMessage = false;
-            if (render)
-            {
-                RenderWithPredictionQueryPaused();
-            }
-        }
-
         private void RenderWithPredictionQueryPaused()
         {
             // Sometimes we need to re-render the buffer to show status line, or to clear
