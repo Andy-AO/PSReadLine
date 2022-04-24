@@ -52,7 +52,10 @@ namespace Microsoft.PowerShell
             }
             private set => _singleton = value;
         }
-
+        public Token[] GetCloneToken()
+        {
+            return (Token[])Tokens.Clone();
+        }
         private Token[] Tokens
         {
             get => _tokens;
@@ -63,9 +66,9 @@ namespace Microsoft.PowerShell
 
         // This is used by PowerShellEditorServices (the backend of the PowerShell VSCode extension)
         // so that it can call PSReadLine from a delegate and not hit nested pipeline issues.
-        #pragma warning disable CS0649
+#pragma warning disable CS0649
         private static Action<CancellationToken> _handleIdleOverride;
-        #pragma warning restore CS0649
+#pragma warning restore CS0649
 
         private bool _delayedOneTimeInitCompleted;
 
@@ -388,7 +391,7 @@ namespace Microsoft.PowerShell
                     oldControlCAsInput = Console.TreatControlCAsInput;
                     Console.TreatControlCAsInput = true;
                 }
-                catch {}
+                catch { }
             }
 
             if (lastRunStatus.HasValue)
@@ -751,7 +754,8 @@ namespace Microsoft.PowerShell
                     && PlatformWindows.IsConsoleInput()
                     && PlatformWindows.IsUsingRasterFont());
 
-            if (!_skipOutputEncodingChange) {
+            if (!_skipOutputEncodingChange)
+            {
                 _console.OutputEncoding = Encoding.UTF8;
             }
 
@@ -833,7 +837,7 @@ namespace Microsoft.PowerShell
 
                         if (i >= 0)
                         {
-                            _options.PromptText = new [] { evaluatedPrompt.Substring(i) };
+                            _options.PromptText = new[] { evaluatedPrompt.Substring(i) };
                         }
                     }
                 }
@@ -876,8 +880,8 @@ namespace Microsoft.PowerShell
             Singleton._readKeyWaitHandle = new AutoResetEvent(false);
             Singleton._keyReadWaitHandle = new AutoResetEvent(false);
             Singleton._closingWaitHandle = new ManualResetEvent(false);
-            Singleton._requestKeyWaitHandles = new WaitHandle[] {Singleton._keyReadWaitHandle, Singleton._closingWaitHandle, _defaultCancellationToken.WaitHandle};
-            Singleton._threadProcWaitHandles = new WaitHandle[] {Singleton._readKeyWaitHandle, Singleton._closingWaitHandle};
+            Singleton._requestKeyWaitHandles = new WaitHandle[] { Singleton._keyReadWaitHandle, Singleton._closingWaitHandle, _defaultCancellationToken.WaitHandle };
+            Singleton._threadProcWaitHandles = new WaitHandle[] { Singleton._readKeyWaitHandle, Singleton._closingWaitHandle };
 
             // This is for a "being hosted in an alternate appdomain scenario" (the
             // DomainUnload event is not raised for the default appdomain). It allows us
@@ -892,7 +896,7 @@ namespace Microsoft.PowerShell
                 };
             }
 
-            Singleton._readKeyThread = new Thread(Singleton.ReadKeyThreadProc) {IsBackground = true, Name = "PSReadLine ReadKey Thread"};
+            Singleton._readKeyThread = new Thread(Singleton.ReadKeyThreadProc) { IsBackground = true, Name = "PSReadLine ReadKey Thread" };
             Singleton._readKeyThread.Start();
         }
 
