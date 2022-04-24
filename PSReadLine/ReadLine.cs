@@ -58,30 +58,20 @@ namespace Microsoft.PowerShell
         {
             get
             {
-
-                Parser.ParseInput(_buffer.ToString(), out _tokens, out _);
-                return (Token[])_tokens.Clone();
+                Parser.ParseInput(_buffer.ToString(), out var _tokens, out _);
+                return (Token[]) _tokens.Clone();
             }
         }
 
-        private Ast RLAst
-        {
-            get
-            {
-                _rlAst = Parser.ParseInput(_buffer.ToString(), out _, out _);
-                return _rlAst;
-            }
-            set => _rlAst = value;
-        }
+        private Ast RLAst => Parser.ParseInput(_buffer.ToString(), out _, out _);
 
         private ParseError[] ParseErrors
         {
             get
             {
-                Parser.ParseInput(_buffer.ToString(), out _, out _parseErrors);
+                Parser.ParseInput(_buffer.ToString(), out _, out var _parseErrors);
                 return _parseErrors;
             }
-            set => _parseErrors = value;
         }
 
         private static readonly CancellationToken _defaultCancellationToken = new CancellationTokenSource().Token;
@@ -125,12 +115,6 @@ namespace Microsoft.PowerShell
         // Save a fixed # of keys so we can reconstruct a repro after a crash
         private static readonly HistoryQueue<PSKeyInfo> _lastNKeys = new HistoryQueue<PSKeyInfo>(200);
         private static PSConsoleReadLine _singleton;
-
-        // Tokens etc.
-        // private List<Token> _tokens;
-        private Token[] _tokens;
-        private Ast _rlAst;
-        private ParseError[] _parseErrors;
 
         bool IPSConsoleReadLineMockableMethods.RunspaceIsRemote(Runspace runspace)
         {
@@ -789,9 +773,6 @@ namespace Microsoft.PowerShell
             _mark = 0;
             EmphasisStart = -1;
             EmphasisLength = 0;
-            RLAst = null;
-            _tokens = null;
-            ParseErrors = null;
             _inputAccepted = false;
             InitialX = _console.CursorLeft;
             InitialY = _console.CursorTop;
@@ -892,7 +873,7 @@ namespace Microsoft.PowerShell
 
                         if (i >= 0)
                         {
-                            _options.PromptText = new[] { evaluatedPrompt.Substring(i) };
+                            _options.PromptText = new[] {evaluatedPrompt.Substring(i)};
                         }
                     }
                 }
@@ -955,7 +936,7 @@ namespace Microsoft.PowerShell
             }
 
             Singleton._readKeyThread = new Thread(Singleton.ReadKeyThreadProc)
-            { IsBackground = true, Name = "PSReadLine ReadKey Thread" };
+                {IsBackground = true, Name = "PSReadLine ReadKey Thread"};
             Singleton._readKeyThread.Start();
         }
 

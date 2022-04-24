@@ -97,9 +97,6 @@ namespace Microsoft.PowerShell
             {
                 // We won't render, but most likely the tokens will be different, so make
                 // sure we don't use old tokens, also allow garbage to get collected.
-                _tokens = null;
-                RLAst = null;
-                ParseErrors = null;
                 WaitingToRender = true;
                 return;
             }
