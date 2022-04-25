@@ -254,10 +254,10 @@ namespace Microsoft.PowerShell
 
                 // PageUp/PageDown and CtrlPageUp/CtrlPageDown bindings are supported on Windows only because they depend on the
                 // API 'Console.SetWindowPosition', which throws 'PlatformNotSupportedException' on unix platforms.
-                _dispatchTable.Add(Keys.PageUp,       MakeKeyHandler(ScrollDisplayUp,       "ScrollDisplayUp"));
-                _dispatchTable.Add(Keys.PageDown,     MakeKeyHandler(ScrollDisplayDown,     "ScrollDisplayDown"));
-                _dispatchTable.Add(Keys.CtrlPageUp,   MakeKeyHandler(ScrollDisplayUpLine,   "ScrollDisplayUpLine"));
-                _dispatchTable.Add(Keys.CtrlPageDown, MakeKeyHandler(ScrollDisplayDownLine, "ScrollDisplayDownLine"));
+                _dispatchTable.Add(Keys.PageUp,       MakeKeyHandler((key, arg) => Renderer.ScrollDisplayUp(key,arg),       "ScrollDisplayUp"));
+                _dispatchTable.Add(Keys.PageDown,     MakeKeyHandler(Renderer.ScrollDisplayDown,     "ScrollDisplayDown"));
+                _dispatchTable.Add(Keys.CtrlPageUp,   MakeKeyHandler(Renderer.ScrollDisplayUpLine,   "ScrollDisplayUpLine"));
+                _dispatchTable.Add(Keys.CtrlPageDown, MakeKeyHandler(Renderer.ScrollDisplayDownLine, "ScrollDisplayDownLine"));
             }
 
             _chordDispatchTable = new Dictionary<PSKeyInfo, Dictionary<PSKeyInfo, KeyHandler>>();
@@ -345,15 +345,15 @@ namespace Microsoft.PowerShell
             {
                 _dispatchTable.Add(Keys.CtrlH,        MakeKeyHandler(BackwardDeleteChar,    "BackwardDeleteChar"));
                 _dispatchTable.Add(Keys.CtrlSpace,    MakeKeyHandler(MenuComplete,          "MenuComplete"));
-                _dispatchTable.Add(Keys.CtrlEnd,      MakeKeyHandler(ScrollDisplayToCursor, "ScrollDisplayToCursor"));
-                _dispatchTable.Add(Keys.CtrlHome,     MakeKeyHandler(ScrollDisplayTop,      "ScrollDisplayTop"));
+                _dispatchTable.Add(Keys.CtrlEnd,      MakeKeyHandler(Renderer.ScrollDisplayToCursor, "ScrollDisplayToCursor"));
+                _dispatchTable.Add(Keys.CtrlHome,     MakeKeyHandler(Renderer.ScrollDisplayTop,      "ScrollDisplayTop"));
 
                 // PageUp/PageDown and CtrlPageUp/CtrlPageDown bindings are supported on Windows only because they depend on the
                 // API 'Console.SetWindowPosition', which throws 'PlatformNotSupportedException' on unix platforms.
-                _dispatchTable.Add(Keys.PageUp,       MakeKeyHandler(ScrollDisplayUp,       "ScrollDisplayUp"));
-                _dispatchTable.Add(Keys.PageDown,     MakeKeyHandler(ScrollDisplayDown,     "ScrollDisplayDown"));
-                _dispatchTable.Add(Keys.CtrlPageUp,   MakeKeyHandler(ScrollDisplayUpLine,   "ScrollDisplayUpLine"));
-                _dispatchTable.Add(Keys.CtrlPageDown, MakeKeyHandler(ScrollDisplayDownLine, "ScrollDisplayDownLine"));
+                _dispatchTable.Add(Keys.PageUp,       MakeKeyHandler((key, arg) => Renderer.ScrollDisplayUp(key,arg),       "ScrollDisplayUp"));
+                _dispatchTable.Add(Keys.PageDown,     MakeKeyHandler(Renderer.ScrollDisplayDown,     "ScrollDisplayDown"));
+                _dispatchTable.Add(Keys.CtrlPageUp,   MakeKeyHandler(Renderer.ScrollDisplayUpLine,   "ScrollDisplayUpLine"));
+                _dispatchTable.Add(Keys.CtrlPageDown, MakeKeyHandler(Renderer.ScrollDisplayDownLine, "ScrollDisplayDownLine"));
             }
             else
             {
@@ -562,12 +562,12 @@ namespace Microsoft.PowerShell
             case nameof(ClearScreen):
             case nameof(DigitArgument):
             case nameof(InvokePrompt):
-            case nameof(ScrollDisplayDown):
-            case nameof(ScrollDisplayDownLine):
-            case nameof(ScrollDisplayToCursor):
-            case nameof(ScrollDisplayTop):
-            case nameof(ScrollDisplayUp):
-            case nameof(ScrollDisplayUpLine):
+            case nameof(Renderer.ScrollDisplayDown):
+            case nameof(Renderer.ScrollDisplayDownLine):
+            case nameof(Renderer.ScrollDisplayToCursor):
+            case nameof(Renderer.ScrollDisplayTop):
+            case nameof(Renderer.ScrollDisplayUp):
+            case nameof(Renderer.ScrollDisplayUpLine):
             case nameof(SelfInsert):
             case nameof(ShowKeyBindings):
             case nameof(ViCommandMode):

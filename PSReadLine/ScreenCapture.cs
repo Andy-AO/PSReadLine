@@ -381,7 +381,7 @@ namespace Microsoft.PowerShell
                 {
                     if (TooCloseToTop())
                     {
-                        ScrollDisplayUpLine();
+                        Renderer.ScrollDisplayUpLine();
                     }
 
                     if (currentY > 0)
@@ -412,7 +412,7 @@ namespace Microsoft.PowerShell
                 else if (k == Keys.J || k == Keys.ucJ || k == Keys.DownArrow || k == Keys.ShiftDownArrow)
                 {
                     if (TooCloseToBottom())
-                        ScrollDisplayDownLine();
+                        Renderer.ScrollDisplayDownLine();
 
                     if (currentY < (console.BufferHeight - 1))
                     {
@@ -443,7 +443,7 @@ namespace Microsoft.PowerShell
                 {
                     ScreenCapture.InvertLines(selectionTop, selectionHeight, console);
                     ScreenCapture.DumpScreenToClipboard(selectionTop, selectionHeight, console);
-                    ScrollDisplayToCursor();
+                    Renderer.ScrollDisplayToCursor();
                     return;
                 }
                 else if (k == Keys.Escape || k == Keys.CtrlC || k == Keys.CtrlG)
@@ -456,7 +456,7 @@ namespace Microsoft.PowerShell
                 }
             }
             ScreenCapture.InvertLines(selectionTop, selectionHeight, console);
-            ScrollDisplayToCursor();
+            Renderer.ScrollDisplayToCursor();
         }
     }
 }
