@@ -103,7 +103,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private int FindForwardWordPoint(string wordDelimiters)
         {
-            int i = Current;
+            int i = _renderer.Current;
             if (i == buffer.Length)
             {
                 return i;
@@ -137,7 +137,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private int FindNextWordPoint(string wordDelimiters)
         {
-            int i = Singleton.Current;
+            int i = _renderer.Current;
             if (i == Singleton.buffer.Length)
             {
                 return i;
@@ -172,7 +172,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private int FindBackwardWordPoint(string wordDelimiters)
         {
-            int i = Current - 1;
+            int i = _renderer.Current - 1;
             if (i < 0)
             {
                 return 0;

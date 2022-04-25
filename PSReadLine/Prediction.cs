@@ -76,8 +76,9 @@ namespace Microsoft.PowerShell
 
                 using var _ = prediction.DisableScoped();
 
-                Singleton.Current = Singleton.buffer.Length;
-                Insert(inlineView.SuggestionText.Substring(Singleton.Current));
+                int val = Singleton.buffer.Length;
+                _renderer.Current = val;
+                Insert(inlineView.SuggestionText.Substring(_renderer.Current));
             }
         }
 
@@ -116,7 +117,7 @@ namespace Microsoft.PowerShell
 
                 inlineView.OnSuggestionAccepted();
 
-                Singleton.Current = start;
+                _renderer.Current = start;
                 Insert(inlineView.SuggestionText.Substring(start, index - start));
             }
         }
@@ -179,7 +180,7 @@ namespace Microsoft.PowerShell
                 Singleton.SaveEditItem(insertStringItem);
                 Singleton.buffer.Clear();
                 Singleton.buffer.Append(selectedItemText);
-                Singleton.Current = selectedItemText.Length;
+                _renderer.Current = selectedItemText.Length;
 
                 _renderer.Render();
                 return;
@@ -197,7 +198,7 @@ namespace Microsoft.PowerShell
 
             Singleton.SaveEditItem(insertStringItem);
             Singleton.buffer.Append(selectedItemText);
-            Singleton.Current = selectedItemText.Length;
+            _renderer.Current = selectedItemText.Length;
 
             if (useEditGroup)
             {

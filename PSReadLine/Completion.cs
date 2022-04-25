@@ -288,7 +288,7 @@ namespace Microsoft.PowerShell
                         ps = System.Management.Automation.PowerShell.Create();
                         ps.Runspace = _runspace;
                     }
-                    _tabCompletions = _mockableMethods.CompleteInput(buffer.ToString(), Current, null, ps);
+                    _tabCompletions = _mockableMethods.CompleteInput(buffer.ToString(), _renderer.Current, null, ps);
 
                     if (_tabCompletions.CompletionMatches.Count == 0) return null;
 
@@ -321,9 +321,9 @@ namespace Microsoft.PowerShell
                     // GetCompletions could scroll the screen, e.g. via Write-Progress. For example,
                     // cd <TAB> under the CloudShell Azure drive will show the progress bar while fetching data.
                     // We need to update the _initialY in case the current cursor postion has changed.
-                    if (Singleton.InitialY > RLConsole.CursorTop)
+                    if (_renderer.InitialY > RLConsole.CursorTop)
                     {
-                        Singleton.InitialY = RLConsole.CursorTop;
+                        _renderer.InitialY = RLConsole.CursorTop;
                     }
                 }
             }
@@ -373,7 +373,7 @@ namespace Microsoft.PowerShell
             Replace(completions.ReplacementIndex, completions.ReplacementLength, replacementText);
             if (cursorAdjustment != 0)
             {
-                _renderer.MoveCursor(Current + cursorAdjustment);
+                _renderer.MoveCursor(_renderer.Current + cursorAdjustment);
             }
             completions.ReplacementLength = replacementText.Length;
         }
@@ -775,7 +775,7 @@ namespace Microsoft.PowerShell
                 // if not, we'll skip the menu.
 
                 var endBufferPoint = _renderer.ConvertOffsetToPoint(buffer.Length);
-                menu.BufferLines = endBufferPoint.Y - InitialY + 1 + _options.ExtraPromptLineCount;
+                menu.BufferLines = endBufferPoint.Y - _renderer.InitialY + 1 + _options.ExtraPromptLineCount;
                 if (menu.BufferLines + menu.Rows > RLConsole.WindowHeight)
                 {
                     menuSelect = false;
@@ -867,7 +867,7 @@ namespace Microsoft.PowerShell
                         // getting shorter or longer.
                         var endOfCommandLine = _renderer.ConvertOffsetToPoint(buffer.Length);
                         var topAdjustment = (endOfCommandLine.Y + 1) - menu.Top;
-                        int oldInitialY = InitialY;
+                        int oldInitialY = _renderer.InitialY;
 
                         if (topAdjustment != 0)
                         {
@@ -879,11 +879,11 @@ namespace Microsoft.PowerShell
                             // into the menu, so we must do that here.
                             menu.SaveCursor();
 
-                            if (oldInitialY > InitialY)
+                            if (oldInitialY > _renderer.InitialY)
                             {
                                 // Scrolling happened when drawing the menu, so we need to adjust
                                 // this point as it was calculated before drawing the menu.
-                                endOfCommandLine.Y -= oldInitialY - InitialY;
+                                endOfCommandLine.Y -= oldInitialY - _renderer.InitialY;
                             }
 
                             RLConsole.SetCursorPosition(endOfCommandLine.X, endOfCommandLine.Y);
@@ -931,9 +931,9 @@ namespace Microsoft.PowerShell
                         unAmbiguousText.Length > (userComplPos + userCompletionText.Length))
                     {
                         userCompletionText = unAmbiguousText.Substring(userComplPos);
-                        Current = completions.ReplacementIndex +
-                                   FindUserCompletionTextPosition(menu.MenuItems[menu.CurrentSelection], userCompletionText) +
-                                   userCompletionText.Length;
+                        _renderer.Current = completions.ReplacementIndex +
+                                            FindUserCompletionTextPosition(menu.MenuItems[menu.CurrentSelection], userCompletionText) +
+                                            userCompletionText.Length;
                         _renderer.Render();
                         Ding();
                     }
@@ -1075,7 +1075,7 @@ namespace Microsoft.PowerShell
                         if (truncateCurrentCompletion && !undo)
                         {
                             CompletionResult r = new CompletionResult(currentMenuItem
-                                .CompletionText.Substring(0, Current - completions.ReplacementIndex));
+                                .CompletionText.Substring(0, _renderer.Current - completions.ReplacementIndex));
                             DoReplacementForCompletion(r, completions);
                         }
                         if (keepSelection)
@@ -1096,7 +1096,7 @@ namespace Microsoft.PowerShell
                         }
                         if (prependNextKey)
                         {
-                            Current -= cursorAdjustment;
+                            _renderer.Current = _renderer.Current - cursorAdjustment;
                             PrependQueuedKeys(nextKey);
                         }
                     }

@@ -34,7 +34,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SetMark(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton._mark = Singleton.Current;
+            Singleton._mark = _renderer.Current;
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Microsoft.PowerShell
         public static void ExchangePointAndMark(ConsoleKeyInfo? key = null, object arg = null)
         {
             var tmp = Singleton._mark;
-            Singleton._mark = Singleton.Current;
+            Singleton._mark = _renderer.Current;
             _renderer.MoveCursor(Math.Min(tmp, Singleton.buffer.Length));
         }
 
@@ -72,7 +72,7 @@ namespace Microsoft.PowerShell
             var killText = buffer.ToString(start, length);
             SaveEditItem(EditItemDelete.Create(killText, start));
             buffer.Remove(start, length);
-            Current = start;
+            _renderer.Current = start;
             _renderer.Render();
             if (_killCommandCount > 0)
             {
@@ -111,7 +111,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void KillLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton.Kill(Singleton.Current, Singleton.buffer.Length - Singleton.Current, false);
+            Singleton.Kill(_renderer.Current, Singleton.buffer.Length - _renderer.Current, false);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BackwardKillInput(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton.Kill(0, Singleton.Current, true);
+            Singleton.Kill(0, _renderer.Current, true);
         }
 
         /// <summary>
@@ -129,8 +129,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BackwardKillLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var start = GetBeginningOfLinePos(Singleton.Current);
-            Singleton.Kill(start, Singleton.Current, true);
+            var start = GetBeginningOfLinePos(_renderer.Current);
+            Singleton.Kill(start, _renderer.Current, true);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Microsoft.PowerShell
         public static void KillWord(ConsoleKeyInfo? key = null, object arg = null)
         {
             int i = Singleton.FindForwardWordPoint(Singleton.Options.WordDelimiters);
-            Singleton.Kill(Singleton.Current, i - Singleton.Current, false);
+            Singleton.Kill(_renderer.Current, i - _renderer.Current, false);
         }
 
         /// <summary>
@@ -151,11 +151,11 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ShellKillWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var token = Singleton.FindToken(Singleton.Current, FindTokenMode.CurrentOrNext);
+            var token = Singleton.FindToken(_renderer.Current, FindTokenMode.CurrentOrNext);
             var end = (token.Kind == TokenKind.EndOfInput)
                 ? Singleton.buffer.Length
                 : token.Extent.EndOffset;
-            Singleton.Kill(Singleton.Current, end - Singleton.Current, false);
+            Singleton.Kill(_renderer.Current, end - _renderer.Current, false);
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace Microsoft.PowerShell
         public static void BackwardKillWord(ConsoleKeyInfo? key = null, object arg = null)
         {
             int i = Singleton.FindBackwardWordPoint(Singleton.Options.WordDelimiters);
-            Singleton.Kill(i, Singleton.Current - i, true);
+            Singleton.Kill(i, _renderer.Current - i, true);
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Microsoft.PowerShell
         public static void UnixWordRubout(ConsoleKeyInfo? key = null, object arg = null)
         {
             int i = Singleton.FindBackwardWordPoint("");
-            Singleton.Kill(i, Singleton.Current - i, true);
+            Singleton.Kill(i, _renderer.Current - i, true);
         }
 
         /// <summary>
@@ -187,9 +187,9 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ShellBackwardKillWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var token = Singleton.FindToken(Singleton.Current, FindTokenMode.Previous);
+            var token = Singleton.FindToken(_renderer.Current, FindTokenMode.Previous);
             var start = token?.Extent.StartOffset ?? 0;
-            Singleton.Kill(start, Singleton.Current - start, true);
+            Singleton.Kill(start, _renderer.Current - start, true);
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace Microsoft.PowerShell
 
             // Starting a yank session, yank the last thing killed and
             // remember where we started.
-            _mark = _yankStartPoint = Current;
+            _mark = _yankStartPoint = _renderer.Current;
             Insert(_killRing[_killIndex]);
 
             _yankCommandCount += 1;
@@ -233,7 +233,7 @@ namespace Microsoft.PowerShell
                 _killIndex = _killRing.Count - 1;
             }
             var yankText = _killRing[_killIndex];
-            Replace(_yankStartPoint, Current - _yankStartPoint, yankText);
+            Replace(_yankStartPoint, _renderer.Current - _yankStartPoint, yankText);
             _yankCommandCount += 1;
         }
 
@@ -269,12 +269,12 @@ namespace Microsoft.PowerShell
             var argText = tokens[arg].Text;
             if (yankLastArgState.startPoint < 0)
             {
-                yankLastArgState.startPoint = Current;
+                yankLastArgState.startPoint = _renderer.Current;
                 Insert(argText);
             }
             else
             {
-                Replace(yankLastArgState.startPoint, Current - yankLastArgState.startPoint, argText);
+                Replace(yankLastArgState.startPoint, _renderer.Current - yankLastArgState.startPoint, argText);
             }
         }
 
@@ -430,7 +430,8 @@ namespace Microsoft.PowerShell
         {
             Singleton._visualSelectionCommandCount += 1;
             Singleton._mark = 0;
-            Singleton.Current = Singleton.buffer.Length;
+            int val = Singleton.buffer.Length;
+            _renderer.Current = val;
             _renderer.RenderWithPredictionQueryPaused();
         }
 
@@ -460,7 +461,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            int cursor = Singleton.Current;
+            int cursor = _renderer.Current;
             int prev = -1, curr = -1, next = -1;
             var sbAsts = Singleton.RLAst.FindAll(GetScriptBlockAst, searchNestedScriptBlocks: true).ToList();
             var arguments = new List<ExpressionAst>();

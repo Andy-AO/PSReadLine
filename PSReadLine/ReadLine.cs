@@ -170,7 +170,7 @@ namespace Microsoft.PowerShell
         {
             Singleton._mockableMethods.Ding();
         }
-
+        private static readonly Renderer _renderer = Renderer.Singleton;
         private void ReadOneOrMoreKeys()
         {
             _readkeyStopwatch.Restart();
@@ -341,7 +341,7 @@ namespace Microsoft.PowerShell
                             ps.Invoke();
                             if (y != console.CursorTop)
                             {
-                                Singleton.InitialY = console.CursorTop;
+                                _renderer.InitialY = console.CursorTop;
                                 _renderer.Render();
                             }
                         }
@@ -373,7 +373,7 @@ namespace Microsoft.PowerShell
                 // is called, clear the buffer and throw an exception so we can return an empty string.
                 Singleton.SaveCurrentLine();
                 Singleton._getNextHistoryIndex = Singleton._history.Count;
-                Singleton.Current = 0;
+                _renderer.Current = 0;
                 Singleton.buffer.Clear();
                 _renderer.Render();
                 throw new OperationCanceledException();
@@ -636,7 +636,7 @@ namespace Microsoft.PowerShell
                 {
                     if (_searchHistoryCommandCount > 0)
                     {
-                        EmphasisStart = -1;
+                        _renderer.EmphasisStart = -1;
                         _renderer.EmphasisLength = 0;
                         _renderer.RenderWithPredictionQueryPaused();
                     }
@@ -809,21 +809,22 @@ namespace Microsoft.PowerShell
                 _delayedOneTimeInitCompleted = true;
             }
 
-            PreviousRender = InitialPrevRender;
-            PreviousRender.bufferWidth = RLConsole.BufferWidth;
-            PreviousRender.bufferHeight = RLConsole.BufferHeight;
-            PreviousRender.errorPrompt = false;
+            Renderer.RenderData val = Renderer.InitialPrevRender;
+            _renderer.PreviousRender = val;
+            _renderer.PreviousRender.bufferWidth = RLConsole.BufferWidth;
+            _renderer.PreviousRender.bufferHeight = RLConsole.BufferHeight;
+            _renderer.PreviousRender.errorPrompt = false;
             buffer.Clear();
             _edits = new List<EditItem>();
             _undoEditIndex = 0;
             _editGroupStart = -1;
-            Current = 0;
+            _renderer.Current = 0;
             _mark = 0;
-            EmphasisStart = -1;
+            _renderer.EmphasisStart = -1;
             _renderer.EmphasisLength = 0;
             _inputAccepted = false;
-            InitialX = RLConsole.CursorLeft;
-            InitialY = RLConsole.CursorTop;
+            _renderer.InitialX = RLConsole.CursorLeft;
+            _renderer.InitialY = RLConsole.CursorTop;
             _statusIsErrorMessage = false;
 
             _initialOutputEncoding = RLConsole.OutputEncoding;
@@ -1118,7 +1119,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                newY = Singleton.InitialY - Singleton._options.ExtraPromptLineCount;
+                newY = _renderer.InitialY - Singleton._options.ExtraPromptLineCount;
 
                 console.SetCursorPosition(0, newY);
 
@@ -1134,9 +1135,10 @@ namespace Microsoft.PowerShell
             }
 
             console.Write(Prompt);
-            Singleton.InitialX = console.CursorLeft;
-            Singleton.InitialY = console.CursorTop;
-            Singleton.PreviousRender = InitialPrevRender;
+            _renderer.InitialX = console.CursorLeft;
+            _renderer.InitialY = console.CursorTop;
+            Renderer.RenderData val = Renderer.InitialPrevRender;
+            _renderer.PreviousRender = val;
 
             _renderer.Render();
             console.CursorVisible = true;

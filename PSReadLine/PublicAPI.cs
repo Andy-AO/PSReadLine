@@ -71,18 +71,18 @@ namespace Microsoft.PowerShell
         /// <param name="c">Character to insert</param>
         public static void Insert(char c)
         {
-            Singleton.SaveEditItem(EditItemInsertChar.Create(c, Singleton.Current));
+            Singleton.SaveEditItem(EditItemInsertChar.Create(c, _renderer.Current));
 
             // Use Append if possible because Insert at end makes StringBuilder quite slow.
-            if (Singleton.Current == Singleton.buffer.Length)
+            if (_renderer.Current == Singleton.buffer.Length)
             {
                 Singleton.buffer.Append(c);
             }
             else
             {
-                Singleton.buffer.Insert(Singleton.Current, c);
+                Singleton.buffer.Insert(_renderer.Current, c);
             }
-            Singleton.Current += 1;
+            _renderer.Current = _renderer.Current + 1;
             _renderer.Render();
         }
 
@@ -92,18 +92,18 @@ namespace Microsoft.PowerShell
         /// <param name="s">String to insert</param>
         public static void Insert(string s)
         {
-            Singleton.SaveEditItem(EditItemInsertString.Create(s, Singleton.Current));
+            Singleton.SaveEditItem(EditItemInsertString.Create(s, _renderer.Current));
 
             // Use Append if possible because Insert at end makes StringBuilder quite slow.
-            if (Singleton.Current == Singleton.buffer.Length)
+            if (_renderer.Current == Singleton.buffer.Length)
             {
                 Singleton.buffer.Append(s);
             }
             else
             {
-                Singleton.buffer.Insert(Singleton.Current, s);
+                Singleton.buffer.Insert(_renderer.Current, s);
             }
-            Singleton.Current += s.Length;
+            _renderer.Current = _renderer.Current + s.Length;
             _renderer.Render();
         }
 
@@ -150,11 +150,11 @@ namespace Microsoft.PowerShell
             {
                 Singleton.SaveEditItem(EditItemInsertString.Create(replacement, start));
                 Singleton.buffer.Insert(start, replacement);
-                Singleton.Current = start + replacement.Length;
+                _renderer.Current = start + replacement.Length;
             }
             else
             {
-                Singleton.Current = start;
+                _renderer.Current = start;
             }
 
             if (useEditGroup)
@@ -170,7 +170,7 @@ namespace Microsoft.PowerShell
         public static void GetBufferState(out string input, out int cursor)
         {
             input = Singleton.buffer.ToString();
-            cursor = Singleton.Current;
+            cursor = _renderer.Current;
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace Microsoft.PowerShell
             ast = Singleton.RLAst;
             tokens = Singleton.Tokens;
             parseErrors = Singleton.ParseErrors;
-            cursor = Singleton.Current;
+            cursor = _renderer.Current;
         }
 
         /// <summary>

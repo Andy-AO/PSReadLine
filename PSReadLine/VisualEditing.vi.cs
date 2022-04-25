@@ -88,8 +88,8 @@ namespace Microsoft.PowerShell
                 }
                 editedCommand = editedCommand.Replace(Environment.NewLine, "\n");
                 Replace(0, buffer.Length, editedCommand);
-                Current = buffer.Length;
-                if (_options.EditMode == EditMode.Vi) Current -= 1;
+                _renderer.Current = buffer.Length;
+                if (_options.EditMode == EditMode.Vi) _renderer.Current = _renderer.Current - 1;
                 _renderer.Render();
             }
         }

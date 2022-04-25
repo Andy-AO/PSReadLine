@@ -123,9 +123,9 @@ namespace Microsoft.PowerShell
                 Singleton._edits[Singleton._undoEditIndex - 1].Undo();
                 Singleton._undoEditIndex--;
 
-                if (Singleton._options.EditMode == EditMode.Vi && Singleton.Current >= Singleton.buffer.Length)
+                if (Singleton._options.EditMode == EditMode.Vi && _renderer.Current >= Singleton.buffer.Length)
                 {
-                    Singleton.Current = Math.Max(0, Singleton.buffer.Length + ViEndOfLineFactor);
+                    _renderer.Current = Math.Max(0, Singleton.buffer.Length + ViEndOfLineFactor);
                 }
                 _renderer.Render();
             }
@@ -182,13 +182,13 @@ namespace Microsoft.PowerShell
             {
                 Debug.Assert(Singleton.buffer[_insertStartPosition] == _insertedCharacter, "Character to undo is not what it should be");
                 Singleton.buffer.Remove(_insertStartPosition, 1);
-                Singleton.Current = _insertStartPosition;
+                _renderer.Current = _insertStartPosition;
             }
 
             public override void Redo()
             {
                 Singleton.buffer.Insert(_insertStartPosition, _insertedCharacter);
-                Singleton.Current++;
+                _renderer.Current++;
             }
         }
 
@@ -216,13 +216,13 @@ namespace Microsoft.PowerShell
                 Debug.Assert(Singleton.buffer.ToString(_insertStartPosition, _insertedString.Length).Equals(_insertedString),
                     "Character to undo is not what it should be");
                 Singleton.buffer.Remove(_insertStartPosition, _insertedString.Length);
-                Singleton.Current = _insertStartPosition;
+                _renderer.Current = _insertStartPosition;
             }
 
             public override void Redo()
             {
                 Singleton.buffer.Insert(_insertStartPosition, _insertedString);
-                Singleton.Current += _insertedString.Length;
+                _renderer.Current = _renderer.Current + _insertedString.Length;
             }
         }
 
@@ -248,7 +248,7 @@ namespace Microsoft.PowerShell
             public override void Undo()
             {
                 base.Undo();
-                Singleton.Current = _insertAnchor;
+                _renderer.Current = _insertAnchor;
             }
         }
 
@@ -289,7 +289,7 @@ namespace Microsoft.PowerShell
             public override void Undo()
             {
                 Singleton.buffer.Insert(_deleteStartPosition, _deletedString);
-                Singleton.Current = _moveCursorToEndWhenUndo
+                _renderer.Current = _moveCursorToEndWhenUndo
                     ? _deleteStartPosition + _deletedString.Length
                     : _deleteStartPosition;
             }
@@ -297,7 +297,7 @@ namespace Microsoft.PowerShell
             public override void Redo()
             {
                 Singleton.buffer.Remove(_deleteStartPosition, _deletedString.Length);
-                Singleton.Current = _deleteStartPosition;
+                _renderer.Current = _deleteStartPosition;
             }
         }
 
@@ -323,7 +323,7 @@ namespace Microsoft.PowerShell
             public override void Undo()
             {
                 base.Undo();
-                Singleton.Current = _deleteAnchor;
+                _renderer.Current = _deleteAnchor;
             }
         }
 

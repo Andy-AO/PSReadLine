@@ -83,7 +83,8 @@ namespace Microsoft.PowerShell
         public static void CancelLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             Singleton.ClearStatusMessage(false);
-            Singleton.Current = Singleton.buffer.Length;
+            int val = Singleton.buffer.Length;
+            _renderer.Current = val;
 
             using var _ = Singleton._Prediction.DisableScoped();
             _renderer.ForceRender();
@@ -91,7 +92,7 @@ namespace Microsoft.PowerShell
             Singleton.RLConsole.Write("\x1b[91m^C\x1b[0m");
 
             Singleton.buffer.Clear(); // Clear so we don't actually run the input
-            Singleton.Current = 0; // If Render is called, _current must be correct.
+            _renderer.Current = 0; // If Render is called, _current must be correct.
             Singleton._currentHistoryIndex = Singleton._history.Count;
             Singleton._inputAccepted = true;
         }
@@ -111,7 +112,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ForwardDeleteLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            ForwardDeleteImpl(GetEndOfLogicalLinePos(Singleton.Current) + 1, ForwardDeleteLine);
+            ForwardDeleteImpl(GetEndOfLogicalLinePos(_renderer.Current) + 1, ForwardDeleteLine);
         }
 
         /// <summary>
@@ -121,7 +122,7 @@ namespace Microsoft.PowerShell
         /// <param name="endPosition">0-based offset to one character past the end of the text.</param>
         private static void ForwardDeleteImpl(int endPosition, Action<ConsoleKeyInfo?, object> instigator)
         {
-            var current = Singleton.Current;
+            var current = _renderer.Current;
             var buffer = Singleton.buffer;
 
             if (buffer.Length > 0 && current < endPosition)
@@ -156,18 +157,18 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BackwardDeleteLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var position = GetBeginningOfLinePos(Singleton.Current);
+            var position = GetBeginningOfLinePos(_renderer.Current);
             BackwardDeleteSubstring(position, BackwardDeleteLine);
         }
 
         private static void BackwardDeleteSubstring(int position, Action<ConsoleKeyInfo?, object> instigator)
         {
-            if (Singleton.Current > position)
+            if (_renderer.Current > position)
             {
-                var count = Singleton.Current - position;
+                var count = _renderer.Current - position;
 
                 Singleton.RemoveTextToViRegister(position, count, instigator, arg: null, !InViEditMode());
-                Singleton.Current = position;
+                _renderer.Current = position;
                 _renderer.Render();
             }
         }
@@ -184,16 +185,16 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            if (Singleton.buffer.Length > 0 && Singleton.Current > 0)
+            if (Singleton.buffer.Length > 0 && _renderer.Current > 0)
             {
                 int qty = arg as int? ?? 1;
                 if (qty < 1) return; // Ignore useless counts
-                qty = Math.Min(qty, Singleton.Current);
+                qty = Math.Min(qty, _renderer.Current);
 
-                int startDeleteIndex = Singleton.Current - qty;
+                int startDeleteIndex = _renderer.Current - qty;
 
                 Singleton.RemoveTextToViRegister(startDeleteIndex, qty, BackwardDeleteChar, arg, !InViEditMode());
-                Singleton.Current = startDeleteIndex;
+                _renderer.Current = startDeleteIndex;
                 _renderer.Render();
             }
         }
@@ -209,14 +210,14 @@ namespace Microsoft.PowerShell
 
             if (buffer.Length > 0)
             {
-                if (Current < buffer.Length)
+                if (_renderer.Current < buffer.Length)
                 {
-                    qty = Math.Min(qty, Singleton.buffer.Length - Singleton.Current);
+                    qty = Math.Min(qty, Singleton.buffer.Length - _renderer.Current);
 
-                    RemoveTextToViRegister(Current, qty, DeleteChar, qty, !InViEditMode());
-                    if (Current >= buffer.Length)
+                    RemoveTextToViRegister(_renderer.Current, qty, DeleteChar, qty, !InViEditMode());
+                    if (_renderer.Current >= buffer.Length)
                     {
-                        Current = Math.Max(0, buffer.Length + ViEndOfLineFactor);
+                        _renderer.Current = Math.Max(0, buffer.Length + ViEndOfLineFactor);
                     }
                     _renderer.Render();
                 }
@@ -262,14 +263,14 @@ namespace Microsoft.PowerShell
             //
             // Also - if there was an emphasis, we want to clear that before accepting
             // and that requires rendering.
-            bool renderNeeded = EmphasisStart >= 0 || _queuedKeys.Count > 0;
+            bool renderNeeded = _renderer.EmphasisStart >= 0 || _queuedKeys.Count > 0;
 
-            EmphasisStart = -1;
+            _renderer.EmphasisStart = -1;
             _renderer.EmphasisLength = 0;
 
-            var insertionPoint = Current;
+            var insertionPoint = _renderer.Current;
             // Make sure cursor is at the end before writing the line
-            Current = buffer.Length;
+            _renderer.Current = buffer.Length;
 
             if (renderNeeded)
             {
@@ -309,7 +310,7 @@ namespace Microsoft.PowerShell
             }
 
             // Let public API set cursor to end of line incase end of line is end of buffer
-            SetCursorPosition(Current);
+            SetCursorPosition(_renderer.Current);
 
             if (_Prediction.ActiveView is PredictionListView listView)
             {
@@ -345,7 +346,7 @@ namespace Microsoft.PowerShell
                         var commandInfo = Singleton._engineIntrinsics.InvokeCommand.GetCommand(commandName, CommandTypes.All);
                         if (commandInfo == null && !Singleton.UnresolvedCommandCouldSucceed(commandName, _rootAst))
                         {
-                            Singleton.Current = commandAst.CommandElements[0].Extent.EndOffset;
+                            _renderer.Current = commandAst.CommandElements[0].Extent.EndOffset;
                             detectedError = string.Format(CultureInfo.CurrentCulture, PSReadLineResources.CommandNotFoundError, commandName);
                             return AstVisitAction.StopVisit;
                         }
@@ -384,7 +385,7 @@ namespace Microsoft.PowerShell
             if (ParseErrors != null && ParseErrors.Length > 0)
             {
                 // Move the cursor to the point of error
-                Current = ParseErrors[0].Extent.EndOffset;
+                _renderer.Current = ParseErrors[0].Extent.EndOffset;
                 return ParseErrors[0].Message;
             }
 
@@ -519,7 +520,7 @@ namespace Microsoft.PowerShell
         public static void InsertLineAbove(ConsoleKeyInfo? key = null, object arg = null)
         {
             // Move the current position to the beginning of the current line and only the current line.
-            Singleton.Current = GetBeginningOfLinePos(Singleton.Current);
+            _renderer.Current = GetBeginningOfLinePos(_renderer.Current);
             Insert('\n');
             PreviousLine();
         }
@@ -530,7 +531,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void InsertLineBelow(ConsoleKeyInfo? key = null, object arg = null)
         {
-            int i = Singleton.Current;
+            int i = _renderer.Current;
             for (; i < Singleton.buffer.Length; i++)
             {
                 if (Singleton.buffer[i] == '\n')
@@ -539,7 +540,7 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            Singleton.Current = i;
+            _renderer.Current = i;
 
             Insert('\n');
         }
