@@ -156,42 +156,6 @@ namespace Microsoft.PowerShell
 
             return false;
         }
-
-        [ExcludeFromCodeCoverage]
-        void IPSConsoleReadLineMockableMethods.Ding()
-        {
-            switch (Options.BellStyle)
-            {
-                case BellStyle.None:
-                    break;
-                case BellStyle.Audible:
-                    if (Options.DingDuration > 0)
-                    {
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        {
-                            Console.Beep(Options.DingTone, Options.DingDuration);
-                        }
-                        else
-                        {
-                            Console.Beep();
-                        }
-                    }
-
-                    break;
-                case BellStyle.Visual:
-                    // TODO: flash prompt? command line?
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Notify the user based on their preference for notification.
-        /// </summary>
-        public static void Ding()
-        {
-            Singleton._mockableMethods.Ding();
-        }
-
         private bool PromptYesOrNo(string s)
         {
             _statusLinePrompt = s;
