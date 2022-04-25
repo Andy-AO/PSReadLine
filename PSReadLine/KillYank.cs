@@ -73,7 +73,7 @@ namespace Microsoft.PowerShell
             SaveEditItem(EditItemDelete.Create(killText, start));
             buffer.Remove(start, length);
             Current = start;
-            Render();
+            _renderer.Render();
             if (_killCommandCount > 0)
             {
                 if (prepend)

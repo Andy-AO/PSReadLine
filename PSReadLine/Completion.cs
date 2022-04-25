@@ -934,7 +934,7 @@ namespace Microsoft.PowerShell
                         Current = completions.ReplacementIndex +
                                    FindUserCompletionTextPosition(menu.MenuItems[menu.CurrentSelection], userCompletionText) +
                                    userCompletionText.Length;
-                        Render();
+                        _renderer.Render();
                         Ding();
                     }
                     // ... if no - usual Tab behaviour
@@ -1092,7 +1092,7 @@ namespace Microsoft.PowerShell
                         // without render all key chords that just move cursor leave selection visible, but it can be wrong
                         if (!undo && !keepSelection)
                         {
-                            Render();
+                            _renderer.Render();
                         }
                         if (prependNextKey)
                         {
@@ -1119,7 +1119,7 @@ namespace Microsoft.PowerShell
                 // Pretend it never happened.
                 lastInsert.Undo();
                 firstDelete.Undo();
-                Render();
+                _renderer.Render();
             }
             else
             {

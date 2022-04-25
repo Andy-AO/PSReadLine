@@ -251,7 +251,7 @@ namespace Microsoft.PowerShell
                         beginningOfLinePos,
                         Math.Min(Singleton.Current, endOfLineCursorPos));
 
-                    Singleton.Render();
+                    _renderer.Render();
                 }
             }
         }
@@ -289,7 +289,7 @@ namespace Microsoft.PowerShell
             {
                 Singleton.Current = Math.Max(0, Singleton.buffer.Length - 1);
             }
-            Singleton.Render();
+            _renderer.Render();
         }
 
         private static void DeleteBackwardToEndPoint(object arg, int endPoint, Action<ConsoleKeyInfo?, object> instigator)
@@ -303,7 +303,7 @@ namespace Microsoft.PowerShell
                 arg);
 
             Singleton.Current = endPoint;
-            Singleton.Render();
+            _renderer.Render();
         }
 
         /// <summary>
@@ -647,7 +647,7 @@ namespace Microsoft.PowerShell
                 }
                 Singleton.MoveCursor(Math.Min(Singleton.Current + 1, Singleton.buffer.Length));
             }
-            Singleton.Render();
+            _renderer.Render();
         }
 
         /// <summary>
@@ -672,7 +672,7 @@ namespace Microsoft.PowerShell
             Singleton.SwapCharactersImpl(cursor);
 
             Singleton.MoveCursor(Math.Min(cursor + 1, cursorRightLimit));
-            Singleton.Render();
+            _renderer.Render();
         }
 
         private void SwapCharactersImpl(int cursor)
@@ -700,7 +700,7 @@ namespace Microsoft.PowerShell
                     arg);
 
                 Singleton.Current = i;
-                Singleton.Render();
+                _renderer.Render();
             }
             else
             {
@@ -731,7 +731,7 @@ namespace Microsoft.PowerShell
             }
 
             Singleton.Current = newCurrent;
-            Singleton.Render();
+            _renderer.Render();
         }
 
         /// <summary>
@@ -777,7 +777,7 @@ namespace Microsoft.PowerShell
             var newPosition = GetBeginningOfNthLinePos(previousLineIndex);
 
             Singleton.Current = newPosition;
-            Singleton.Render();
+            _renderer.Render();
         }
 
         /// <summary>
@@ -809,7 +809,7 @@ namespace Microsoft.PowerShell
                 var newCurrent = GetBeginningOfNthLinePos(startLineIndex);
 
                 Singleton.Current = newCurrent;
-                Singleton.Render();
+                _renderer.Render();
             }
         }
 
@@ -868,7 +868,7 @@ namespace Microsoft.PowerShell
                 arg);
 
             Singleton.Current = deletePoint;
-            Singleton.Render();
+            _renderer.Render();
         }
 
         /// <summary>
@@ -899,7 +899,7 @@ namespace Microsoft.PowerShell
                 arg);
 
             Singleton.Current = deletePoint;
-            Singleton.Render();
+            _renderer.Render();
         }
 
         /// <summary>
@@ -939,7 +939,7 @@ namespace Microsoft.PowerShell
                 action);
 
             Singleton.Current = first;
-            Singleton.Render();
+            _renderer.Render();
         }
 
 
@@ -994,7 +994,7 @@ namespace Microsoft.PowerShell
         {
             _statusLinePrompt = "find: ";
             var argBuffer = _statusBuffer;
-            Render(); // Render prompt
+            _renderer.Render(); // Render prompt
 
             while (true)
             {
@@ -1015,19 +1015,19 @@ namespace Microsoft.PowerShell
                     if (argBuffer.Length > 0)
                     {
                         argBuffer.Remove(argBuffer.Length - 1, 1);
-                        Render(); // Render prompt
+                        _renderer.Render(); // Render prompt
                         continue;
                     }
                     break;
                 }
                 argBuffer.Append(nextKey.KeyChar);
-                Render(); // Render prompt
+                _renderer.Render(); // Render prompt
             }
 
             // Remove our status line
             argBuffer.Clear();
             _statusLinePrompt = null;
-            Render(); // Render prompt
+            _renderer.Render(); // Render prompt
         }
 
         /// <summary>
@@ -1123,7 +1123,7 @@ namespace Microsoft.PowerShell
                 while (IsNumeric(secondKey))
                 {
                     argBuffer.Append(secondKey.KeyChar);
-                    Singleton.Render();
+                    _renderer.Render();
                     secondKey = ReadKey();
                 }
                 int numericArg = int.Parse(argBuffer.ToString());
@@ -1185,7 +1185,7 @@ namespace Microsoft.PowerShell
                 sawDigit = true;
             }
 
-            Singleton.Render(); // Render prompt
+            _renderer.Render(); // Render prompt
             while (true)
             {
                 var nextKey = ReadKey();
@@ -1201,7 +1201,7 @@ namespace Microsoft.PowerShell
                         {
                             argBuffer.Insert(0, '-');
                         }
-                        Singleton.Render(); // Render prompt
+                        _renderer.Render(); // Render prompt
                         continue;
                     }
 
@@ -1215,7 +1215,7 @@ namespace Microsoft.PowerShell
                         }
                         sawDigit = true;
                         argBuffer.Append(nextKey.KeyChar);
-                        Singleton.Render(); // Render prompt
+                        _renderer.Render(); // Render prompt
                         continue;
                     }
                 }
@@ -1258,7 +1258,7 @@ namespace Microsoft.PowerShell
             Singleton.buffer.Insert(Singleton.Current, '\n');
             //_singleton._current = Math.Max(0, _singleton._current - 1);
             Singleton.SaveEditItem(EditItemInsertChar.Create('\n', Singleton.Current));
-            Singleton.Render();
+            _renderer.Render();
             ViInsertMode();
         }
 
@@ -1303,7 +1303,7 @@ namespace Microsoft.PowerShell
                 Singleton.buffer.Insert(insertPoint, '\n');
             }
             Singleton.SaveEditItem(EditItemInsertChar.Create('\n', insertPoint));
-            Singleton.Render();
+            _renderer.Render();
             ViInsertWithAppend();
         }
 
@@ -1355,7 +1355,7 @@ namespace Microsoft.PowerShell
 
                 Singleton.SaveEditItem(EditItemInsertChar.Create(' ', Singleton.Current));
                 Singleton._groupUndoHelper.EndGroup();
-                Singleton.Render();
+                _renderer.Render();
             }
         }
     }

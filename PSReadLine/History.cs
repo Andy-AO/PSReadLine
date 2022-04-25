@@ -736,7 +736,7 @@ namespace Microsoft.PowerShell
             }
 
             using var _ = _Prediction.DisableScoped();
-            Render();
+            _renderer.Render();
         }
 
         private void SaveCurrentLine()
@@ -1017,7 +1017,7 @@ namespace Microsoft.PowerShell
             EmphasisStart = -1;
             EmphasisLength = 0;
             _statusLinePrompt = direction > 0 ? _failedForwardISearchPrompt : _failedBackwardISearchPrompt;
-            Render();
+            _renderer.Render();
         }
 
         private void InteractiveHistorySearchLoop(int direction)
@@ -1083,7 +1083,7 @@ namespace Microsoft.PowerShell
                             Current = startIndex;
                             EmphasisStart = startIndex;
                             EmphasisLength = toMatch.Length;
-                            Render();
+                            _renderer.Render();
                         }
                     }
                     else
@@ -1124,7 +1124,7 @@ namespace Microsoft.PowerShell
                         Current = startIndex;
                         EmphasisStart = startIndex;
                         EmphasisLength = toMatch.Length;
-                        Render();
+                        _renderer.Render();
                     }
                     searchPositions.Push(_currentHistoryIndex);
                 }
@@ -1140,7 +1140,7 @@ namespace Microsoft.PowerShell
             _statusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
             _statusBuffer.Append("_");
 
-            Render(); // Render prompt
+            _renderer.Render(); // Render prompt
             InteractiveHistorySearchLoop(direction);
 
             EmphasisStart = -1;

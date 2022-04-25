@@ -55,7 +55,7 @@ namespace Microsoft.PowerShell
                     Singleton._edits[Singleton._undoEditIndex - 1].Undo();
                     Singleton._undoEditIndex--;
                 }
-                Singleton.Render();
+                _renderer.Render();
             }
             else
             {

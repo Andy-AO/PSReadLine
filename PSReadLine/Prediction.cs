@@ -181,7 +181,7 @@ namespace Microsoft.PowerShell
                 Singleton.buffer.Append(selectedItemText);
                 Singleton.Current = selectedItemText.Length;
 
-                Singleton.Render();
+                _renderer.Render();
                 return;
             }
 
@@ -202,7 +202,7 @@ namespace Microsoft.PowerShell
             if (useEditGroup)
             {
                 Singleton.EndEditGroup(); // Instigator is needed for VI undo
-                Singleton.Render();
+                _renderer.Render();
             }
         }
 
@@ -217,7 +217,7 @@ namespace Microsoft.PowerShell
 
             Singleton._options.PredictionViewStyle = style;
             Singleton._Prediction.SetViewStyle(style);
-            Singleton.Render();
+            _renderer.Render();
         }
 
         /// <summary>
@@ -397,7 +397,7 @@ namespace Microsoft.PowerShell
 
                     retValue = true;
                     using var _ = DisableScoped();
-                    _singleton.Render();
+                    _renderer.Render();
                 }
 
                 return retValue;

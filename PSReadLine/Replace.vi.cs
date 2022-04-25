@@ -41,7 +41,7 @@ namespace Microsoft.PowerShell
                             Singleton.buffer.Remove(Singleton.Current - 1, 1);
                         }
                         Singleton.Current--;
-                        Singleton.Render();
+                        _renderer.Render();
                     }
                 }
                 else
@@ -56,7 +56,7 @@ namespace Microsoft.PowerShell
                         Singleton.buffer[Singleton.Current] = nextKey.KeyChar;
                     }
                     Singleton.Current++;
-                    Singleton.Render();
+                    _renderer.Render();
                 }
                 nextKey = ReadKey();
             }
@@ -243,7 +243,7 @@ namespace Microsoft.PowerShell
                 Singleton.EndEditGroup();
 
                 Singleton.buffer[Singleton.Current] = nextKey.KeyChar;
-                Singleton.Render();
+                _renderer.Render();
             }
             else
             {

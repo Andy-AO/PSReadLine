@@ -40,8 +40,8 @@ namespace Microsoft.PowerShell
 
         internal static string Spaces(int cnt)
         {
-            return cnt < _spaces.Length
-                ? (_spaces[cnt] ?? (_spaces[cnt] = new string(' ', cnt)))
+            return cnt < Renderer.SpacesArr.Length
+                ? (Renderer.SpacesArr[cnt] ?? (Renderer.SpacesArr[cnt] = new string(' ', cnt)))
                 : new string(' ', cnt);
         }
 

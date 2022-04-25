@@ -3,11 +3,9 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 --********************************************************************/
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Text;
 using Microsoft.PowerShell.Internal;
 using static Microsoft.PowerShell.Renderer;
 
@@ -16,10 +14,6 @@ namespace Microsoft.PowerShell
     public partial class PSConsoleReadLine
     {
         private static readonly Renderer _renderer = Renderer.Singleton;
-
-        private List<StringBuilder> ConsoleBufferLines => _renderer.ConsoleBufferLines;
-
-        private static string[] _spaces => SpacesArr;
 
         private RenderData PreviousRender
         {
@@ -39,12 +33,6 @@ namespace Microsoft.PowerShell
         {
             get => _renderer.InitialY;
             set => _renderer.InitialY = value;
-        }
-
-        private bool WaitingToRender
-        {
-            get => _renderer.WaitingToRender;
-            set => _renderer.WaitingToRender = value;
         }
 
         private int Current
@@ -73,28 +61,13 @@ namespace Microsoft.PowerShell
             // In those cases, the buffer text is unchanged, and thus we can skip querying
             // for prediction during the rendering, but instead, use the existing results.
             using var _ = _Prediction.PauseQuery();
-            Render();
-        }
-
-        private void Render()
-        {
-            // If there are a bunch of keys queued up, skip rendering if we've rendered
-            // recently.
-            if (_queuedKeys.Count > 10 && (_renderer._lastRenderTime.ElapsedMilliseconds < 50))
-            {
-                // We won't render, but most likely the tokens will be different, so make
-                // sure we don't use old tokens, also allow garbage to get collected.
-                WaitingToRender = true;
-                return;
-            }
-
-            _renderer.ForceRender();
+            _renderer.Render();
         }
 
         private void MoveCursor(int newCursor)
         {
             // Only update screen cursor if the buffer is fully rendered.
-            if (!WaitingToRender)
+            if (!_renderer.WaitingToRender)
             {
                 // In case the buffer was resized
                 _renderer.RecomputeInitialCoords();
@@ -222,12 +195,12 @@ namespace Microsoft.PowerShell
         private bool PromptYesOrNo(string s)
         {
             _statusLinePrompt = s;
-            Render();
+            _renderer.Render();
 
             var key = ReadKey();
 
             _statusLinePrompt = null;
-            Render();
+            _renderer.Render();
             return key.KeyStr.Equals("y", StringComparison.OrdinalIgnoreCase);
         }
 

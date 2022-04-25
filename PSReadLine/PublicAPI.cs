@@ -83,7 +83,7 @@ namespace Microsoft.PowerShell
                 Singleton.buffer.Insert(Singleton.Current, c);
             }
             Singleton.Current += 1;
-            Singleton.Render();
+            _renderer.Render();
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Microsoft.PowerShell
                 Singleton.buffer.Insert(Singleton.Current, s);
             }
             Singleton.Current += s.Length;
-            Singleton.Render();
+            _renderer.Render();
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Microsoft.PowerShell
             if (useEditGroup)
             {
                 Singleton.EndEditGroup(instigator, instigatorArg); // Instigator is needed for VI undo
-                Singleton.Render();
+                _renderer.Render();
             }
         }
 

@@ -44,13 +44,13 @@ namespace Microsoft.PowerShell
         private void PasteAfterImpl()
         {
             Current = _viRegister.PasteAfter(buffer, Current);
-            Render();
+            _renderer.Render();
         }
 
         private void PasteBeforeImpl()
         {
             Current = _viRegister.PasteBefore(buffer, Current);
-            Render();
+            _renderer.Render();
         }
 
         private void SaveToClipboard(int startIndex, int length)

@@ -90,7 +90,7 @@ namespace Microsoft.PowerShell
                 Replace(0, buffer.Length, editedCommand);
                 Current = buffer.Length;
                 if (_options.EditMode == EditMode.Vi) Current -= 1;
-                Render();
+                _renderer.Render();
             }
         }
 

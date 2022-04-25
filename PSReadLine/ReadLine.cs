@@ -113,7 +113,7 @@ namespace Microsoft.PowerShell
         private int _undoEditIndex;
         internal int _mark;
         private bool _inputAccepted;
-        private readonly Queue<PSKeyInfo> _queuedKeys;
+        internal readonly Queue<PSKeyInfo> _queuedKeys;
         private static readonly Stopwatch _readkeyStopwatch = new Stopwatch();
 
         // Save a fixed # of keys so we can reconstruct a repro after a crash
@@ -307,7 +307,7 @@ namespace Microsoft.PowerShell
                             if (y != console.CursorTop)
                             {
                                 Singleton.InitialY = console.CursorTop;
-                                Singleton.Render();
+                                _renderer.Render();
                             }
                         }
                     }
@@ -340,7 +340,7 @@ namespace Microsoft.PowerShell
                 Singleton._getNextHistoryIndex = Singleton._history.Count;
                 Singleton.Current = 0;
                 Singleton.buffer.Clear();
-                Singleton.Render();
+                _renderer.Render();
                 throw new OperationCanceledException();
             }
 
@@ -1103,7 +1103,7 @@ namespace Microsoft.PowerShell
             Singleton.InitialY = console.CursorTop;
             Singleton.PreviousRender = InitialPrevRender;
 
-            Singleton.Render();
+            _renderer.Render();
             console.CursorVisible = true;
         }
 

@@ -127,7 +127,7 @@ namespace Microsoft.PowerShell
                 {
                     Singleton.Current = Math.Max(0, Singleton.buffer.Length + ViEndOfLineFactor);
                 }
-                Singleton.Render();
+                _renderer.Render();
             }
             else
             {
@@ -144,7 +144,7 @@ namespace Microsoft.PowerShell
             {
                 Singleton._edits[Singleton._undoEditIndex].Redo();
                 Singleton._undoEditIndex++;
-                Singleton.Render();
+                _renderer.Render();
             }
             else
             {

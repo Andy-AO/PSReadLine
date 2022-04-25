@@ -11,6 +11,20 @@ namespace Microsoft.PowerShell
 {
     internal class Renderer
     {
+        internal void Render()
+        {
+            // If there are a bunch of keys queued up, skip rendering if we've rendered
+            // recently.
+            if (_rl._queuedKeys.Count > 10 && (_lastRenderTime.ElapsedMilliseconds < 50))
+            {
+                // We won't render, but most likely the tokens will be different, so make
+                // sure we don't use old tokens, also allow garbage to get collected.
+                WaitingToRender = true;
+                return;
+            }
+            ForceRender();
+        }
+
         internal string GetTokenColor(Token token)
         {
             if ((token.TokenFlags & TokenFlags.CommandName) != 0)

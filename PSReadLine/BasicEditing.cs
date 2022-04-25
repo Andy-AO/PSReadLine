@@ -73,7 +73,7 @@ namespace Microsoft.PowerShell
                 Singleton._edits[Singleton._undoEditIndex - 1].Undo();
                 Singleton._undoEditIndex--;
             }
-            Singleton.Render();
+            _renderer.Render();
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Microsoft.PowerShell
                         !InViEditMode()));
 
                 buffer.Remove(current, length);
-                Singleton.Render();
+                _renderer.Render();
             }
         }
 
@@ -168,7 +168,7 @@ namespace Microsoft.PowerShell
 
                 Singleton.RemoveTextToViRegister(position, count, instigator, arg: null, !InViEditMode());
                 Singleton.Current = position;
-                Singleton.Render();
+                _renderer.Render();
             }
         }
 
@@ -194,7 +194,7 @@ namespace Microsoft.PowerShell
 
                 Singleton.RemoveTextToViRegister(startDeleteIndex, qty, BackwardDeleteChar, arg, !InViEditMode());
                 Singleton.Current = startDeleteIndex;
-                Singleton.Render();
+                _renderer.Render();
             }
         }
 
@@ -218,7 +218,7 @@ namespace Microsoft.PowerShell
                     {
                         Current = Math.Max(0, buffer.Length + ViEndOfLineFactor);
                     }
-                    Render();
+                    _renderer.Render();
                 }
             }
             else if (orExit)
@@ -298,7 +298,7 @@ namespace Microsoft.PowerShell
                     _statusLinePrompt = "";
                     _statusBuffer.Append(errorMessage);
                     _statusIsErrorMessage = true;
-                    Render();
+                    _renderer.Render();
                     return false;
                 }
             }
