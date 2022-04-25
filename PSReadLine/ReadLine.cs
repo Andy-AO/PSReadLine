@@ -127,7 +127,7 @@ namespace Microsoft.PowerShell
             _statusIsErrorMessage = false;
             if (render)
             {
-                RenderWithPredictionQueryPaused();
+                _renderer.RenderWithPredictionQueryPaused();
             }
         }
 
@@ -637,8 +637,8 @@ namespace Microsoft.PowerShell
                     if (_searchHistoryCommandCount > 0)
                     {
                         EmphasisStart = -1;
-                        EmphasisLength = 0;
-                        RenderWithPredictionQueryPaused();
+                        _renderer.EmphasisLength = 0;
+                        _renderer.RenderWithPredictionQueryPaused();
                     }
 
                     _searchHistoryCommandCount = 0;
@@ -665,7 +665,7 @@ namespace Microsoft.PowerShell
                 if (visualSelectionCommandCount == _visualSelectionCommandCount && _visualSelectionCommandCount > 0)
                 {
                     _visualSelectionCommandCount = 0;
-                    RenderWithPredictionQueryPaused(); // Clears the visual selection
+                    _renderer.RenderWithPredictionQueryPaused(); // Clears the visual selection
                 }
 
                 if (moveToLineCommandCount == _moveToLineCommandCount)
@@ -820,7 +820,7 @@ namespace Microsoft.PowerShell
             Current = 0;
             _mark = 0;
             EmphasisStart = -1;
-            EmphasisLength = 0;
+            _renderer.EmphasisLength = 0;
             _inputAccepted = false;
             InitialX = RLConsole.CursorLeft;
             InitialY = RLConsole.CursorTop;
@@ -1038,7 +1038,7 @@ namespace Microsoft.PowerShell
                 sawDigit = true;
             }
 
-            Singleton.RenderWithPredictionQueryPaused(); // Render prompt
+            _renderer.RenderWithPredictionQueryPaused(); // Render prompt
             while (true)
             {
                 var nextKey = ReadKey();
@@ -1057,7 +1057,7 @@ namespace Microsoft.PowerShell
                                 argBuffer.Insert(0, '-');
                             }
 
-                            Singleton.RenderWithPredictionQueryPaused(); // Render prompt
+                            _renderer.RenderWithPredictionQueryPaused(); // Render prompt
                             continue;
                         }
 
@@ -1072,7 +1072,7 @@ namespace Microsoft.PowerShell
 
                             sawDigit = true;
                             argBuffer.Append(nextKey.KeyChar);
-                            Singleton.RenderWithPredictionQueryPaused(); // Render prompt
+                            _renderer.RenderWithPredictionQueryPaused(); // Render prompt
                             continue;
                         }
                     }

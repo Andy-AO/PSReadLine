@@ -12,13 +12,13 @@ namespace Microsoft.PowerShell
         /// <param name="arg" />
         public void MoveToFirstLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (!LineIsMultiLine())
+            if (!_renderer.LineIsMultiLine())
             {
                 Ding(key, arg);
                 return;
             }
 
-            var currentLine =  GetLogicalLineNumber();
+            var currentLine =  _renderer.GetLogicalLineNumber();
 
             int offset = Singleton.Current;
             var pos = _renderer.ConvertOffsetToPoint(offset);
@@ -39,14 +39,14 @@ namespace Microsoft.PowerShell
         /// <param name="arg" />
         public void MoveToLastLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var count = GetLogicalLineCount();
+            var count = _renderer.GetLogicalLineCount();
             if (count == 1)
             {
                 Ding(key, arg);
                 return;
             }
 
-            var currentLine = GetLogicalLineNumber();
+            var currentLine = _renderer.GetLogicalLineNumber();
 
             int offset = Singleton.Current;
             var pos = _renderer.ConvertOffsetToPoint(offset);
@@ -101,7 +101,7 @@ namespace Microsoft.PowerShell
 
             int targetLineOffset;
 
-            var currentLineIndex = Singleton.GetLogicalLineNumber() - 1;
+            var currentLineIndex = _renderer.GetLogicalLineNumber() - 1;
 
             if (lineOffset < 0)
             {
@@ -109,7 +109,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                var lastLineIndex = Singleton.GetLogicalLineCount() - 1;
+                var lastLineIndex = _renderer.GetLogicalLineCount() - 1;
                 targetLineOffset = Math.Min(lastLineIndex, currentLineIndex + lineOffset);
             }
 

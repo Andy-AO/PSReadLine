@@ -761,7 +761,7 @@ namespace Microsoft.PowerShell
 
             if (completions.CompletionMatches.Count >= _options.CompletionQueryItems)
             {
-                if (!PromptYesOrNo(string.Format(CultureInfo.CurrentCulture, PSReadLineResources.DisplayAllPossibilities, completions.CompletionMatches.Count)))
+                if (!_renderer.PromptYesOrNo(string.Format(CultureInfo.CurrentCulture, PSReadLineResources.DisplayAllPossibilities, completions.CompletionMatches.Count)))
                 {
                     return;
                 }

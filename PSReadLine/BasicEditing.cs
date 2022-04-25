@@ -265,7 +265,7 @@ namespace Microsoft.PowerShell
             bool renderNeeded = EmphasisStart >= 0 || _queuedKeys.Count > 0;
 
             EmphasisStart = -1;
-            EmphasisLength = 0;
+            _renderer.EmphasisLength = 0;
 
             var insertionPoint = Current;
             // Make sure cursor is at the end before writing the line

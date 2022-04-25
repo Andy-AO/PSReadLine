@@ -30,7 +30,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private static int GetBeginningOfNthLinePos(int lineIndex)
         {
-            System.Diagnostics.Debug.Assert(lineIndex >= 0 || lineIndex < Singleton.GetLogicalLineCount());
+            System.Diagnostics.Debug.Assert(lineIndex >= 0 || lineIndex < _renderer.GetLogicalLineCount());
 
             var nth = 0;
             var index = 0;

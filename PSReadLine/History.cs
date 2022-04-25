@@ -757,7 +757,7 @@ namespace Microsoft.PowerShell
 
         private void HistoryRecall(int direction)
         {
-            if (_recallHistoryCommandCount == 0 && LineIsMultiLine())
+            if (_recallHistoryCommandCount == 0 && _renderer.LineIsMultiLine())
             {
                 MoveToLine(direction);
                 return;
@@ -852,7 +852,7 @@ namespace Microsoft.PowerShell
         {
             if (_searchHistoryCommandCount == 0)
             {
-                if (LineIsMultiLine())
+                if (_renderer.LineIsMultiLine())
                 {
                     MoveToLine(direction);
                     return;
@@ -860,7 +860,7 @@ namespace Microsoft.PowerShell
 
                 _searchHistoryPrefix = buffer.ToString(0, Current);
                 EmphasisStart = 0;
-                EmphasisLength = Current;
+                _renderer.EmphasisLength = Current;
                 if (Options.HistoryNoDuplicates)
                 {
                     _hashedHistory = new Dictionary<string, int>();
@@ -910,7 +910,7 @@ namespace Microsoft.PowerShell
             {
                 // Set '_current' back to where it was when starting the first search, because
                 // it might be changed during the rendering of the last matching history command.
-                Current = EmphasisLength;
+                Current = _renderer.EmphasisLength;
                 _currentHistoryIndex = newHistoryIndex;
                 var moveCursor = InViCommandMode()
                     ? HistoryMoveCursor.ToBeginning
@@ -997,7 +997,7 @@ namespace Microsoft.PowerShell
                     _statusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
                     Current = startIndex;
                     EmphasisStart = startIndex;
-                    EmphasisLength = toMatch.Length;
+                    _renderer.EmphasisLength = toMatch.Length;
                     _currentHistoryIndex = searchFromPoint;
                     var moveCursor = Options.HistorySearchCursorMovesToEnd
                         ? HistoryMoveCursor.ToEnd
@@ -1015,7 +1015,7 @@ namespace Microsoft.PowerShell
                 searchFromPoint = _history.Count;
 
             EmphasisStart = -1;
-            EmphasisLength = 0;
+            _renderer.EmphasisLength = 0;
             _statusLinePrompt = direction > 0 ? _failedForwardISearchPrompt : _failedBackwardISearchPrompt;
             _renderer.Render();
         }
@@ -1082,7 +1082,7 @@ namespace Microsoft.PowerShell
                             _statusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
                             Current = startIndex;
                             EmphasisStart = startIndex;
-                            EmphasisLength = toMatch.Length;
+                            _renderer.EmphasisLength = toMatch.Length;
                             _renderer.Render();
                         }
                     }
@@ -1123,7 +1123,7 @@ namespace Microsoft.PowerShell
                     {
                         Current = startIndex;
                         EmphasisStart = startIndex;
-                        EmphasisLength = toMatch.Length;
+                        _renderer.EmphasisLength = toMatch.Length;
                         _renderer.Render();
                     }
                     searchPositions.Push(_currentHistoryIndex);
@@ -1144,7 +1144,7 @@ namespace Microsoft.PowerShell
             InteractiveHistorySearchLoop(direction);
 
             EmphasisStart = -1;
-            EmphasisLength = 0;
+            _renderer.EmphasisLength = 0;
 
             // Remove our status line, this will render
             ClearStatusMessage(render: true);

@@ -12,6 +12,70 @@ namespace Microsoft.PowerShell
 {
     internal class Renderer
     {
+        internal void RenderWithPredictionQueryPaused()
+        {
+            // Sometimes we need to re-render the buffer to show status line, or to clear
+            // the visual selection, or to clear the visual emphasis.
+            // In those cases, the buffer text is unchanged, and thus we can skip querying
+            // for prediction during the rendering, but instead, use the existing results.
+            using var _ = _rl._Prediction.PauseQuery();
+            Render();
+        }
+        /// <summary>
+        /// Returns the number of logical lines in a multi-line buffer.
+        /// When rendering, a logical line may span multiple physical lines.
+        /// </summary>
+
+        internal int GetLogicalLineNumber()
+        {
+            var current = Current;
+            var lineNumber = 1;
+
+            for (int i = 0; i < current; i++)
+            {
+                if (_rl.buffer[i] == '\n')
+                {
+                    lineNumber++;
+                }
+            }
+
+            return lineNumber;
+        }
+        internal int GetLogicalLineCount()
+        {
+            var count = 1;
+
+            for (int i = 0; i < _rl.buffer.Length; i++)
+            {
+                if (_rl.buffer[i] == '\n')
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+        internal bool LineIsMultiLine()
+        {
+            for (int i = 0; i < _rl.buffer.Length; i++)
+            {
+                if (_rl.buffer[i] == '\n')
+                    return true;
+            }
+
+            return false;
+        }
+        internal bool PromptYesOrNo(string s)
+        {
+            _rl._statusLinePrompt = s;
+            Render();
+
+            var key = RL.ReadKey();
+
+            _rl._statusLinePrompt = null;
+            Render();
+            return key.KeyStr.Equals("y", StringComparison.OrdinalIgnoreCase);
+        }
         internal void MoveCursor(int newCursor)
         {
             // Only update screen cursor if the buffer is fully rendered.

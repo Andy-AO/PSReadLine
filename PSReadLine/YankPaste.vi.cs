@@ -106,7 +106,7 @@ namespace Microsoft.PowerShell
         public static void ViYankLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             TryGetArgAsInt(arg, out var lineCount, 1);
-            var lineIndex = Singleton.GetLogicalLineNumber() - 1;
+            var lineIndex = _renderer.GetLogicalLineNumber() - 1;
             Singleton.SaveLinesToClipboard(lineIndex, lineCount);
         }
 

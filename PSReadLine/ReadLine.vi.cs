@@ -220,8 +220,8 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            var lineCount = Singleton.GetLogicalLineCount();
-            var lineIndex = Singleton.GetLogicalLineNumber() - 1;
+            var lineCount = _renderer.GetLogicalLineCount();
+            var lineIndex = _renderer.GetLogicalLineNumber() - 1;
 
             if (TryGetArgAsInt(arg, out var requestedLineCount, 1))
             {
@@ -713,8 +713,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void DeleteLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var lineCount = Singleton.GetLogicalLineCount();
-            var lineIndex = Singleton.GetLogicalLineNumber() - 1;
+            var lineCount = _renderer.GetLogicalLineCount();
+            var lineIndex = _renderer.GetLogicalLineNumber() - 1;
 
             TryGetArgAsInt(arg, out var requestedLineCount, 1);
 
@@ -767,8 +767,8 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void DeleteEndOfBuffer(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var lineIndex = Singleton.GetLogicalLineNumber() - 1;
-            var lineCount = Singleton.GetLogicalLineCount() - lineIndex;
+            var lineIndex = _renderer.GetLogicalLineNumber() - 1;
+            var lineCount = _renderer.GetLogicalLineCount() - lineIndex;
 
             DeleteLineImpl(lineIndex, lineCount);
 
@@ -798,14 +798,14 @@ namespace Microsoft.PowerShell
         {
             if (TryGetArgAsInt(arg, out int requestedLineCount, 1))
             {
-                var currentLineIndex = Singleton.GetLogicalLineNumber() - 1;
+                var currentLineIndex = _renderer.GetLogicalLineNumber() - 1;
                 var startLineIndex = Math.Max(0, currentLineIndex - requestedLineCount);
 
                 DeleteLineImpl(startLineIndex, currentLineIndex - startLineIndex + 1);
 
                 // go the beginning of the line at index 'startLineIndex'
                 // or at the beginning of the last line
-                startLineIndex = Math.Min(startLineIndex, Singleton.GetLogicalLineCount() - 1);
+                startLineIndex = Math.Min(startLineIndex, _renderer.GetLogicalLineCount() - 1);
                 var newCurrent = GetBeginningOfNthLinePos(startLineIndex);
 
                 Singleton.Current = newCurrent;
@@ -820,14 +820,14 @@ namespace Microsoft.PowerShell
         {
             if (TryGetArgAsInt(arg, out var requestedLineNumber, 1))
             {
-                var currentLineIndex = Singleton.GetLogicalLineNumber() - 1;
+                var currentLineIndex = _renderer.GetLogicalLineNumber() - 1;
                 var requestedLineIndex = requestedLineNumber - 1;
                 if (requestedLineIndex < 0)
                 {
                     requestedLineIndex = 0;
                 }
 
-                var logicalLineCount = Singleton.GetLogicalLineCount();
+                var logicalLineCount = _renderer.GetLogicalLineCount();
                 if (requestedLineIndex >= logicalLineCount)
                 {
                     requestedLineIndex = logicalLineCount - 1;
