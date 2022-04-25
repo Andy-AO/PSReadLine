@@ -621,7 +621,7 @@ namespace Microsoft.PowerShell
         {
             var buffer = new StringBuilder();
             var boundKeys = GetKeyHandlers(includeBound: true, includeUnbound: false);
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
             foreach (var group in boundKeys.GroupBy(k => k.Group).OrderBy(k => k.Key))
             {
                 var groupDescription = PowerShell.KeyHandler.GetGroupingDescription(group.Key);
@@ -653,12 +653,13 @@ namespace Microsoft.PowerShell
             }
 
             // Don't overwrite any of the line - so move to first line after the end of our buffer.
-            var point = Singleton.ConvertOffsetToPoint(Singleton._buffer.Length);
+            int offset = Singleton.buffer.Length;
+            var point = _renderer.ConvertOffsetToPoint(offset);
             console.SetCursorPosition(point.X, point.Y);
             console.Write("\n");
 
             console.WriteLine(buffer.ToString());
-            InvokePrompt(key: null, arg: Singleton._console.CursorTop);
+            InvokePrompt(key: null, arg: Singleton.RLConsole.CursorTop);
         }
 
         /// <summary>
@@ -708,9 +709,10 @@ namespace Microsoft.PowerShell
 
             Singleton.ClearStatusMessage(render: false);
 
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
             // Don't overwrite any of the line - so move to first line after the end of our buffer.
-            var point = Singleton.ConvertOffsetToPoint(Singleton._buffer.Length);
+            int offset = Singleton.buffer.Length;
+            var point = _renderer.ConvertOffsetToPoint(offset);
             console.SetCursorPosition(point.X, point.Y);
             console.Write("\n");
 

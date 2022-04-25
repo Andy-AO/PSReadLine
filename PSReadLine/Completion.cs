@@ -288,7 +288,7 @@ namespace Microsoft.PowerShell
                         ps = System.Management.Automation.PowerShell.Create();
                         ps.Runspace = _runspace;
                     }
-                    _tabCompletions = _mockableMethods.CompleteInput(_buffer.ToString(), Current, null, ps);
+                    _tabCompletions = _mockableMethods.CompleteInput(buffer.ToString(), Current, null, ps);
 
                     if (_tabCompletions.CompletionMatches.Count == 0) return null;
 
@@ -296,8 +296,8 @@ namespace Microsoft.PowerShell
                     // the replacement, we'll ignore the completions.
                     var start = _tabCompletions.ReplacementIndex;
                     var length = _tabCompletions.ReplacementLength;
-                    if (start < 0 || start > Singleton._buffer.Length) return null;
-                    if (length < 0 || length > (Singleton._buffer.Length - start)) return null;
+                    if (start < 0 || start > Singleton.buffer.Length) return null;
+                    if (length < 0 || length > (Singleton.buffer.Length - start)) return null;
 
                     if (_tabCompletions.CompletionMatches.Count > 1)
                     {
@@ -321,9 +321,9 @@ namespace Microsoft.PowerShell
                     // GetCompletions could scroll the screen, e.g. via Write-Progress. For example,
                     // cd <TAB> under the CloudShell Azure drive will show the progress bar while fetching data.
                     // We need to update the _initialY in case the current cursor postion has changed.
-                    if (Singleton.InitialY > _console.CursorTop)
+                    if (Singleton.InitialY > RLConsole.CursorTop)
                     {
-                        Singleton.InitialY = _console.CursorTop;
+                        Singleton.InitialY = RLConsole.CursorTop;
                     }
                 }
             }
@@ -437,7 +437,7 @@ namespace Microsoft.PowerShell
 
             public void DrawMenu(Menu previousMenu, bool menuSelect)
             {
-                IConsole console = Singleton._console;
+                IConsole console = Singleton.RLConsole;
 
                 if (menuSelect)
                 {
@@ -538,7 +538,7 @@ namespace Microsoft.PowerShell
 
             public void UpdateMenuSelection(int selectedItem, bool select, bool showTooltips, string toolTipColor)
             {
-                var console = Singleton._console;
+                var console = Singleton.RLConsole;
                 var menuItem = MenuItems[selectedItem];
                 var listItem = menuItem.ListItemText;
 
@@ -694,8 +694,8 @@ namespace Microsoft.PowerShell
 
         private Menu CreateCompletionMenu(Collection<CompletionResult> matches)
         {
-            var bufferWidth = _console.BufferWidth;
-            var colWidth = Math.Min(matches.Max(c => LengthInBufferCells(c.ListItemText)) + 2, bufferWidth);
+            var bufferWidth = RLConsole.BufferWidth;
+            var colWidth = Math.Min(matches.Max(c => _renderer.LengthInBufferCells(c.ListItemText)) + 2, bufferWidth);
             var columns = Math.Max(1, bufferWidth / colWidth);
 
             return new Menu
@@ -774,9 +774,9 @@ namespace Microsoft.PowerShell
                 // Make sure the menu and line can appear on the screen at the same time,
                 // if not, we'll skip the menu.
 
-                var endBufferPoint = ConvertOffsetToPoint(_buffer.Length);
+                var endBufferPoint = _renderer.ConvertOffsetToPoint(buffer.Length);
                 menu.BufferLines = endBufferPoint.Y - InitialY + 1 + _options.ExtraPromptLineCount;
-                if (menu.BufferLines + menu.Rows > _console.WindowHeight)
+                if (menu.BufferLines + menu.Rows > RLConsole.WindowHeight)
                 {
                     menuSelect = false;
                 }
@@ -789,14 +789,14 @@ namespace Microsoft.PowerShell
             else
             {
                 menu.DrawMenu(null, menuSelect: false);
-                InvokePrompt(key: null, arg: _console.CursorTop);
+                InvokePrompt(key: null, arg: RLConsole.CursorTop);
             }
         }
 
         private static string GetMenuItem(string item, int columnWidth)
         {
             item = HandleNewlinesForPossibleCompletions(item);
-            var spacesNeeded = columnWidth - LengthInBufferCells(item);
+            var spacesNeeded = columnWidth - _renderer.LengthInBufferCells(item);
             if (spacesNeeded > 0)
             {
                 item = item + Spaces(spacesNeeded);
@@ -865,7 +865,7 @@ namespace Microsoft.PowerShell
                     {
                         // After replacement, the menu might be misplaced from the command line
                         // getting shorter or longer.
-                        var endOfCommandLine = ConvertOffsetToPoint(_buffer.Length);
+                        var endOfCommandLine = _renderer.ConvertOffsetToPoint(buffer.Length);
                         var topAdjustment = (endOfCommandLine.Y + 1) - menu.Top;
                         int oldInitialY = InitialY;
 
@@ -886,8 +886,8 @@ namespace Microsoft.PowerShell
                                 endOfCommandLine.Y -= oldInitialY - InitialY;
                             }
 
-                            _console.SetCursorPosition(endOfCommandLine.X, endOfCommandLine.Y);
-                            _console.Write(Spaces(_console.BufferWidth - endOfCommandLine.X));
+                            RLConsole.SetCursorPosition(endOfCommandLine.X, endOfCommandLine.Y);
+                            RLConsole.Write(Spaces(RLConsole.BufferWidth - endOfCommandLine.X));
                             menu.RestoreCursor();
                         }
 
@@ -899,14 +899,14 @@ namespace Microsoft.PowerShell
 
                         menu.UpdateMenuSelection(
                             previousSelection,
-                            select: false,
+                            @select: false,
                             showTooltips: false,
                             Options._emphasisColor);
                     }
 
                     menu.UpdateMenuSelection(
                         menu.CurrentSelection,
-                        select: true,
+                        @select: true,
                         Options.ShowToolTips,
                         Options._emphasisColor);
 

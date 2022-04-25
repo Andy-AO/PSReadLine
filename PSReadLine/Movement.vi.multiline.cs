@@ -18,9 +18,10 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            var currentLine =  GetLogicalLineNumber(); 
+            var currentLine =  GetLogicalLineNumber();
 
-            var pos = ConvertOffsetToPoint(Singleton.Current);
+            int offset = Singleton.Current;
+            var pos = _renderer.ConvertOffsetToPoint(offset);
 
             pos.Y -= currentLine -1;
 
@@ -47,7 +48,8 @@ namespace Microsoft.PowerShell
 
             var currentLine = GetLogicalLineNumber();
 
-            var pos = ConvertOffsetToPoint(Singleton.Current);
+            int offset = Singleton.Current;
+            var pos = _renderer.ConvertOffsetToPoint(offset);
 
             pos.Y += (count - currentLine);
 
@@ -92,7 +94,7 @@ namespace Microsoft.PowerShell
             // Nothing needs to be done when:
             //  - actually not moving the line, or
             //  - moving the line down when it's at the end of the last logical line.
-            if (lineOffset == 0 || (lineOffset > 0 && Current == _buffer.Length))
+            if (lineOffset == 0 || (lineOffset > 0 && Current == buffer.Length))
             {
                 return;
             }

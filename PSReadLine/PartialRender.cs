@@ -97,7 +97,7 @@ namespace Microsoft.PowerShell
         {
             var defaultColor = VTColorUtils.DefaultColor;
 
-            // Geneate a sequence of logical lines with escape sequences for coloring.
+            // Generate a sequence of logical lines with escape sequences for coloring.
             int logicalLineCount = GenerateRender(defaultColor);
 
             // Now write that out (and remember what we did so we can clear previous renders
@@ -109,7 +109,7 @@ namespace Microsoft.PowerShell
             {
                 var line = ConsoleBufferLines[i].ToString();
                 renderLines[i].line = line;
-                renderLines[i].columns = LengthInBufferCells(line);
+                renderLines[i].columns = _renderer.LengthInBufferCells(line);
             }
 
             // And then do the real work of writing to the screen.
@@ -127,7 +127,7 @@ namespace Microsoft.PowerShell
 
         private int GenerateRender(string defaultColor)
         {
-            var text = _buffer.ToString();
+            var text = buffer.ToString();
             _prediction.QueryForSuggestion(text);
 
             string color = defaultColor;
@@ -146,6 +146,7 @@ namespace Microsoft.PowerShell
                             .Append(VTColorUtils.AnsiReset)
                             .Append(newColor);
                     }
+
                     activeColor = newColor;
                 }
             }
@@ -193,7 +194,7 @@ namespace Microsoft.PowerShell
                 if (char.IsControl(charToRender))
                 {
                     ConsoleBufferLines[currentLogicalLine].Append('^');
-                    ConsoleBufferLines[currentLogicalLine].Append((char)('@' + charToRender));
+                    ConsoleBufferLines[currentLogicalLine].Append((char) ('@' + charToRender));
                 }
                 else
                 {
@@ -373,7 +374,7 @@ namespace Microsoft.PowerShell
             }
 
             // We need to update the prompt
-            _console.SetCursorPosition(InitialX, InitialY);
+            RLConsole.SetCursorPosition(InitialX, InitialY);
 
             string promptText =
                 (renderData.errorPrompt && _options.PromptText.Length == 2)
@@ -381,14 +382,14 @@ namespace Microsoft.PowerShell
                     : _options.PromptText[0];
 
             // promptBufferCells is the number of visible characters in the prompt
-            int promptBufferCells = LengthInBufferCells(promptText);
+            int promptBufferCells = _renderer.LengthInBufferCells(promptText);
             bool renderErrorPrompt = false;
-            int bufferWidth = _console.BufferWidth;
+            int bufferWidth = RLConsole.BufferWidth;
 
-            if (_console.CursorLeft >= promptBufferCells)
+            if (RLConsole.CursorLeft >= promptBufferCells)
             {
                 renderErrorPrompt = true;
-                _console.CursorLeft -= promptBufferCells;
+                RLConsole.CursorLeft -= promptBufferCells;
             }
             else
             {
@@ -400,7 +401,7 @@ namespace Microsoft.PowerShell
                 // In case of case 3, the rendering would be off, but it's more of a user error because the prompt is changed without
                 // updating 'PromptText' with 'Set-PSReadLineOption'.
 
-                int diffs = promptBufferCells - _console.CursorLeft;
+                int diffs = promptBufferCells - RLConsole.CursorLeft;
                 int newX = bufferWidth - diffs % bufferWidth;
                 int newY = InitialY - diffs / bufferWidth - 1;
 
@@ -408,7 +409,7 @@ namespace Microsoft.PowerShell
                 if (newY >= 0)
                 {
                     renderErrorPrompt = true;
-                    _console.SetCursorPosition(newX, newY);
+                    RLConsole.SetCursorPosition(newX, newY);
                 }
             }
 
@@ -417,13 +418,13 @@ namespace Microsoft.PowerShell
                 if (!promptText.Contains('\x1b'))
                 {
                     string color = renderData.errorPrompt ? _options._errorColor : defaultColor;
-                    _console.Write(color);
-                    _console.Write(promptText);
-                    _console.Write(VTColorUtils.AnsiReset);
+                    RLConsole.Write(color);
+                    RLConsole.Write(promptText);
+                    RLConsole.Write(VTColorUtils.AnsiReset);
                 }
                 else
                 {
-                    _console.Write(promptText);
+                    RLConsole.Write(promptText);
                 }
             }
 
@@ -444,7 +445,7 @@ namespace Microsoft.PowerShell
             }
 
             int cnt = 1;
-            int bufferWidth = _console.BufferWidth;
+            int bufferWidth = RLConsole.BufferWidth;
 
             if (isFirstLogicalLine)
             {
@@ -480,10 +481,11 @@ namespace Microsoft.PowerShell
         /// We avoid re-rendering everything while editing if it's possible.
         /// This method attempts to find the first changed logical line and move the cursor to the right position for the subsequent rendering.
         /// </summary>
-        private void CalculateWhereAndWhatToRender(bool cursorMovedToInitialPos, RenderData renderData, out LineInfoForRendering lineInfoForRendering)
+        private void CalculateWhereAndWhatToRender(bool cursorMovedToInitialPos, RenderData renderData,
+            out LineInfoForRendering lineInfoForRendering)
         {
-            int bufferWidth = _console.BufferWidth;
-            int bufferHeight = _console.BufferHeight;
+            int bufferWidth = RLConsole.BufferWidth;
+            int bufferHeight = RLConsole.BufferHeight;
 
             RenderedLineData[] previousRenderLines = PreviousRender.lines;
             int previousLogicalLine = 0;
@@ -515,7 +517,7 @@ namespace Microsoft.PowerShell
 
                     if (InitialY < 0)
                     {
-                        int y = ConvertOffsetToPoint(Current).Y;
+                        int y = _renderer.ConvertOffsetToPoint(Current).Y;
                         if (y < 0)
                         {
                             // Number of physical lines from the initial row to the row where the cursor is supposed to be set at.
@@ -528,7 +530,10 @@ namespace Microsoft.PowerShell
                 for (; logicalLine < minLinesLength; logicalLine++)
                 {
                     // Found the first different logical line? Break out the loop.
-                    if (renderLines[logicalLine].line != previousRenderLines[logicalLine].line) { break; }
+                    if (renderLines[logicalLine].line != previousRenderLines[logicalLine].line)
+                    {
+                        break;
+                    }
 
                     int count = PhysicalLineCount(renderLines[logicalLine].columns, logicalLine == 0, out _);
                     physicalLine += count;
@@ -559,8 +564,8 @@ namespace Microsoft.PowerShell
                         {
                             // This could happen when adding a new line in the end of the very last line.
                             // In this case, we scroll up by writing out a new line.
-                            _console.SetCursorPosition(left: bufferWidth - 1, top: bufferHeight - 1);
-                            _console.Write("\n");
+                            RLConsole.SetCursorPosition(left: bufferWidth - 1, top: bufferHeight - 1);
+                            RLConsole.Write("\n");
                         }
 
                         // It might happen that 'logicalLine == renderLines.Length'. This means the current
@@ -585,7 +590,7 @@ namespace Microsoft.PowerShell
                             newTop = 0;
                         }
 
-                        _console.SetCursorPosition(left: 0, top: newTop);
+                        RLConsole.SetCursorPosition(left: 0, top: newTop);
                     }
                 }
             }
@@ -598,22 +603,22 @@ namespace Microsoft.PowerShell
                 {
                     // The prompt had been scrolled up-off the buffer. Now we are about to render from the very
                     // beginning, so we clear the screen and invoke/print the prompt line.
-                    _console.Write("\x1b[2J");
-                    _console.SetCursorPosition(0, _console.WindowTop);
+                    RLConsole.Write("\x1b[2J");
+                    RLConsole.SetCursorPosition(0, RLConsole.WindowTop);
 
                     string newPrompt = GetPrompt();
                     if (!string.IsNullOrEmpty(newPrompt))
                     {
-                        _console.Write(newPrompt);
+                        RLConsole.Write(newPrompt);
                     }
 
-                    InitialX = _console.CursorLeft;
-                    InitialY = _console.CursorTop;
+                    InitialX = RLConsole.CursorLeft;
+                    InitialY = RLConsole.CursorTop;
                     PreviousRender = InitialPrevRender;
                 }
                 else
                 {
-                    _console.SetCursorPosition(InitialX, InitialY);
+                    RLConsole.SetCursorPosition(InitialX, InitialY);
                 }
             }
 
@@ -628,25 +633,25 @@ namespace Microsoft.PowerShell
         private void ReallyRender(RenderData renderData, string defaultColor)
         {
             string activeColor = "";
-            int bufferWidth = _console.BufferWidth;
-            int bufferHeight = _console.BufferHeight;
+            int bufferWidth = RLConsole.BufferWidth;
+            int bufferHeight = RLConsole.BufferHeight;
 
             void UpdateColorsIfNecessary(string newColor)
             {
                 if (!ReferenceEquals(newColor, activeColor))
                 {
-                    _console.Write(newColor);
+                    RLConsole.Write(newColor);
                     activeColor = newColor;
                 }
             }
 
             // In case the buffer was resized
-            RecomputeInitialCoords();
+            _renderer.RecomputeInitialCoords();
             renderData.bufferWidth = bufferWidth;
             renderData.bufferHeight = bufferHeight;
 
             // Make cursor invisible while we're rendering.
-            _console.CursorVisible = false;
+            RLConsole.CursorVisible = false;
 
             // Change the prompt color if the parsing error state changed.
             bool cursorMovedToInitialPos = RenderErrorPrompt(renderData, defaultColor);
@@ -670,10 +675,10 @@ namespace Microsoft.PowerShell
 
             for (; logicalLine < renderLines.Length; logicalLine++)
             {
-                if (logicalLine != logicalLineStartIndex) _console.Write("\n");
+                if (logicalLine != logicalLineStartIndex) RLConsole.Write("\n");
 
                 var lineData = renderLines[logicalLine];
-                _console.Write(lineData.line);
+                RLConsole.Write(lineData.line);
 
                 physicalLine += PhysicalLineCount(lineData.columns, logicalLine == 0, out int lenLastLine);
 
@@ -683,11 +688,11 @@ namespace Microsoft.PowerShell
                 // on the right side of the line.
 
                 while (physicalLine > previousPhysicalLine
-                    && previousLogicalLine < previousRenderLines.Length)
+                       && previousLogicalLine < previousRenderLines.Length)
                 {
                     previousPhysicalLine += PhysicalLineCount(previousRenderLines[previousLogicalLine].columns,
-                                                              previousLogicalLine == 0,
-                                                              out lenPrevLastLine);
+                        previousLogicalLine == 0,
+                        out lenPrevLastLine);
                     previousLogicalLine += 1;
                 }
 
@@ -719,7 +724,7 @@ namespace Microsoft.PowerShell
                 if (lenToClear > 0)
                 {
                     UpdateColorsIfNecessary(defaultColor);
-                    _console.Write(Spaces(lenToClear));
+                    RLConsole.Write(Spaces(lenToClear));
                 }
             }
 
@@ -728,13 +733,13 @@ namespace Microsoft.PowerShell
             // The last logical line is shorter than our previous render? Clear them.
             for (int currentLines = physicalLine; currentLines < previousPhysicalLine;)
             {
-                _console.SetCursorPosition(0, InitialY + currentLines);
+                RLConsole.SetCursorPosition(0, InitialY + currentLines);
 
                 currentLines++;
                 var lenToClear = currentLines == previousPhysicalLine ? lenPrevLastLine : bufferWidth;
                 if (lenToClear > 0)
                 {
-                    _console.Write(Spaces(lenToClear));
+                    RLConsole.Write(Spaces(lenToClear));
                 }
             }
 
@@ -750,11 +755,11 @@ namespace Microsoft.PowerShell
                     // In other cases, we need to write a new line to get the cursor to the correct
                     // physical line.
 
-                    _console.Write("\n");
+                    RLConsole.Write("\n");
                 }
 
                 // No need to write new line if all we need is to clear the extra previous render.
-                _console.Write(Spaces(previousRenderLines[line].columns));
+                RLConsole.Write(Spaces(previousRenderLines[line].columns));
             }
 
             // Preserve the current render data.
@@ -765,7 +770,7 @@ namespace Microsoft.PowerShell
             physicalLine -= pseudoPhysicalLineOffset;
 
             // Reset the colors after we've finished all our rendering.
-            _console.Write(VTColorUtils.AnsiReset);
+            RLConsole.Write(VTColorUtils.AnsiReset);
 
             if (InitialY + physicalLine > bufferHeight)
             {
@@ -794,13 +799,13 @@ namespace Microsoft.PowerShell
             }
 
             // Calculate the coord to place the cursor for the next input.
-            var point = ConvertOffsetToPoint(Current);
+            var point = _renderer.ConvertOffsetToPoint(Current);
 
             if (point.Y == bufferHeight)
             {
                 // The cursor top exceeds the buffer height, so we need to
                 // scroll up the buffer by 1 line.
-                _console.Write("\n");
+                RLConsole.Write("\n");
 
                 // Adjust the initial cursor position and the to-be-set cursor position
                 // after scrolling up the buffer.
@@ -829,11 +834,11 @@ namespace Microsoft.PowerShell
                 // then we call 'ConvertOffsetToPoint' again to get the right cursor position to use.
                 point.X = point.Y = 0;
                 Current = ConvertLineAndColumnToOffset(point);
-                point = ConvertOffsetToPoint(Current);
+                point = _renderer.ConvertOffsetToPoint(Current);
             }
 
-            _console.SetCursorPosition(point.X, point.Y);
-            _console.CursorVisible = true;
+            RLConsole.SetCursorPosition(point.X, point.Y);
+            RLConsole.CursorVisible = true;
 
             // TODO: set WindowTop if necessary
 
@@ -850,25 +855,25 @@ namespace Microsoft.PowerShell
 
             switch (token.Kind)
             {
-            case TokenKind.Comment:
-                return _options._commentColor;
+                case TokenKind.Comment:
+                    return _options._commentColor;
 
-            case TokenKind.Parameter:
-            case TokenKind.Generic when token is StringLiteralToken slt && slt.Text.StartsWith("--"):
-                return _options._parameterColor;
+                case TokenKind.Parameter:
+                case TokenKind.Generic when token is StringLiteralToken slt && slt.Text.StartsWith("--"):
+                    return _options._parameterColor;
 
-            case TokenKind.Variable:
-            case TokenKind.SplattedVariable:
-                return _options._variableColor;
+                case TokenKind.Variable:
+                case TokenKind.SplattedVariable:
+                    return _options._variableColor;
 
-            case TokenKind.StringExpandable:
-            case TokenKind.StringLiteral:
-            case TokenKind.HereStringExpandable:
-            case TokenKind.HereStringLiteral:
-                return _options._stringColor;
+                case TokenKind.StringExpandable:
+                case TokenKind.StringLiteral:
+                case TokenKind.HereStringExpandable:
+                case TokenKind.HereStringLiteral:
+                    return _options._stringColor;
 
-            case TokenKind.Number:
-                return _options._numberColor;
+                case TokenKind.Number:
+                    return _options._numberColor;
             }
 
             if ((token.TokenFlags & TokenFlags.Keyword) != 0)
@@ -876,7 +881,9 @@ namespace Microsoft.PowerShell
                 return _options._keywordColor;
             }
 
-            if (token.Kind != TokenKind.Generic && (token.TokenFlags & (TokenFlags.BinaryOperator | TokenFlags.UnaryOperator | TokenFlags.AssignmentOperator)) != 0)
+            if (token.Kind != TokenKind.Generic && (token.TokenFlags &
+                                                    (TokenFlags.BinaryOperator | TokenFlags.UnaryOperator |
+                                                     TokenFlags.AssignmentOperator)) != 0)
             {
                 return _options._operatorColor;
             }
@@ -908,41 +915,24 @@ namespace Microsoft.PowerShell
             }
         }
 
-        private void RecomputeInitialCoords()
-        {
-            if ((PreviousRender.bufferWidth != _console.BufferWidth)
-            ||  (PreviousRender.bufferHeight != _console.BufferHeight))
-            {
-                // If the buffer width changed, our initial coordinates
-                // may have as well.
-                // Recompute X from the buffer width:
-                InitialX = InitialX % _console.BufferWidth;
-
-                // Recompute Y from the cursor
-                InitialY = 0;
-                var pt = ConvertOffsetToPoint(Current);
-                InitialY = _console.CursorTop - pt.Y;
-            }
-        }
-
         private void MoveCursor(int newCursor)
         {
             // Only update screen cursor if the buffer is fully rendered.
             if (!WaitingToRender)
             {
                 // In case the buffer was resized
-                RecomputeInitialCoords();
-                PreviousRender.bufferWidth = _console.BufferWidth;
-                PreviousRender.bufferHeight = _console.BufferHeight;
+                _renderer.RecomputeInitialCoords();
+                PreviousRender.bufferWidth = RLConsole.BufferWidth;
+                PreviousRender.bufferHeight = RLConsole.BufferHeight;
 
-                var point = ConvertOffsetToPoint(newCursor);
+                var point = _renderer.ConvertOffsetToPoint(newCursor);
                 if (point.Y < 0)
                 {
                     Ding();
                     return;
                 }
 
-                if (point.Y == _console.BufferHeight)
+                if (point.Y == RLConsole.BufferHeight)
                 {
                     // The cursor top exceeds the buffer height, so adjust the initial cursor
                     // position and the to-be-set cursor position for scrolling up the buffer.
@@ -951,14 +941,14 @@ namespace Microsoft.PowerShell
 
                     // Insure the cursor is on the last line of the buffer prior
                     // to issuing a newline to scroll the buffer.
-                    _console.SetCursorPosition(point.X, point.Y);
+                    RLConsole.SetCursorPosition(point.X, point.Y);
 
                     // Scroll up the buffer by 1 line.
-                    _console.Write("\n");
+                    RLConsole.Write("\n");
                 }
                 else
                 {
-                    _console.SetCursorPosition(point.X, point.Y);
+                    RLConsole.SetCursorPosition(point.X, point.Y);
                 }
             }
 
@@ -968,66 +958,15 @@ namespace Microsoft.PowerShell
             Current = newCursor;
         }
 
-        internal Point ConvertOffsetToPoint(int offset)
-        {
-            int x = InitialX;
-            int y = InitialY;
-
-            int bufferWidth = _console.BufferWidth;
-            var continuationPromptLength = LengthInBufferCells(Options.ContinuationPrompt);
-
-            for (int i = 0; i < offset; i++)
-            {
-                char c = _buffer[i];
-                if (c == '\n')
-                {
-                    y += 1;
-                    x = continuationPromptLength;
-                }
-                else
-                {
-                    int size = LengthInBufferCells(c);
-                    x += size;
-                    // Wrap?  No prompt when wrapping
-                    if (x >= bufferWidth)
-                    {
-                        // If character didn't fit on current line, it will move entirely to the next line.
-                        x = ((x == bufferWidth) ? 0 : size);
-
-                        // If cursor is at column 0 and the next character is newline, let the next loop
-                        // iteration increment y.
-                        if (x != 0 || !(i + 1 < offset && _buffer[i + 1] == '\n'))
-                        {
-                            y += 1;
-                        }
-                    }
-                }
-            }
-
-            // If next character actually exists, and isn't newline, check if wider than the space left on the current line.
-            if (_buffer.Length > offset && _buffer[offset] != '\n')
-            {
-                int size = LengthInBufferCells(_buffer[offset]);
-                if (x + size > bufferWidth)
-                {
-                    // Character was wider than remaining space, so character, and cursor, appear on next line.
-                    x = 0;
-                    y++;
-                }
-            }
-
-            return new Point {X = x, Y = y};
-        }
-
         private int ConvertLineAndColumnToOffset(Point point)
         {
             int offset;
             int x = InitialX;
             int y = InitialY;
 
-            int bufferWidth = _console.BufferWidth;
-            var continuationPromptLength = LengthInBufferCells(Options.ContinuationPrompt);
-            for (offset = 0; offset < _buffer.Length; offset++)
+            int bufferWidth = RLConsole.BufferWidth;
+            var continuationPromptLength = _renderer.LengthInBufferCells(Options.ContinuationPrompt);
+            for (offset = 0; offset < buffer.Length; offset++)
             {
                 // If we are on the correct line, return when we find
                 // the correct column
@@ -1035,7 +974,8 @@ namespace Microsoft.PowerShell
                 {
                     return offset;
                 }
-                char c = _buffer[offset];
+
+                char c = buffer[offset];
                 if (c == '\n')
                 {
                     // If we are about to move off of the correct line,
@@ -1044,12 +984,13 @@ namespace Microsoft.PowerShell
                     {
                         return offset;
                     }
+
                     y += 1;
                     x = continuationPromptLength;
                 }
                 else
                 {
-                    int size = LengthInBufferCells(c);
+                    int size = _renderer.LengthInBufferCells(c);
                     x += size;
                     // Wrap?  No prompt when wrapping
                     if (x >= bufferWidth)
@@ -1059,7 +1000,7 @@ namespace Microsoft.PowerShell
 
                         // If cursor is at column 0 and the next character is newline, let the next loop
                         // iteration increment y.
-                        if (x != 0 || !(offset + 1 < _buffer.Length && _buffer[offset + 1] == '\n'))
+                        if (x != 0 || !(offset + 1 < buffer.Length && buffer[offset + 1] == '\n'))
                         {
                             y += 1;
                         }
@@ -1083,13 +1024,13 @@ namespace Microsoft.PowerShell
 
             for (int i = 0; i < current; i++)
             {
-                if (_buffer[i] == '\n')
+                if (buffer[i] == '\n')
                 {
                     lineNumber++;
                 }
             }
-            return lineNumber;
 
+            return lineNumber;
         }
 
         /// <summary>
@@ -1100,23 +1041,25 @@ namespace Microsoft.PowerShell
         {
             var count = 1;
 
-            for (int i = 0; i < _buffer.Length; i++)
+            for (int i = 0; i < buffer.Length; i++)
             {
-                if (_buffer[i] == '\n')
+                if (buffer[i] == '\n')
                 {
                     count++;
                 }
             }
+
             return count;
         }
 
         private bool LineIsMultiLine()
         {
-            for (int i = 0; i < _buffer.Length; i++)
+            for (int i = 0; i < buffer.Length; i++)
             {
-                if (_buffer[i] == '\n')
+                if (buffer[i] == '\n')
                     return true;
             }
+
             return false;
         }
 
@@ -1125,7 +1068,7 @@ namespace Microsoft.PowerShell
             if (_statusLinePrompt == null)
                 return 0;
 
-            return (_statusLinePrompt.Length + _statusBuffer.Length) / _console.BufferWidth + 1;
+            return (_statusLinePrompt.Length + _statusBuffer.Length) / RLConsole.BufferWidth + 1;
         }
 
         [ExcludeFromCodeCoverage]
@@ -1133,24 +1076,25 @@ namespace Microsoft.PowerShell
         {
             switch (Options.BellStyle)
             {
-            case BellStyle.None:
-                break;
-            case BellStyle.Audible:
-                if (Options.DingDuration > 0)
-                {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                case BellStyle.None:
+                    break;
+                case BellStyle.Audible:
+                    if (Options.DingDuration > 0)
                     {
-                        Console.Beep(Options.DingTone, Options.DingDuration);
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        {
+                            Console.Beep(Options.DingTone, Options.DingDuration);
+                        }
+                        else
+                        {
+                            Console.Beep();
+                        }
                     }
-                    else
-                    {
-                        Console.Beep();
-                    }
-                }
-                break;
-            case BellStyle.Visual:
-                // TODO: flash prompt? command line?
-                break;
+
+                    break;
+                case BellStyle.Visual:
+                    // TODO: flash prompt? command line?
+                    break;
             }
         }
 
@@ -1180,12 +1124,13 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayUp(ConsoleKeyInfo? key = null, object arg = null)
         {
             TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
             var newTop = console.WindowTop - (numericArg * console.WindowHeight);
             if (newTop < 0)
             {
                 newTop = 0;
             }
+
             console.SetWindowPosition(0, newTop);
         }
 
@@ -1195,12 +1140,13 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayUpLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
             var newTop = console.WindowTop - numericArg;
             if (newTop < 0)
             {
                 newTop = 0;
             }
+
             console.SetWindowPosition(0, newTop);
         }
 
@@ -1210,12 +1156,13 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayDown(ConsoleKeyInfo? key = null, object arg = null)
         {
             TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
             var newTop = console.WindowTop + (numericArg * console.WindowHeight);
             if (newTop > (console.BufferHeight - console.WindowHeight))
             {
                 newTop = (console.BufferHeight - console.WindowHeight);
             }
+
             console.SetWindowPosition(0, newTop);
         }
 
@@ -1225,12 +1172,13 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayDownLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
             var newTop = console.WindowTop + numericArg;
             if (newTop > (console.BufferHeight - console.WindowHeight))
             {
                 newTop = (console.BufferHeight - console.WindowHeight);
             }
+
             console.SetWindowPosition(0, newTop);
         }
 
@@ -1239,7 +1187,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ScrollDisplayTop(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton._console.SetWindowPosition(0, 0);
+            Singleton.RLConsole.SetWindowPosition(0, 0);
         }
 
         /// <summary>
@@ -1248,9 +1196,10 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayToCursor(ConsoleKeyInfo? key = null, object arg = null)
         {
             // Ideally, we'll put the last input line at the bottom of the window
-            var point = Singleton.ConvertOffsetToPoint(Singleton._buffer.Length);
+            int offset = Singleton.buffer.Length;
+            var point = _renderer.ConvertOffsetToPoint(offset);
 
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
             var newTop = point.Y - console.WindowHeight + 1;
 
             // If the cursor is already visible, and we're on the first
@@ -1279,6 +1228,7 @@ namespace Microsoft.PowerShell
             {
                 newTop = (console.BufferHeight - console.WindowHeight);
             }
+
             console.SetWindowPosition(0, newTop);
         }
     }

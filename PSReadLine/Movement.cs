@@ -22,15 +22,15 @@ namespace Microsoft.PowerShell
         public static void EndOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             int i = Singleton.Current;
-            for (; i < Singleton._buffer.Length; i++)
+            for (; i < Singleton.buffer.Length; i++)
             {
-                if (Singleton._buffer[i] == '\n')
+                if (Singleton.buffer[i] == '\n')
                 {
                     break;
                 }
             }
 
-            Singleton.MoveCursor((i == Singleton.Current) ? Singleton._buffer.Length : i);
+            Singleton.MoveCursor((i == Singleton.Current) ? Singleton.buffer.Length : i);
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Microsoft.PowerShell
         {
             if (TryGetArgAsInt(arg, out var numericArg, 1))
             {
-                if (Singleton.Current == Singleton._buffer.Length && numericArg > 0)
+                if (Singleton.Current == Singleton.buffer.Length && numericArg > 0)
                 {
                     AcceptSuggestion(key, arg);
                 }
@@ -84,7 +84,7 @@ namespace Microsoft.PowerShell
         {
             if (TryGetArgAsInt(arg, out var numericArg, 1))
             {
-                if (InViInsertMode() && Singleton.Current == Singleton._buffer.Length && numericArg > 0)
+                if (InViInsertMode() && Singleton.Current == Singleton.buffer.Length && numericArg > 0)
                 {
                     AcceptSuggestion(key, arg);
                 }
@@ -121,7 +121,7 @@ namespace Microsoft.PowerShell
                     Singleton.MoveCursor(newCurrent);
                 }
             }
-            else if (Singleton.Current < Singleton._buffer.Length)
+            else if (Singleton.Current < Singleton.buffer.Length)
             {
                 // when in the VI command mode, 'end' is the position of the last character;
                 // when in the VI insert mode, 'end' is 1 char beyond the last character.
@@ -162,9 +162,9 @@ namespace Microsoft.PowerShell
 
             if (_moveToLineCommandCount == 1)
             {
-                point = ConvertOffsetToPoint(Current);
+                point = _renderer.ConvertOffsetToPoint(Current);
                 _moveToLineDesiredColumn =
-                    (Current == _buffer.Length || _buffer[Current] == '\n')
+                    (Current == buffer.Length || buffer[Current] == '\n')
                         ? endOfLine
                         : point.Value.X;
             }
@@ -172,7 +172,7 @@ namespace Microsoft.PowerShell
             // Nothing needs to be done when:
             //  - actually not moving the line, or
             //  - moving the line down when it's at the end of the last line.
-            if (lineOffset == 0 || (lineOffset > 0 && Current == _buffer.Length))
+            if (lineOffset == 0 || (lineOffset > 0 && Current == buffer.Length))
             {
                 return;
             }
@@ -187,9 +187,9 @@ namespace Microsoft.PowerShell
                     // Moving to the end of a subsequent logical line.
                     for (int i = 0; i < lineOffset; i++)
                     {
-                        for (newCurrent++; newCurrent < _buffer.Length && _buffer[newCurrent] != '\n'; newCurrent++) ;
+                        for (newCurrent++; newCurrent < buffer.Length && buffer[newCurrent] != '\n'; newCurrent++) ;
 
-                        if (newCurrent == _buffer.Length)
+                        if (newCurrent == buffer.Length)
                         {
                             break;
                         }
@@ -201,7 +201,7 @@ namespace Microsoft.PowerShell
                     int lastEndOfLineIndex = Current;
                     for (int i = 0; i < -lineOffset; i++)
                     {
-                        for (newCurrent--; newCurrent >= 0 && _buffer[newCurrent] != '\n'; newCurrent--) ;
+                        for (newCurrent--; newCurrent >= 0 && buffer[newCurrent] != '\n'; newCurrent--) ;
 
                         if (newCurrent < 0)
                         {
@@ -215,7 +215,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                point = point ?? ConvertOffsetToPoint(Current);
+                point = point ?? _renderer.ConvertOffsetToPoint(Current);
                 int newY = point.Value.Y + lineOffset;
 
                 Point newPoint = new Point()
@@ -302,7 +302,7 @@ namespace Microsoft.PowerShell
                 Debug.Assert(token != null, "We'll always find EOF");
 
                 Singleton.MoveCursor(token.Kind == TokenKind.EndOfInput
-                    ? Singleton._buffer.Length
+                    ? Singleton.buffer.Length
                     : token.Extent.StartOffset);
             }
         }
@@ -319,7 +319,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            if (Singleton.Current == Singleton._buffer.Length && numericArg > 0)
+            if (Singleton.Current == Singleton.buffer.Length && numericArg > 0)
             {
                 AcceptNextSuggestionWord(numericArg);
                 return;
@@ -361,7 +361,7 @@ namespace Microsoft.PowerShell
                 Debug.Assert(token != null, "We'll always find EOF");
 
                 Singleton.MoveCursor(token.Kind == TokenKind.EndOfInput
-                    ? Singleton._buffer.Length
+                    ? Singleton.buffer.Length
                     : token.Extent.EndOffset);
             }
         }
@@ -443,7 +443,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void GotoBrace(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (Singleton.Current >= Singleton._buffer.Length)
+            if (Singleton.Current >= Singleton.buffer.Length)
             {
                 Ding();
                 return;
@@ -504,7 +504,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ClearScreen(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
             console.Write("\x1b[2J");
             InvokePrompt(null, console.WindowTop);
         }
@@ -545,9 +545,9 @@ namespace Microsoft.PowerShell
                 // Should we prompt?
                 toFind = ReadKey().KeyChar;
             }
-            for (int i = Singleton.Current + 1; i < Singleton._buffer.Length; i++)
+            for (int i = Singleton.Current + 1; i < Singleton.buffer.Length; i++)
             {
-                if (Singleton._buffer[i] == toFind)
+                if (Singleton.buffer[i] == toFind)
                 {
                     occurence -= 1;
                     if (occurence == 0)
@@ -585,7 +585,7 @@ namespace Microsoft.PowerShell
             }
             for (int i = Singleton.Current - 1; i >= 0; i--)
             {
-                if (Singleton._buffer[i] == toFind)
+                if (Singleton.buffer[i] == toFind)
                 {
                     occurence -= 1;
                     if (occurence == 0)

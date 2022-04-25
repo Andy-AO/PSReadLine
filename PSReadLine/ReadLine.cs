@@ -58,20 +58,25 @@ namespace Microsoft.PowerShell
         {
             get
             {
-                Parser.ParseInput(_buffer.ToString(), out var _tokens, out _);
+                Parser.ParseInput(buffer.ToString(), out var _tokens, out _);
                 return (Token[]) _tokens.Clone();
             }
         }
 
-        private Ast RLAst => Parser.ParseInput(_buffer.ToString(), out _, out _);
+        private Ast RLAst => Parser.ParseInput(buffer.ToString(), out _, out _);
 
         private ParseError[] ParseErrors
         {
             get
             {
-                Parser.ParseInput(_buffer.ToString(), out _, out var _parseErrors);
+                Parser.ParseInput(buffer.ToString(), out _, out var _parseErrors);
                 return _parseErrors;
             }
+        }
+
+        public IConsole RLConsole
+        {
+            get => _renderer.RLConsole;
         }
 
         private static readonly CancellationToken _defaultCancellationToken = new CancellationTokenSource().Token;
@@ -85,7 +90,7 @@ namespace Microsoft.PowerShell
         private bool _delayedOneTimeInitCompleted;
 
         private IPSConsoleReadLineMockableMethods _mockableMethods;
-        private IConsole _console;
+
         private ICharMap _charMap;
         private Encoding _initialOutputEncoding;
         private bool _skipOutputEncodingChange;
@@ -98,7 +103,7 @@ namespace Microsoft.PowerShell
         private WaitHandle[] _threadProcWaitHandles;
         private WaitHandle[] _requestKeyWaitHandles;
 
-        private readonly StringBuilder _buffer;
+        public readonly StringBuilder buffer;
         private readonly StringBuilder _statusBuffer;
         private bool _statusIsErrorMessage;
         private string _statusLinePrompt;
@@ -135,13 +140,13 @@ namespace Microsoft.PowerShell
         private void ReadOneOrMoreKeys()
         {
             _readkeyStopwatch.Restart();
-            while (_console.KeyAvailable)
+            while (RLConsole.KeyAvailable)
             {
                 // _charMap is only guaranteed to accumulate input while KeyAvailable
                 // returns false. Make sure to check KeyAvailable after every ProcessKey call,
                 // and clear it in a loop in case the input was something like ^[[1 which can
                 // be 3, 2, or part of 1 key depending on timing.
-                _charMap.ProcessKey(_console.ReadKey());
+                _charMap.ProcessKey(RLConsole.ReadKey());
                 while (_charMap.KeyAvailable)
                 {
                     var key = PSKeyInfo.FromConsoleKeyInfo(_charMap.ReadKey());
@@ -163,9 +168,9 @@ namespace Microsoft.PowerShell
                     // Don't want to block when there is an escape sequence being read.
                     if (_charMap.InEscapeSequence)
                     {
-                        if (_console.KeyAvailable)
+                        if (RLConsole.KeyAvailable)
                         {
-                            _charMap.ProcessKey(_console.ReadKey());
+                            _charMap.ProcessKey(RLConsole.ReadKey());
                         }
                         else
                         {
@@ -180,7 +185,7 @@ namespace Microsoft.PowerShell
                     }
                     else
                     {
-                        _charMap.ProcessKey(_console.ReadKey());
+                        _charMap.ProcessKey(RLConsole.ReadKey());
                     }
                 }
 
@@ -266,7 +271,7 @@ namespace Microsoft.PowerShell
                             if (sub.SourceIdentifier.Equals(PSEngineEvent.OnIdle, StringComparison.OrdinalIgnoreCase))
                             {
                                 // If the buffer is not empty, let's not consider we are idle because the user is in the middle of typing something.
-                                if (Singleton._buffer.Length > 0)
+                                if (Singleton.buffer.Length > 0)
                                 {
                                     continue;
                                 }
@@ -297,7 +302,7 @@ namespace Microsoft.PowerShell
 
                             // To detect output during possible event processing, see if the cursor moved
                             // and rerender if so.
-                            var console = Singleton._console;
+                            var console = Singleton.RLConsole;
                             var y = console.CursorTop;
                             ps.Invoke();
                             if (y != console.CursorTop)
@@ -335,7 +340,7 @@ namespace Microsoft.PowerShell
                 Singleton.SaveCurrentLine();
                 Singleton._getNextHistoryIndex = Singleton._history.Count;
                 Singleton.Current = 0;
-                Singleton._buffer.Clear();
+                Singleton.buffer.Clear();
                 Singleton.Render();
                 throw new OperationCanceledException();
             }
@@ -383,7 +388,7 @@ namespace Microsoft.PowerShell
             CancellationToken cancellationToken,
             bool? lastRunStatus)
         {
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
 
             if (Console.IsInputRedirected || Console.IsOutputRedirected)
             {
@@ -456,7 +461,7 @@ namespace Microsoft.PowerShell
                             e.InnerException.Message));
                     console.ForegroundColor = oldColor;
 
-                    var lineBeforeCrash = Singleton._buffer.ToString();
+                    var lineBeforeCrash = Singleton.buffer.ToString();
                     Singleton.Initialize(runspace, Singleton._engineIntrinsics);
                     InvokePrompt();
                     Insert(lineBeforeCrash);
@@ -503,7 +508,7 @@ namespace Microsoft.PowerShell
                         PSReadLineResources.OopsAnErrorMessage2,
                         ourVersion, psVersion, osInfo, bufferWidth, bufferHeight,
                         _lastNKeys.Count, sb, e));
-                    var lineBeforeCrash = Singleton._buffer.ToString();
+                    var lineBeforeCrash = Singleton.buffer.ToString();
                     Singleton.Initialize(runspace, Singleton._engineIntrinsics);
                     InvokePrompt();
                     Insert(lineBeforeCrash);
@@ -560,7 +565,7 @@ namespace Microsoft.PowerShell
                 ProcessOneKey(key, _dispatchTable, ignoreIfNoAction: false, arg: null);
                 if (_inputAccepted)
                 {
-                    _acceptedCommandLine = _buffer.ToString();
+                    _acceptedCommandLine = buffer.ToString();
                     MaybeAddToHistory(_acceptedCommandLine, _edits, _undoEditIndex);
 
                     _prediction.OnCommandLineAccepted(_acceptedCommandLine);
@@ -650,7 +655,7 @@ namespace Microsoft.PowerShell
         {
             try
             {
-                _console.OutputEncoding = _initialOutputEncoding;
+                RLConsole.OutputEncoding = _initialOutputEncoding;
                 return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     ? PlatformWindows.CallPossibleExternalApplication(func)
                     : func();
@@ -659,7 +664,7 @@ namespace Microsoft.PowerShell
             {
                 if (!_skipOutputEncodingChange)
                 {
-                    _console.OutputEncoding = Encoding.UTF8;
+                    RLConsole.OutputEncoding = Encoding.UTF8;
                 }
             }
         }
@@ -725,12 +730,10 @@ namespace Microsoft.PowerShell
         private PSConsoleReadLine()
         {
             _mockableMethods = this;
-            _console = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? PlatformWindows.OneTimeInit(this)
-                : new VirtualTerminal();
+
             _charMap = new DotNetCharMap();
 
-            _buffer = new StringBuilder(8 * 1024);
+            buffer = new StringBuilder(8 * 1024);
             _statusBuffer = new StringBuilder(256);
             _savedCurrentLine = new HistoryItem();
             _queuedKeys = new Queue<PSKeyInfo>();
@@ -773,10 +776,10 @@ namespace Microsoft.PowerShell
             }
 
             PreviousRender = InitialPrevRender;
-            PreviousRender.bufferWidth = _console.BufferWidth;
-            PreviousRender.bufferHeight = _console.BufferHeight;
+            PreviousRender.bufferWidth = RLConsole.BufferWidth;
+            PreviousRender.bufferHeight = RLConsole.BufferHeight;
             PreviousRender.errorPrompt = false;
-            _buffer.Clear();
+            buffer.Clear();
             _edits = new List<EditItem>();
             _undoEditIndex = 0;
             _editGroupStart = -1;
@@ -785,11 +788,11 @@ namespace Microsoft.PowerShell
             EmphasisStart = -1;
             EmphasisLength = 0;
             _inputAccepted = false;
-            InitialX = _console.CursorLeft;
-            InitialY = _console.CursorTop;
+            InitialX = RLConsole.CursorLeft;
+            InitialY = RLConsole.CursorTop;
             _statusIsErrorMessage = false;
 
-            _initialOutputEncoding = _console.OutputEncoding;
+            _initialOutputEncoding = RLConsole.OutputEncoding;
             _prediction.Reset();
 
             // Don't change the OutputEncoding if already UTF8, no console, or using raster font on Windows
@@ -800,7 +803,7 @@ namespace Microsoft.PowerShell
 
             if (!_skipOutputEncodingChange)
             {
-                _console.OutputEncoding = Encoding.UTF8;
+                RLConsole.OutputEncoding = Encoding.UTF8;
             }
 
             _lastRenderTime = Stopwatch.StartNew();
@@ -1074,7 +1077,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void InvokePrompt(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
             console.CursorVisible = false;
 
             if (arg is int newY)

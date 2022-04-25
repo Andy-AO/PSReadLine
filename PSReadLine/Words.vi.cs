@@ -70,7 +70,7 @@ namespace Microsoft.PowerShell
 
         private bool IsAtEndOfLine(int i)
         {
-            return i >= (_buffer.Length - 1);
+            return i >= (buffer.Length - 1);
         }
 
         private int ViFindNextWordFromWord(int i, string wordDelimiters)
@@ -86,7 +86,7 @@ namespace Microsoft.PowerShell
             }
             if (IsDelimiter(i, wordDelimiters))
             {
-                _lastWordDelimiter = _buffer[i];
+                _lastWordDelimiter = buffer[i];
                 return i;
             }
             while (!IsAtEndOfLine(i) && IsWhiteSpace(i))
@@ -97,7 +97,7 @@ namespace Microsoft.PowerShell
             {
                 return i + 1;
             }
-            _lastWordDelimiter = _buffer[i-1];
+            _lastWordDelimiter = buffer[i-1];
             return i;
         }
 
@@ -109,7 +109,7 @@ namespace Microsoft.PowerShell
             // Treat just beyond the end of buffer as whitespace because
             // it looks like whitespace to the user even though they haven't
             // entered a character yet.
-            return i >= _buffer.Length || char.IsWhiteSpace(_buffer[i]);
+            return i >= buffer.Length || char.IsWhiteSpace(buffer[i]);
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private bool IsDelimiter(int i, string wordDelimiters)
         {
-            return wordDelimiters.IndexOf(_buffer[i]) >= 0;
+            return wordDelimiters.IndexOf(buffer[i]) >= 0;
         }
 
         /// <summary>
@@ -252,7 +252,7 @@ namespace Microsoft.PowerShell
                 i--;
             }
             int j = i - 1;
-            if (j < 0 || !InWord(i, wordDelimiters) || char.IsWhiteSpace(_buffer[j]))
+            if (j < 0 || !InWord(i, wordDelimiters) || char.IsWhiteSpace(buffer[j]))
             {
                 return i;
             }
@@ -294,7 +294,7 @@ namespace Microsoft.PowerShell
 
         private int ViFindNextGlob(int i)
         {
-            if (i >= _buffer.Length)
+            if (i >= buffer.Length)
             {
                 return i;
             }

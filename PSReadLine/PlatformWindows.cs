@@ -132,10 +132,9 @@ static class PlatformWindows
         return result && (fontInfo.FontFamily & FontFamily.LOWORDER_BITS) == 0;
     }
 
-    private static PSConsoleReadLine _singleton;
-    internal static IConsole OneTimeInit(PSConsoleReadLine singleton)
+    internal static IConsole OneTimeInit(PSConsoleReadLine psConsoleReadLine)
     {
-        _singleton = singleton;
+        _singleton = psConsoleReadLine;
         var breakHandlerGcHandle = GCHandle.Alloc(new BreakHandler(OnBreak));
         SetConsoleCtrlHandler((BreakHandler)breakHandlerGcHandle.Target, true);
         _enableVtOutput = !Console.IsOutputRedirected && SetConsoleOutputVirtualTerminalProcessing();
@@ -332,6 +331,8 @@ static class PlatformWindows
 
         return new SafeFileHandle(handle, true);
     });
+
+    private static PSConsoleReadLine _singleton;
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool GetConsoleMode(IntPtr hConsole, out uint dwMode);

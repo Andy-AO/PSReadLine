@@ -43,19 +43,19 @@ namespace Microsoft.PowerShell
 
         private void PasteAfterImpl()
         {
-            Current = _viRegister.PasteAfter(_buffer, Current);
+            Current = _viRegister.PasteAfter(buffer, Current);
             Render();
         }
 
         private void PasteBeforeImpl()
         {
-            Current = _viRegister.PasteBefore(_buffer, Current);
+            Current = _viRegister.PasteBefore(buffer, Current);
             Render();
         }
 
         private void SaveToClipboard(int startIndex, int length)
         {
-            _viRegister.Record(_buffer, startIndex, length);
+            _viRegister.Record(buffer, startIndex, length);
         }
 
         /// <summary>
@@ -66,8 +66,8 @@ namespace Microsoft.PowerShell
         /// <param name="lineCount">The number of lines to record to the unnamed register</param>
         private void SaveLinesToClipboard(int lineIndex, int lineCount)
         {
-            var range = _buffer.GetRange(lineIndex, lineCount);
-            _viRegister.LinewiseRecord(_buffer.ToString(range.Offset, range.Count));
+            var range = buffer.GetRange(lineIndex, lineCount);
+            _viRegister.LinewiseRecord(buffer.ToString(range.Offset, range.Count));
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Microsoft.PowerShell
                 instigator,
                 arg,
                 moveCursorToEndWhenUndoDelete));
-            Singleton._buffer.Remove(start, count);
+            Singleton.buffer.Remove(start, count);
         }
 
         /// <summary>

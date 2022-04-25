@@ -14,7 +14,7 @@ namespace Microsoft.PowerShell
             int i = Math.Max(0, current);
             while (i > 0)
             {
-                if (Singleton._buffer[--i] == '\n')
+                if (Singleton.buffer[--i] == '\n')
                 {
                     i += 1;
                     break;
@@ -36,7 +36,7 @@ namespace Microsoft.PowerShell
             var index = 0;
             var result = 0;
 
-            for (; index < Singleton._buffer.Length; index++)
+            for (; index < Singleton.buffer.Length; index++)
             {
                 if (nth == lineIndex)
                 {
@@ -44,7 +44,7 @@ namespace Microsoft.PowerShell
                     break;
                 }
 
-                if (Singleton._buffer[index] == '\n')
+                if (Singleton.buffer[index] == '\n')
                 {
                     nth++;
                 }
@@ -69,9 +69,9 @@ namespace Microsoft.PowerShell
         {
             var newCurrent = current;
 
-            for (var position = current; position < Singleton._buffer.Length; position++)
+            for (var position = current; position < Singleton.buffer.Length; position++)
             {
-                if (Singleton._buffer[position] == '\n')
+                if (Singleton.buffer[position] == '\n')
                 {
                     break;
                 }
@@ -103,7 +103,7 @@ namespace Microsoft.PowerShell
 
             var newCurrent = beginningOfLine;
 
-            while (newCurrent < Singleton._buffer.Length && IsVisibleBlank(newCurrent))
+            while (newCurrent < Singleton.buffer.Length && IsVisibleBlank(newCurrent))
             {
                 newCurrent++;
             }
@@ -113,7 +113,7 @@ namespace Microsoft.PowerShell
 
         private static bool IsVisibleBlank(int newCurrent)
         {
-            var c = Singleton._buffer[newCurrent];
+            var c = Singleton.buffer[newCurrent];
 
             // [:blank:] of vim's pattern matching behavior
             // defines blanks as SPACE and TAB characters.

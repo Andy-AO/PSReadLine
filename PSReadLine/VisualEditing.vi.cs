@@ -35,7 +35,7 @@ namespace Microsoft.PowerShell
             {
                 using (TextWriter tw = new StreamWriter(fs))
                 {
-                    tw.Write(Singleton._buffer.ToString());
+                    tw.Write(Singleton.buffer.ToString());
                 }
             }
 
@@ -87,8 +87,8 @@ namespace Microsoft.PowerShell
                     editedCommand = editedCommand.Substring(0, editedCommand.Length - 1);
                 }
                 editedCommand = editedCommand.Replace(Environment.NewLine, "\n");
-                Replace(0, _buffer.Length, editedCommand);
-                Current = _buffer.Length;
+                Replace(0, buffer.Length, editedCommand);
+                Current = buffer.Length;
                 if (_options.EditMode == EditMode.Vi) Current -= 1;
                 Render();
             }

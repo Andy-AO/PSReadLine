@@ -39,9 +39,9 @@ namespace Microsoft.PowerShell
             {
                 int qty = arg as int? ?? 1;
 
-                for (int i = Singleton.Current + 1; i < Singleton._buffer.Length; i++)
+                for (int i = Singleton.Current + 1; i < Singleton.buffer.Length; i++)
                 {
-                    if (Singleton._buffer[i] == keyChar)
+                    if (Singleton.buffer[i] == keyChar)
                     {
                         qty -= 1;
                         if (qty == 0)
@@ -58,9 +58,9 @@ namespace Microsoft.PowerShell
             {
                 int qty = arg as int? ?? 1;
 
-                for (int i = Singleton.Current + 1; i < Singleton._buffer.Length; i++)
+                for (int i = Singleton.Current + 1; i < Singleton.buffer.Length; i++)
                 {
-                    if (Singleton._buffer[i] == keyChar)
+                    if (Singleton.buffer[i] == keyChar)
                     {
                         qty -= 1;
                         if (qty == 0)
@@ -80,7 +80,7 @@ namespace Microsoft.PowerShell
 
                 for (int i = Singleton.Current - 1; i >= 0; i--)
                 {
-                    if (Singleton._buffer[i] == keyChar)
+                    if (Singleton.buffer[i] == keyChar)
                     {
                         qty -= 1;
                         if (qty == 0)
@@ -100,7 +100,7 @@ namespace Microsoft.PowerShell
 
                 for (int i = Singleton.Current - 1; i >= 0; i--)
                 {
-                    if (Singleton._buffer[i] == keyChar)
+                    if (Singleton.buffer[i] == keyChar)
                     {
                         qty -= 1;
                         if (qty == 0)
@@ -214,7 +214,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void DeleteToEnd(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (Singleton.Current >= Singleton._buffer.Length)
+            if (Singleton.Current >= Singleton.buffer.Length)
             {
                 Ding();
                 return;
@@ -285,9 +285,9 @@ namespace Microsoft.PowerShell
                 instigator,
                 arg);
 
-            if (Singleton.Current >= Singleton._buffer.Length)
+            if (Singleton.Current >= Singleton.buffer.Length)
             {
-                Singleton.Current = Math.Max(0, Singleton._buffer.Length - 1);
+                Singleton.Current = Math.Max(0, Singleton.buffer.Length - 1);
             }
             Singleton.Render();
         }
@@ -516,14 +516,14 @@ namespace Microsoft.PowerShell
 
             if (_options.ViModeIndicator == ViModeStyle.Cursor)
             {
-                _console.CursorSize = _normalCursorSize < 50 ? 100 : 25;
+                RLConsole.CursorSize = _normalCursorSize < 50 ? 100 : 25;
             }
             else if (_options.ViModeIndicator == ViModeStyle.Prompt)
             {
-                ConsoleColor savedBackground = _console.BackgroundColor;
-                _console.BackgroundColor = AlternateBackground(_console.BackgroundColor);
+                ConsoleColor savedBackground = RLConsole.BackgroundColor;
+                RLConsole.BackgroundColor = AlternateBackground(RLConsole.BackgroundColor);
                 InvokePrompt();
-                _console.BackgroundColor = savedBackground;
+                RLConsole.BackgroundColor = savedBackground;
             }
             else if (_options.ViModeIndicator == ViModeStyle.Script && _options.ViModeChangeHandler != null)
             {
@@ -538,7 +538,7 @@ namespace Microsoft.PowerShell
 
             if (_options.ViModeIndicator == ViModeStyle.Cursor)
             {
-                _console.CursorSize = _normalCursorSize;
+                RLConsole.CursorSize = _normalCursorSize;
             }
             else if (_options.ViModeIndicator == ViModeStyle.Prompt)
             {
@@ -612,7 +612,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void InvertCase(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (Singleton.Current >= Singleton._buffer.Length)
+            if (Singleton.Current >= Singleton.buffer.Length)
             {
                 Ding();
                 return;
@@ -620,9 +620,9 @@ namespace Microsoft.PowerShell
 
             int qty = arg as int? ?? 1;
 
-            for (; qty > 0 && Singleton.Current < Singleton._buffer.Length; qty--)
+            for (; qty > 0 && Singleton.Current < Singleton.buffer.Length; qty--)
             {
-                char c = Singleton._buffer[Singleton.Current];
+                char c = Singleton.buffer[Singleton.Current];
                 if (Char.IsLetter(c))
                 {
                     char newChar = Char.IsUpper(c) ? Char.ToLower(c, CultureInfo.CurrentCulture) : char.ToUpper(c, CultureInfo.CurrentCulture);
@@ -643,9 +643,9 @@ namespace Microsoft.PowerShell
                         arg
                     ));
 
-                    Singleton._buffer[Singleton.Current] = newChar;
+                    Singleton.buffer[Singleton.Current] = newChar;
                 }
-                Singleton.MoveCursor(Math.Min(Singleton.Current + 1, Singleton._buffer.Length));
+                Singleton.MoveCursor(Math.Min(Singleton.Current + 1, Singleton.buffer.Length));
             }
             Singleton.Render();
         }
@@ -656,7 +656,7 @@ namespace Microsoft.PowerShell
         public static void SwapCharacters(ConsoleKeyInfo? key = null, object arg = null)
         {
             // if in vi command mode, the cursor can't go as far
-            var bufferLength = Singleton._buffer.Length;
+            var bufferLength = Singleton.buffer.Length;
             int cursorRightLimit = bufferLength + ViEndOfLineFactor;
             if (Singleton.Current <= 0 || bufferLength < 2 || Singleton.Current > cursorRightLimit)
             {
@@ -677,11 +677,11 @@ namespace Microsoft.PowerShell
 
         private void SwapCharactersImpl(int cursor)
         {
-            char current = _buffer[cursor];
-            char previous = _buffer[cursor - 1];
+            char current = buffer[cursor];
+            char previous = buffer[cursor - 1];
 
-            _buffer[cursor] = previous;
-            _buffer[cursor - 1] = current;
+            buffer[cursor] = previous;
+            buffer[cursor - 1] = current;
         }
 
         /// <summary>
@@ -742,16 +742,16 @@ namespace Microsoft.PowerShell
         /// <returns></returns>
         private static int DeleteLineImpl(int lineIndex, int lineCount)
         {
-            var range = Singleton._buffer.GetRange(lineIndex, lineCount);
+            var range = Singleton.buffer.GetRange(lineIndex, lineCount);
 
-            var deleteText = Singleton._buffer.ToString(range.Offset, range.Count);
+            var deleteText = Singleton.buffer.ToString(range.Offset, range.Count);
 
             _viRegister.LinewiseRecord(deleteText);
 
             var deletePosition = range.Offset;
             var anchor = Singleton.Current;
 
-            Singleton._buffer.Remove(range.Offset, range.Count);
+            Singleton.buffer.Remove(range.Offset, range.Count);
 
             Singleton.SaveEditItem(
                 EditItemDeleteLines.Create(
@@ -1237,7 +1237,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViAcceptLineOrExit(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (Singleton._buffer.Length > 0)
+            if (Singleton.buffer.Length > 0)
             {
                 ViInsertMode(key, arg);
                 Singleton.AcceptLineImpl(false);
@@ -1255,7 +1255,7 @@ namespace Microsoft.PowerShell
         {
             Singleton._groupUndoHelper.StartGroup(ViInsertLine, arg);
             Singleton.MoveToBeginningOfPhrase();
-            Singleton._buffer.Insert(Singleton.Current, '\n');
+            Singleton.buffer.Insert(Singleton.Current, '\n');
             //_singleton._current = Math.Max(0, _singleton._current - 1);
             Singleton.SaveEditItem(EditItemInsertChar.Create('\n', Singleton.Current));
             Singleton.Render();
@@ -1276,7 +1276,7 @@ namespace Microsoft.PowerShell
             {
                 return true;
             }
-            if (_buffer[Current - 1] == '\n')
+            if (buffer[Current - 1] == '\n')
             {
                 return true;
             }
@@ -1293,14 +1293,14 @@ namespace Microsoft.PowerShell
             int insertPoint = 0;
             if (Singleton.IsAtEndOfLine(Singleton.Current))
             {
-                insertPoint = Singleton._buffer.Length;
-                Singleton._buffer.Append('\n');
+                insertPoint = Singleton.buffer.Length;
+                Singleton.buffer.Append('\n');
                 Singleton.Current = insertPoint;
             }
             else
             {
                 insertPoint = Singleton.Current + 1;
-                Singleton._buffer.Insert(insertPoint, '\n');
+                Singleton.buffer.Insert(insertPoint, '\n');
             }
             Singleton.SaveEditItem(EditItemInsertChar.Create('\n', insertPoint));
             Singleton.Render();
@@ -1317,15 +1317,15 @@ namespace Microsoft.PowerShell
 
         private bool IsAtEndOfPhrase()
         {
-            if (_buffer.Length == 0 || Current == _buffer.Length + ViEndOfLineFactor)
+            if (buffer.Length == 0 || Current == buffer.Length + ViEndOfLineFactor)
             {
                 return true;
             }
-            if (Current == _buffer.Length && _buffer[Current - 1] == '\n')
+            if (Current == buffer.Length && buffer[Current - 1] == '\n')
             {
                 return true;
             }
-            if (_buffer[Current] == '\n')
+            if (buffer[Current] == '\n')
             {
                 return true;
             }
@@ -1344,7 +1344,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                Singleton._buffer[Singleton.Current] = ' ';
+                Singleton.buffer[Singleton.Current] = ' ';
                 Singleton._groupUndoHelper.StartGroup(ViJoinLines, arg);
                 Singleton.SaveEditItem(EditItemDelete.Create(
                     "\n",

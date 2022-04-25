@@ -16,7 +16,7 @@ namespace Microsoft.PowerShell
     public partial class PSConsoleReadLine
     {
         private readonly PSConsoleReadLineOptions _options;
-        private PSConsoleReadLineOptions Options => _options;
+        public PSConsoleReadLineOptions Options => _options;
 
         private void SetOptionsInternal(SetPSReadLineOption options)
         {
@@ -137,7 +137,7 @@ namespace Microsoft.PowerShell
             }
             if (options._predictionSource.HasValue)
             {
-                if (_console is PlatformWindows.LegacyWin32Console && options.PredictionSource != PredictionSource.None)
+                if (RLConsole is PlatformWindows.LegacyWin32Console && options.PredictionSource != PredictionSource.None)
                 {
                     throw new ArgumentException(PSReadLineResources.PredictiveSuggestionNotSupported);
                 }

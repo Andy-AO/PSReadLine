@@ -62,7 +62,7 @@ namespace Microsoft.PowerShell
 
                 // Calculate the 'SOURCE' portion to be rendered.
                 int sourceStrLen = Source.Length;
-                int sourceWidth = LengthInBufferCells(Source);
+                int sourceWidth = _renderer.LengthInBufferCells(Source);
                 if (sourceWidth > PredictionListView.SourceMaxWidth)
                 {
                     sourceWidth = PredictionListView.SourceMaxWidth;
@@ -81,7 +81,7 @@ namespace Microsoft.PowerShell
                     .EndColorSection(selectionHighlighting)
                     .Append(' ');
 
-                int textLengthInCells = LengthInBufferCells(SuggestionText);
+                int textLengthInCells = _renderer.LengthInBufferCells(SuggestionText);
                 if (textLengthInCells <= textWidth)
                 {
                     // Things are easy when the suggestion text can fit in the text width.
@@ -126,7 +126,7 @@ namespace Microsoft.PowerShell
                         case 0: {
                             // The suggestion text starts with the user input, so we can divide the suggestion text into
                             // the user input (left portion) and the prediction text (right portion).
-                            int inputLenInCells = LengthInBufferCells(input);
+                            int inputLenInCells = _renderer.LengthInBufferCells(input);
                             if (inputLenInCells < textWidth / 2)
                             {
                                 // If the user input portion takes less than half of the text width,
@@ -141,7 +141,7 @@ namespace Microsoft.PowerShell
                             else
                             {
                                 // We want to reserve 5 cells at least to display the trailing characters of the user input (the left portion).
-                                int rightLenInCells = LengthInBufferCells(SuggestionText, input.Length, SuggestionText.Length);
+                                int rightLenInCells = _renderer.LengthInBufferCells(SuggestionText, input.Length, SuggestionText.Length);
                                 if (rightLenInCells <= textWidth - ellipsisLength - 5)
                                 {
                                     // If the prediction text (the right portion) can fit in the rest width, the list item
@@ -179,7 +179,8 @@ namespace Microsoft.PowerShell
                             //  - prediction text on the left of the user input (left portion);
                             //  - user input (mid portion);
                             //  - prediction text on the right of the user input (right portion).
-                            int leftMidLenInCells = LengthInBufferCells(SuggestionText, 0, InputMatchIndex + input.Length);
+                            int end = InputMatchIndex + input.Length;
+                            int leftMidLenInCells = _renderer.LengthInBufferCells(SuggestionText, 0, end);
                             int rightStartindex = InputMatchIndex + input.Length;
                             // Round up the 2/3 of the text width and use that as the threshold.
                             int threshold = DivideAndRoundUp(textWidth * 2, 3);
@@ -196,7 +197,7 @@ namespace Microsoft.PowerShell
                                 break;
                             }
 
-                            int midRightLenInCells = LengthInBufferCells(SuggestionText, InputMatchIndex, SuggestionText.Length);
+                            int midRightLenInCells = _renderer.LengthInBufferCells(SuggestionText, InputMatchIndex, SuggestionText.Length);
                             if (midRightLenInCells <= threshold)
                             {
                                 // Otherwise, if the (mid+right) portions take up to 2/3 of the text width, we just truncate the suggestion text at the beginning.
@@ -210,7 +211,8 @@ namespace Microsoft.PowerShell
                                 break;
                             }
 
-                            int midLenInCells = LengthInBufferCells(SuggestionText, InputMatchIndex, InputMatchIndex + input.Length);
+                            int end1 = InputMatchIndex + input.Length;
+                            int midLenInCells = _renderer.LengthInBufferCells(SuggestionText, InputMatchIndex, end1);
                             // Round up the 1/3 of the text width and use that as the threshold.
                             threshold = DivideAndRoundUp(textWidth, 3);
                             if (midLenInCells <= threshold)

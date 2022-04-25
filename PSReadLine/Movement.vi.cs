@@ -28,7 +28,7 @@ namespace Microsoft.PowerShell
             while (numericArg-- > 0)
             {
                 int i = Singleton.ViFindNextWordPoint(Singleton.Options.WordDelimiters);
-                if (i >= Singleton._buffer.Length)
+                if (i >= Singleton.buffer.Length)
                 {
                     i += ViEndOfLineFactor;
                 }
@@ -94,7 +94,7 @@ namespace Microsoft.PowerShell
                 i = Singleton.ViFindNextGlob(i);
             }
 
-            int newPosition = Math.Min(i, Math.Max(0, Singleton._buffer.Length - 1));
+            int newPosition = Math.Min(i, Math.Max(0, Singleton.buffer.Length - 1));
             if (newPosition != Singleton.Current)
             {
                 Singleton.MoveCursor(newPosition);
@@ -177,7 +177,7 @@ namespace Microsoft.PowerShell
         public static void NextWordEnd(ConsoleKeyInfo? key = null, object arg = null)
         {
             int qty = arg as int? ?? 1;
-            for (; qty > 0 && Singleton.Current < Singleton._buffer.Length - 1; qty--)
+            for (; qty > 0 && Singleton.Current < Singleton.buffer.Length - 1; qty--)
             {
                 Singleton.MoveCursor(Singleton.ViFindNextWordEnd(Singleton.Options.WordDelimiters));
             }
@@ -195,13 +195,13 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            if (col < Singleton._buffer.Length + ViEndOfLineFactor)
+            if (col < Singleton.buffer.Length + ViEndOfLineFactor)
             {
-                Singleton.MoveCursor(Math.Min(col, Singleton._buffer.Length) - 1);
+                Singleton.MoveCursor(Math.Min(col, Singleton.buffer.Length) - 1);
             }
             else
             {
-                Singleton.MoveCursor(Singleton._buffer.Length + ViEndOfLineFactor);
+                Singleton.MoveCursor(Singleton.buffer.Length + ViEndOfLineFactor);
                 Ding();
             }
         }
@@ -234,12 +234,12 @@ namespace Microsoft.PowerShell
 
         private int ViFindBrace(int i)
         {
-            if (_buffer.Length == 0)
+            if (buffer.Length == 0)
             {
                 return i;
             }
 
-            switch (_buffer[i])
+            switch (buffer[i])
             {
                 case '{':
                     return ViFindForward(i, '}', withoutPassing: '{');
@@ -266,19 +266,19 @@ namespace Microsoft.PowerShell
             }
             int i = start - 1;
             int withoutPassingCount = 0;
-            while (i != 0 && !(_buffer[i] == target && withoutPassingCount == 0))
+            while (i != 0 && !(buffer[i] == target && withoutPassingCount == 0))
             {
-                if (_buffer[i] == withoutPassing)
+                if (buffer[i] == withoutPassing)
                 {
                     withoutPassingCount++;
                 }
-                if (_buffer[i] == target)
+                if (buffer[i] == target)
                 {
                     withoutPassingCount--;
                 }
                 i--;
             }
-            if (_buffer[i] == target && withoutPassingCount == 0)
+            if (buffer[i] == target && withoutPassingCount == 0)
             {
                 return i;
             }
@@ -293,19 +293,19 @@ namespace Microsoft.PowerShell
             }
             int i = start + 1;
             int withoutPassingCount = 0;
-            while (!IsAtEndOfLine(i) && !(_buffer[i] == target && withoutPassingCount == 0))
+            while (!IsAtEndOfLine(i) && !(buffer[i] == target && withoutPassingCount == 0))
             {
-                if (_buffer[i] == withoutPassing)
+                if (buffer[i] == withoutPassing)
                 {
                     withoutPassingCount++;
                 }
-                if (_buffer[i] == target)
+                if (buffer[i] == target)
                 {
                     withoutPassingCount--;
                 }
                 i++;
             }
-            if (_buffer[i] == target && withoutPassingCount == 0)
+            if (buffer[i] == target && withoutPassingCount == 0)
             {
                 return i;
             }

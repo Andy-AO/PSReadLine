@@ -148,7 +148,7 @@ namespace Test
 
         // These colors are random - we just use these colors instead of the defaults
         // so the tests aren't sensitive to tweaks to the default colors.
-        internal static readonly ConsoleColor[] Colors = new []
+        internal static readonly ConsoleColor[] Colors = new[]
         {
         /*None*/      ConsoleColor.DarkRed,
         /*Comment*/   ConsoleColor.Blue,
@@ -258,7 +258,7 @@ namespace Test
         static readonly NextLineToken NextLine = new NextLineToken();
 
         private class SelectionToken { public string _text; }
-        private static SelectionToken Selected(string s) { return new SelectionToken {_text = s}; }
+        private static SelectionToken Selected(string s) { return new SelectionToken { _text = s }; }
 
         private CHAR_INFO[] CreateCharInfoBuffer(int lines, params object[] items)
         {
@@ -350,7 +350,7 @@ namespace Test
             return action;
         }
 
-        private class KeyPlaceholder {}
+        private class KeyPlaceholder { }
         private static readonly KeyPlaceholder InputAcceptedNow = new KeyPlaceholder();
 
         private object[] Keys(params object[] input)
@@ -391,8 +391,9 @@ namespace Test
                     // We've skipped any actions at the end, this is
                     // the last key.  If it's not Enter, add Enter at the
                     // end for convenience.
-                    var consoleKeyInfo = (ConsoleKeyInfo) list[i];
-                    if (consoleKeyInfo.Key != ConsoleKey.Enter || consoleKeyInfo.Modifiers != 0) {
+                    var consoleKeyInfo = (ConsoleKeyInfo)list[i];
+                    if (consoleKeyInfo.Key != ConsoleKey.Enter || consoleKeyInfo.Modifiers != 0)
+                    {
                         list.Add(_.Enter);
                     }
 
@@ -451,10 +452,10 @@ namespace Test
 
         private void SetPrompt(string prompt)
         {
-            var options = new SetPSReadLineOption {ExtraPromptLineCount = 0};
+            var options = new SetPSReadLineOption { ExtraPromptLineCount = 0 };
             if (string.IsNullOrEmpty(prompt))
             {
-                options.PromptText = new [] {""};
+                options.PromptText = new[] { "" };
                 PSConsoleReadLine.SetOptions(options);
                 return;
             }
@@ -465,7 +466,7 @@ namespace Test
                 if (!char.IsWhiteSpace(prompt[i])) break;
             }
 
-            options.PromptText = new [] { prompt.Substring(i) };
+            options.PromptText = new[] { prompt.Substring(i) };
 
             var lineCount = 1 + prompt.Count(c => c == '\n');
             if (lineCount > 1)
@@ -553,14 +554,18 @@ namespace Test
 
             _console = console ?? new TestConsole(_);
             _mockedMethods = new MockedMethods();
-            var instance = (PSConsoleReadLine)typeof(PSConsoleReadLine)
+            var aRL = (PSConsoleReadLine)typeof(PSConsoleReadLine)
                 .GetField("_singleton", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+
             typeof(PSConsoleReadLine)
                 .GetField("_mockableMethods", BindingFlags.Instance | BindingFlags.NonPublic)
-                .SetValue(instance, _mockedMethods);
-            typeof(PSConsoleReadLine)
+                .SetValue(aRL, _mockedMethods);
+
+            var aRenderer = Renderer.Singleton;
+
+            typeof(Renderer)
                 .GetField("_console", BindingFlags.Instance | BindingFlags.NonPublic)
-                .SetValue(instance, _console);
+                .SetValue(aRenderer, _console);
 
             _emptyLine ??= new string(' ', _console.BufferWidth);
 
@@ -569,23 +574,23 @@ namespace Test
 
             var options = new SetPSReadLineOption
             {
-                AddToHistoryHandler               = PSConsoleReadLineOptions.DefaultAddToHistoryHandler,
-                AnsiEscapeTimeout                 = 0,
-                BellStyle                         = PSConsoleReadLineOptions.DefaultBellStyle,
-                CompletionQueryItems              = PSConsoleReadLineOptions.DefaultCompletionQueryItems,
-                ContinuationPrompt                = PSConsoleReadLineOptions.DefaultContinuationPrompt,
-                DingDuration                      = 1,  // Make tests virtually silent when they ding
-                DingTone                          = 37, // Make tests virtually silent when they ding
-                ExtraPromptLineCount              = PSConsoleReadLineOptions.DefaultExtraPromptLineCount,
-                HistoryNoDuplicates               = PSConsoleReadLineOptions.DefaultHistoryNoDuplicates,
-                HistorySaveStyle                  = HistorySaveStyle.SaveNothing,
-                HistorySearchCaseSensitive        = PSConsoleReadLineOptions.DefaultHistorySearchCaseSensitive,
-                HistorySearchCursorMovesToEnd     = PSConsoleReadLineOptions.DefaultHistorySearchCursorMovesToEnd,
-                MaximumHistoryCount               = PSConsoleReadLineOptions.DefaultMaximumHistoryCount,
-                MaximumKillRingCount              = PSConsoleReadLineOptions.DefaultMaximumKillRingCount,
-                ShowToolTips                      = PSConsoleReadLineOptions.DefaultShowToolTips,
-                WordDelimiters                    = PSConsoleReadLineOptions.DefaultWordDelimiters,
-                PromptText                        = new [] {""},
+                AddToHistoryHandler = PSConsoleReadLineOptions.DefaultAddToHistoryHandler,
+                AnsiEscapeTimeout = 0,
+                BellStyle = PSConsoleReadLineOptions.DefaultBellStyle,
+                CompletionQueryItems = PSConsoleReadLineOptions.DefaultCompletionQueryItems,
+                ContinuationPrompt = PSConsoleReadLineOptions.DefaultContinuationPrompt,
+                DingDuration = 1,  // Make tests virtually silent when they ding
+                DingTone = 37, // Make tests virtually silent when they ding
+                ExtraPromptLineCount = PSConsoleReadLineOptions.DefaultExtraPromptLineCount,
+                HistoryNoDuplicates = PSConsoleReadLineOptions.DefaultHistoryNoDuplicates,
+                HistorySaveStyle = HistorySaveStyle.SaveNothing,
+                HistorySearchCaseSensitive = PSConsoleReadLineOptions.DefaultHistorySearchCaseSensitive,
+                HistorySearchCursorMovesToEnd = PSConsoleReadLineOptions.DefaultHistorySearchCursorMovesToEnd,
+                MaximumHistoryCount = PSConsoleReadLineOptions.DefaultMaximumHistoryCount,
+                MaximumKillRingCount = PSConsoleReadLineOptions.DefaultMaximumKillRingCount,
+                ShowToolTips = PSConsoleReadLineOptions.DefaultShowToolTips,
+                WordDelimiters = PSConsoleReadLineOptions.DefaultWordDelimiters,
+                PromptText = new[] { "" },
                 Colors = new Hashtable {
                     { "ContinuationPrompt",       MakeCombinedColor(_console.ForegroundColor, _console.BackgroundColor) },
                     { "Emphasis",                 MakeCombinedColor(PSConsoleReadLineOptions.DefaultEmphasisColor, _console.BackgroundColor) },
@@ -595,22 +600,22 @@ namespace Test
 
             switch (keyMode)
             {
-            case KeyMode.Cmd:
-                options.EditMode = EditMode.Windows;
-                break;
-            case KeyMode.Emacs:
-                options.EditMode = EditMode.Emacs;
-                break;
-            case KeyMode.Vi:
-                options.EditMode = EditMode.Vi;
-                break;
+                case KeyMode.Cmd:
+                    options.EditMode = EditMode.Windows;
+                    break;
+                case KeyMode.Emacs:
+                    options.EditMode = EditMode.Emacs;
+                    break;
+                case KeyMode.Vi:
+                    options.EditMode = EditMode.Vi;
+                    break;
             }
 
             PSConsoleReadLine.SetOptions(options);
 
             foreach (var keyHandler in keyHandlers)
             {
-                PSConsoleReadLine.SetKeyHandler(new [] {keyHandler.Chord}, keyHandler.Handler, "", "");
+                PSConsoleReadLine.SetKeyHandler(new[] { keyHandler.Chord }, keyHandler.Handler, "", "");
             }
 
             var tokenTypes = new[]
@@ -624,7 +629,7 @@ namespace Test
             {
                 colors.Add(tokenTypes[i], MakeCombinedColor(Colors[i], BackgroundColors[i]));
             }
-            var colorOptions = new SetPSReadLineOption {Colors = colors};
+            var colorOptions = new SetPSReadLineOption { Colors = colors };
             PSConsoleReadLine.SetOptions(colorOptions);
         }
     }

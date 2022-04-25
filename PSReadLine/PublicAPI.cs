@@ -74,13 +74,13 @@ namespace Microsoft.PowerShell
             Singleton.SaveEditItem(EditItemInsertChar.Create(c, Singleton.Current));
 
             // Use Append if possible because Insert at end makes StringBuilder quite slow.
-            if (Singleton.Current == Singleton._buffer.Length)
+            if (Singleton.Current == Singleton.buffer.Length)
             {
-                Singleton._buffer.Append(c);
+                Singleton.buffer.Append(c);
             }
             else
             {
-                Singleton._buffer.Insert(Singleton.Current, c);
+                Singleton.buffer.Insert(Singleton.Current, c);
             }
             Singleton.Current += 1;
             Singleton.Render();
@@ -95,13 +95,13 @@ namespace Microsoft.PowerShell
             Singleton.SaveEditItem(EditItemInsertString.Create(s, Singleton.Current));
 
             // Use Append if possible because Insert at end makes StringBuilder quite slow.
-            if (Singleton.Current == Singleton._buffer.Length)
+            if (Singleton.Current == Singleton.buffer.Length)
             {
-                Singleton._buffer.Append(s);
+                Singleton.buffer.Append(s);
             }
             else
             {
-                Singleton._buffer.Insert(Singleton.Current, s);
+                Singleton.buffer.Insert(Singleton.Current, s);
             }
             Singleton.Current += s.Length;
             Singleton.Render();
@@ -127,11 +127,11 @@ namespace Microsoft.PowerShell
         /// <param name="instigatorArg">The argument to the action that initiated the replace (used for undo)</param>
         public static void Replace(int start, int length, string replacement, Action<ConsoleKeyInfo?, object> instigator = null, object instigatorArg = null)
         {
-            if (start < 0 || start > Singleton._buffer.Length)
+            if (start < 0 || start > Singleton.buffer.Length)
             {
                 throw new ArgumentException(PSReadLineResources.StartOutOfRange, nameof(start));
             }
-            if (length > (Singleton._buffer.Length - start) || length < 0)
+            if (length > (Singleton.buffer.Length - start) || length < 0)
             {
                 throw new ArgumentException(PSReadLineResources.ReplacementLengthInvalid, nameof(length));
             }
@@ -143,13 +143,13 @@ namespace Microsoft.PowerShell
                 Singleton.StartEditGroup();
             }
 
-            var str = Singleton._buffer.ToString(start, length);
+            var str = Singleton.buffer.ToString(start, length);
             Singleton.SaveEditItem(EditItemDelete.Create(str, start));
-            Singleton._buffer.Remove(start, length);
+            Singleton.buffer.Remove(start, length);
             if (replacement != null)
             {
                 Singleton.SaveEditItem(EditItemInsertString.Create(replacement, start));
-                Singleton._buffer.Insert(start, replacement);
+                Singleton.buffer.Insert(start, replacement);
                 Singleton.Current = start + replacement.Length;
             }
             else
@@ -169,7 +169,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void GetBufferState(out string input, out int cursor)
         {
-            input = Singleton._buffer.ToString();
+            input = Singleton.buffer.ToString();
             cursor = Singleton.Current;
         }
 
@@ -179,7 +179,7 @@ namespace Microsoft.PowerShell
         public static void GetBufferState(out Ast ast, out Token[] tokens, out ParseError[] parseErrors, out int cursor)
         {
             PSConsoleReadLine tempQualifier = Singleton;
-            tempQualifier._buffer.ToString();
+            tempQualifier.buffer.ToString();
             ast = Singleton.RLAst;
             tokens = Singleton.Tokens;
             parseErrors = Singleton.ParseErrors;
@@ -209,9 +209,9 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SetCursorPosition(int cursor)
         {
-            if (cursor > Singleton._buffer.Length + ViEndOfLineFactor)
+            if (cursor > Singleton.buffer.Length + ViEndOfLineFactor)
             {
-                cursor = Singleton._buffer.Length + ViEndOfLineFactor;
+                cursor = Singleton.buffer.Length + ViEndOfLineFactor;
             }
             if (cursor < 0)
             {

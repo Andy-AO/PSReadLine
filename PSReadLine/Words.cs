@@ -89,7 +89,7 @@ namespace Microsoft.PowerShell
 
         private bool InWord(int index, string wordDelimiters)
         {
-            char c = _buffer[index];
+            char c = buffer[index];
             return InWord(c, wordDelimiters);
         }
 
@@ -104,7 +104,7 @@ namespace Microsoft.PowerShell
         private int FindForwardWordPoint(string wordDelimiters)
         {
             int i = Current;
-            if (i == _buffer.Length)
+            if (i == buffer.Length)
             {
                 return i;
             }
@@ -112,7 +112,7 @@ namespace Microsoft.PowerShell
             if (!InWord(i, wordDelimiters))
             {
                 // Scan to end of current non-word region
-                while (i < _buffer.Length)
+                while (i < buffer.Length)
                 {
                     if (InWord(i, wordDelimiters))
                     {
@@ -121,7 +121,7 @@ namespace Microsoft.PowerShell
                     i += 1;
                 }
             }
-            while (i < _buffer.Length)
+            while (i < buffer.Length)
             {
                 if (!InWord(i, wordDelimiters))
                 {
@@ -138,7 +138,7 @@ namespace Microsoft.PowerShell
         private int FindNextWordPoint(string wordDelimiters)
         {
             int i = Singleton.Current;
-            if (i == Singleton._buffer.Length)
+            if (i == Singleton.buffer.Length)
             {
                 return i;
             }
@@ -146,7 +146,7 @@ namespace Microsoft.PowerShell
             if (InWord(i, wordDelimiters))
             {
                 // Scan to end of current word region
-                while (i < Singleton._buffer.Length)
+                while (i < Singleton.buffer.Length)
                 {
                     if (!InWord(i, wordDelimiters))
                     {
@@ -156,7 +156,7 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            while (i < Singleton._buffer.Length)
+            while (i < Singleton.buffer.Length)
             {
                 if (InWord(i, wordDelimiters))
                 {

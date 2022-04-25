@@ -16,7 +16,7 @@ namespace Microsoft.PowerShell
 
             protected void MoveCursorDown(int cnt)
             {
-                IConsole console = Singleton._console;
+                IConsole console = Singleton.RLConsole;
                 while (cnt-- > 0)
                 {
                     console.Write("\n");
@@ -35,7 +35,7 @@ namespace Microsoft.PowerShell
 
             protected void AdjustForPossibleScroll(int cnt)
             {
-                IConsole console = Singleton._console;
+                IConsole console = Singleton.RLConsole;
                 var scrollCnt = console.CursorTop + cnt + 1 - console.BufferHeight;
                 if (scrollCnt > 0)
                 {
@@ -48,7 +48,7 @@ namespace Microsoft.PowerShell
             protected void MoveCursorToStartDrawingPosition(IConsole console)
             {
                 // Calculate the coord to place the cursor at the end of current input.
-                Point bufferEndPoint = Singleton.ConvertOffsetToPoint(Singleton._buffer.Length);
+                Point bufferEndPoint = _renderer.ConvertOffsetToPoint(Singleton.buffer.Length);
                 // Top must be initialized before any possible adjustion by 'AdjustForPossibleScroll' or 'AdjustForActualScroll',
                 // otherwise its value would be corrupted and cause rendering issue.
                 Top = bufferEndPoint.Y + 1;
@@ -78,12 +78,12 @@ namespace Microsoft.PowerShell
 
             public void SaveCursor()
             {
-                IConsole console = Singleton._console;
+                IConsole console = Singleton.RLConsole;
                 _savedCursorLeft = console.CursorLeft;
                 _savedCursorTop = console.CursorTop;
             }
 
-            public void RestoreCursor() => Singleton._console.SetCursorPosition(_savedCursorLeft, _savedCursorTop);
+            public void RestoreCursor() => Singleton.RLConsole.SetCursorPosition(_savedCursorLeft, _savedCursorTop);
         }
     }
 }

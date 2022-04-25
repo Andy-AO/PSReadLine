@@ -45,7 +45,7 @@ namespace Microsoft.PowerShell
         {
             var tmp = Singleton._mark;
             Singleton._mark = Singleton.Current;
-            Singleton.MoveCursor(Math.Min(tmp, Singleton._buffer.Length));
+            Singleton.MoveCursor(Math.Min(tmp, Singleton.buffer.Length));
         }
 
         /// <summary>
@@ -69,9 +69,9 @@ namespace Microsoft.PowerShell
                     _killCommandCount++;
                 return;
             }
-            var killText = _buffer.ToString(start, length);
+            var killText = buffer.ToString(start, length);
             SaveEditItem(EditItemDelete.Create(killText, start));
-            _buffer.Remove(start, length);
+            buffer.Remove(start, length);
             Current = start;
             Render();
             if (_killCommandCount > 0)
@@ -111,7 +111,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void KillLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton.Kill(Singleton.Current, Singleton._buffer.Length - Singleton.Current, false);
+            Singleton.Kill(Singleton.Current, Singleton.buffer.Length - Singleton.Current, false);
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace Microsoft.PowerShell
         {
             var token = Singleton.FindToken(Singleton.Current, FindTokenMode.CurrentOrNext);
             var end = (token.Kind == TokenKind.EndOfInput)
-                ? Singleton._buffer.Length
+                ? Singleton.buffer.Length
                 : token.Extent.EndOffset;
             Singleton.Kill(Singleton.Current, end - Singleton.Current, false);
         }
@@ -430,7 +430,7 @@ namespace Microsoft.PowerShell
         {
             Singleton._visualSelectionCommandCount += 1;
             Singleton._mark = 0;
-            Singleton.Current = Singleton._buffer.Length;
+            Singleton.Current = Singleton.buffer.Length;
             Singleton.RenderWithPredictionQueryPaused();
         }
 
@@ -671,11 +671,11 @@ namespace Microsoft.PowerShell
             if (Singleton._visualSelectionCommandCount > 0)
             {
                 Singleton.GetRegion(out var start, out var length);
-                textToSet = Singleton._buffer.ToString(start, length);
+                textToSet = Singleton.buffer.ToString(start, length);
             }
             else
             {
-                textToSet = Singleton._buffer.ToString();
+                textToSet = Singleton.buffer.ToString();
             }
             if (!string.IsNullOrEmpty(textToSet))
             {
@@ -706,7 +706,7 @@ namespace Microsoft.PowerShell
             if (Singleton._visualSelectionCommandCount > 0)
             {
                 Singleton.GetRegion(out var start, out var length);
-                Clipboard.SetText(Singleton._buffer.ToString(start, length));
+                Clipboard.SetText(Singleton.buffer.ToString(start, length));
                 Delete(start, length);
             }
         }

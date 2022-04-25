@@ -83,14 +83,14 @@ namespace Microsoft.PowerShell
         public static void CancelLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             Singleton.ClearStatusMessage(false);
-            Singleton.Current = Singleton._buffer.Length;
+            Singleton.Current = Singleton.buffer.Length;
 
             using var _ = Singleton._prediction.DisableScoped();
             Singleton.ForceRender();
 
-            Singleton._console.Write("\x1b[91m^C\x1b[0m");
+            Singleton.RLConsole.Write("\x1b[91m^C\x1b[0m");
 
-            Singleton._buffer.Clear(); // Clear so we don't actually run the input
+            Singleton.buffer.Clear(); // Clear so we don't actually run the input
             Singleton.Current = 0; // If Render is called, _current must be correct.
             Singleton._currentHistoryIndex = Singleton._history.Count;
             Singleton._inputAccepted = true;
@@ -102,7 +102,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ForwardDeleteInput(ConsoleKeyInfo? key = null, object arg = null)
         {
-            ForwardDeleteImpl(Singleton._buffer.Length, ForwardDeleteInput);
+            ForwardDeleteImpl(Singleton.buffer.Length, ForwardDeleteInput);
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Microsoft.PowerShell
         private static void ForwardDeleteImpl(int endPosition, Action<ConsoleKeyInfo?, object> instigator)
         {
             var current = Singleton.Current;
-            var buffer = Singleton._buffer;
+            var buffer = Singleton.buffer;
 
             if (buffer.Length > 0 && current < endPosition)
             {
@@ -184,7 +184,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            if (Singleton._buffer.Length > 0 && Singleton.Current > 0)
+            if (Singleton.buffer.Length > 0 && Singleton.Current > 0)
             {
                 int qty = arg as int? ?? 1;
                 if (qty < 1) return; // Ignore useless counts
@@ -207,16 +207,16 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            if (_buffer.Length > 0)
+            if (buffer.Length > 0)
             {
-                if (Current < _buffer.Length)
+                if (Current < buffer.Length)
                 {
-                    qty = Math.Min(qty, Singleton._buffer.Length - Singleton.Current);
+                    qty = Math.Min(qty, Singleton.buffer.Length - Singleton.Current);
 
                     RemoveTextToViRegister(Current, qty, DeleteChar, qty, !InViEditMode());
-                    if (Current >= _buffer.Length)
+                    if (Current >= buffer.Length)
                     {
-                        Current = Math.Max(0, _buffer.Length + ViEndOfLineFactor);
+                        Current = Math.Max(0, buffer.Length + ViEndOfLineFactor);
                     }
                     Render();
                 }
@@ -250,7 +250,7 @@ namespace Microsoft.PowerShell
         {
             using var _ = _prediction.DisableScoped();
 
-            _buffer.ToString();
+            buffer.ToString();
             if (ParseErrors.Any(e => e.IncompleteInput))
             {
                 Insert('\n');
@@ -269,7 +269,7 @@ namespace Microsoft.PowerShell
 
             var insertionPoint = Current;
             // Make sure cursor is at the end before writing the line
-            Current = _buffer.Length;
+            Current = buffer.Length;
 
             if (renderNeeded)
             {
@@ -320,7 +320,7 @@ namespace Microsoft.PowerShell
             // Clear the prediction view if there is one.
             _prediction.ActiveView.Clear(cursorAtEol: true);
 
-            _console.Write("\n");
+            RLConsole.Write("\n");
             _inputAccepted = true;
             return true;
         }
@@ -531,9 +531,9 @@ namespace Microsoft.PowerShell
         public static void InsertLineBelow(ConsoleKeyInfo? key = null, object arg = null)
         {
             int i = Singleton.Current;
-            for (; i < Singleton._buffer.Length; i++)
+            for (; i < Singleton.buffer.Length; i++)
             {
-                if (Singleton._buffer[i] == '\n')
+                if (Singleton.buffer[i] == '\n')
                 {
                     break;
                 }

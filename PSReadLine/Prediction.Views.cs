@@ -235,7 +235,7 @@ namespace Microsoft.PowerShell
             {
                 get
                 {
-                    var console = _singleton._console;
+                    var console = _singleton.RLConsole;
                     return console.WindowWidth >= MinWindowWidth && console.WindowHeight >= MinWindowHeight;
                 }
             }
@@ -296,7 +296,7 @@ namespace Microsoft.PowerShell
 
                 _inputText = userInput;
                 _selectedIndex = -1;
-                _listItemWidth = Math.Min(_singleton._console.BufferWidth, ListMaxWidth);
+                _listItemWidth = Math.Min(_singleton.RLConsole.BufferWidth, ListMaxWidth);
 
                 if (inputUnchanged)
                 {
@@ -528,8 +528,8 @@ namespace Microsoft.PowerShell
                 if (_listItems == null) { return; }
 
                 int top = cursorAtEol
-                    ? _singleton._console.CursorTop
-                    : _singleton.ConvertOffsetToPoint(_inputText.Length).Y;
+                    ? _singleton.RLConsole.CursorTop
+                    : _renderer.ConvertOffsetToPoint(_inputText.Length).Y;
 
                 _singleton.WriteBlankLines(top + 1, _listItemHeight);
                 Reset();
@@ -676,7 +676,7 @@ namespace Microsoft.PowerShell
                 int totalLength = _suggestionText.Length;
 
                 // Get the maximum buffer cells that could be available to the current command line.
-                int maxBufferCells = _singleton._console.BufferHeight * _singleton._console.BufferWidth - _singleton.InitialX;
+                int maxBufferCells = _singleton.RLConsole.BufferHeight * _singleton.RLConsole.BufferWidth - _singleton.InitialX;
                 bool skipRendering = false;
 
                 // Assuming the suggestion text contains wide characters only (1 character takes up 2 buffer cells),
@@ -757,7 +757,7 @@ namespace Microsoft.PowerShell
                     // Clear the suggestion only if we actually rendered it.
                     int left, top;
                     int inputLen = _inputText.Length;
-                    IConsole console = _singleton._console;
+                    IConsole console = _singleton.RLConsole;
 
                     if (cursorAtEol)
                     {
@@ -767,14 +767,14 @@ namespace Microsoft.PowerShell
                     }
                     else
                     {
-                        Point bufferEndPoint = _singleton.ConvertOffsetToPoint(inputLen);
+                        Point bufferEndPoint = _renderer.ConvertOffsetToPoint(inputLen);
                         left = bufferEndPoint.X;
                         top = bufferEndPoint.Y;
                         _singleton.WriteBlankRestOfLine(left, top);
                     }
 
                     int bufferWidth = console.BufferWidth;
-                    int columns = LengthInBufferCells(_suggestionText, inputLen, _renderedLength);
+                    int columns = _renderer.LengthInBufferCells(_suggestionText, inputLen, _renderedLength);
 
                     int remainingLenInCells = bufferWidth - left;
                     columns -= remainingLenInCells;
@@ -805,7 +805,7 @@ namespace Microsoft.PowerShell
             internal int FindForwardSuggestionWordPoint(int currentIndex, string wordDelimiters)
             {
                 System.Diagnostics.Debug.Assert(
-                    _suggestionText != null && _suggestionText.Length > _singleton._buffer.Length,
+                    _suggestionText != null && _suggestionText.Length > _singleton.buffer.Length,
                     "Caller needs to make sure the suggestion text exist.");
 
                 if (currentIndex >= _suggestionText.Length)

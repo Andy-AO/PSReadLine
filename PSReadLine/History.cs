@@ -716,21 +716,21 @@ namespace Microsoft.PowerShell
                 _undoEditIndex = _history[_currentHistoryIndex]._undoEditIndex;
                 _editGroupStart = _history[_currentHistoryIndex]._editGroupStart;
             }
-            _buffer.Clear();
-            _buffer.Append(line);
+            buffer.Clear();
+            buffer.Append(line);
 
             switch (moveCursor)
             {
                 case HistoryMoveCursor.ToEnd:
-                    Current = Math.Max(0, _buffer.Length + ViEndOfLineFactor);
+                    Current = Math.Max(0, buffer.Length + ViEndOfLineFactor);
                     break;
                 case HistoryMoveCursor.ToBeginning:
                     Current = 0;
                     break;
                 default:
-                    if (Current > _buffer.Length)
+                    if (Current > buffer.Length)
                     {
-                        Current = Math.Max(0, _buffer.Length + ViEndOfLineFactor);
+                        Current = Math.Max(0, buffer.Length + ViEndOfLineFactor);
                     }
                     break;
             }
@@ -748,7 +748,7 @@ namespace Microsoft.PowerShell
             _anyHistoryCommandCount += 1;
             if (_savedCurrentLine.CommandLine == null)
             {
-                _savedCurrentLine.CommandLine = _buffer.ToString();
+                _savedCurrentLine.CommandLine = buffer.ToString();
                 _savedCurrentLine._edits = _edits;
                 _savedCurrentLine._undoEditIndex = _undoEditIndex;
                 _savedCurrentLine._editGroupStart = _editGroupStart;
@@ -858,7 +858,7 @@ namespace Microsoft.PowerShell
                     return;
                 }
 
-                _searchHistoryPrefix = _buffer.ToString(0, Current);
+                _searchHistoryPrefix = buffer.ToString(0, Current);
                 EmphasisStart = 0;
                 EmphasisLength = Current;
                 if (Options.HistoryNoDuplicates)
@@ -1076,7 +1076,7 @@ namespace Microsoft.PowerShell
 
                         // Prompt may need to have 'failed-' removed.
                         var toMatchStr = toMatch.ToString();
-                        var startIndex = _buffer.ToString().IndexOf(toMatchStr, Options.HistoryStringComparison);
+                        var startIndex = buffer.ToString().IndexOf(toMatchStr, Options.HistoryStringComparison);
                         if (startIndex >= 0)
                         {
                             _statusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
@@ -1114,7 +1114,7 @@ namespace Microsoft.PowerShell
                     _statusBuffer.Insert(_statusBuffer.Length - 1, toAppend);
 
                     var toMatchStr = toMatch.ToString();
-                    var startIndex = _buffer.ToString().IndexOf(toMatchStr, Options.HistoryStringComparison);
+                    var startIndex = buffer.ToString().IndexOf(toMatchStr, Options.HistoryStringComparison);
                     if (startIndex < 0)
                     {
                         UpdateHistoryDuringInteractiveSearch(toMatchStr, direction, ref searchFromPoint);

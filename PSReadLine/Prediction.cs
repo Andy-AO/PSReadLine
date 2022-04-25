@@ -76,7 +76,7 @@ namespace Microsoft.PowerShell
 
                 using var _ = prediction.DisableScoped();
 
-                Singleton.Current = Singleton._buffer.Length;
+                Singleton.Current = Singleton.buffer.Length;
                 Insert(inlineView.SuggestionText.Substring(Singleton.Current));
             }
         }
@@ -107,7 +107,7 @@ namespace Microsoft.PowerShell
                 // Ignore the visual selection.
                 Singleton._visualSelectionCommandCount = 0;
 
-                int start = Singleton._buffer.Length;
+                int start = Singleton.buffer.Length;
                 int index = start;
                 while (numericArg-- > 0 && index < inlineView.SuggestionText.Length)
                 {
@@ -177,8 +177,8 @@ namespace Microsoft.PowerShell
             if (Singleton.IsLastEditItemReplaceable)
             {
                 Singleton.SaveEditItem(insertStringItem);
-                Singleton._buffer.Clear();
-                Singleton._buffer.Append(selectedItemText);
+                Singleton.buffer.Clear();
+                Singleton.buffer.Append(selectedItemText);
                 Singleton.Current = selectedItemText.Length;
 
                 Singleton.Render();
@@ -191,12 +191,12 @@ namespace Microsoft.PowerShell
                 Singleton.StartEditGroup();
             }
 
-            var str = Singleton._buffer.ToString();
+            var str = Singleton.buffer.ToString();
             Singleton.SaveEditItem(EditItemDelete.Create(str, position: 0));
-            Singleton._buffer.Clear();
+            Singleton.buffer.Clear();
 
             Singleton.SaveEditItem(insertStringItem);
-            Singleton._buffer.Append(selectedItemText);
+            Singleton.buffer.Append(selectedItemText);
             Singleton.Current = selectedItemText.Length;
 
             if (useEditGroup)
@@ -230,7 +230,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            var console = Singleton._console;
+            var console = Singleton.RLConsole;
             var minWidth = PredictionListView.MinWindowWidth;
             var minHeight = PredictionListView.MinWindowHeight;
 
