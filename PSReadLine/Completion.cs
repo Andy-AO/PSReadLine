@@ -828,7 +828,7 @@ namespace Microsoft.PowerShell
             internal int CurrentSelection;
 
             internal Collection<CompletionResult> MenuItems;
-            internal int PreviousTop;
+            private int PreviousTop;
             internal int Rows;
             internal int ToolTipLines;
             internal CompletionResult CurrentMenuItem => MenuItems[CurrentSelection];

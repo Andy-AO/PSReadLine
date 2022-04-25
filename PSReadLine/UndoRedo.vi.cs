@@ -33,8 +33,8 @@ namespace Microsoft.PowerShell
 
         private class GroupUndoHelper
         {
-            public Action<ConsoleKeyInfo?, object> _instigator;
-            public object _instigatorArg;
+            private Action<ConsoleKeyInfo?, object> _instigator;
+            private object _instigatorArg;
 
             public GroupUndoHelper()
             {
@@ -49,7 +49,7 @@ namespace Microsoft.PowerShell
                 Singleton.StartEditGroup();
             }
 
-            public void Clear()
+            private void Clear()
             {
                 _instigator = null;
                 _instigatorArg = null;

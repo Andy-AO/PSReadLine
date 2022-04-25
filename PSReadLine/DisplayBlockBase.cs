@@ -21,7 +21,7 @@ namespace Microsoft.PowerShell
                 while (cnt-- > 0) console.Write("\n");
             }
 
-            protected void AdjustForActualScroll(int scrollCnt)
+            private void AdjustForActualScroll(int scrollCnt)
             {
                 if (scrollCnt > 0)
                 {

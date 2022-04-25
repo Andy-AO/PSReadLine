@@ -12,7 +12,7 @@ using Microsoft.Win32.SafeHandles;
 
 internal static class PlatformWindows
 {
-    public enum ConsoleBreakSignal : uint
+    private enum ConsoleBreakSignal : uint
     {
         CtrlC = 0,
         CtrlBreak = 1,
@@ -43,7 +43,7 @@ internal static class PlatformWindows
 
     internal const uint SPI_GETSCREENREADER = 0x0046;
 
-    internal static readonly IntPtr INVALID_HANDLE_VALUE = new(-1); // WinBase.h
+    private static readonly IntPtr INVALID_HANDLE_VALUE = new(-1); // WinBase.h
 
     private static uint _prePSReadLineConsoleInputMode;
 
@@ -98,7 +98,7 @@ internal static class PlatformWindows
     private static PSConsoleReadLine _singleton;
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    public static extern IntPtr CreateFile
+    private static extern IntPtr CreateFile
     (
         string fileName,
         uint desiredAccess,
@@ -110,7 +110,7 @@ internal static class PlatformWindows
     );
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    internal static extern int GetFileType(IntPtr handle);
+    private static extern int GetFileType(IntPtr handle);
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern IntPtr GetStdHandle(uint handleId);
@@ -188,7 +188,7 @@ internal static class PlatformWindows
         }
     }
 
-    internal static void SetOurInputMode()
+    private static void SetOurInputMode()
     {
         // Clear a couple flags so we can actually receive certain keys:
         //     ENABLE_PROCESSED_INPUT - enables Ctrl+C
@@ -322,14 +322,14 @@ internal static class PlatformWindows
     internal static extern bool SystemParametersInfo(uint uiAction, uint uiParam, ref bool pvParam, uint fWinIni);
 
     [Flags]
-    internal enum AccessQualifiers : uint
+    private enum AccessQualifiers : uint
     {
         // From winnt.h
         GenericRead = 0x80000000,
         GenericWrite = 0x40000000
     }
 
-    internal enum CreationDisposition : uint
+    private enum CreationDisposition : uint
     {
         // From winbase.h
         CreateNew = 1,
@@ -340,7 +340,7 @@ internal static class PlatformWindows
     }
 
     [Flags]
-    internal enum ShareModes : uint
+    private enum ShareModes : uint
     {
         // From winnt.h
         ShareRead = 0x00000001,

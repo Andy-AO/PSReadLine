@@ -267,7 +267,7 @@ namespace Microsoft.PowerShell
         /// <summary>
         ///     Deletes backwards until given character.
         /// </summary>
-        public static void ViDeleteToCharBack(char keyChar, ConsoleKeyInfo? key = null, object arg = null)
+        private static void ViDeleteToCharBack(char keyChar, ConsoleKeyInfo? key = null, object arg = null)
         {
             ViCharacterSearcher.SearchBackwardDelete(keyChar, arg, false,
                 (_key, _arg) => ViDeleteToCharBack(keyChar, _key, _arg));
@@ -341,7 +341,7 @@ namespace Microsoft.PowerShell
         /// <summary>
         ///     Returns true if in Vi edit mode, otherwise false.
         /// </summary>
-        internal static bool InViEditMode()
+        public static bool InViEditMode()
         {
             return Singleton.Options.EditMode == EditMode.Vi;
         }
@@ -349,7 +349,7 @@ namespace Microsoft.PowerShell
         /// <summary>
         ///     Returns true if in Vi Command mode, otherwise false.
         /// </summary>
-        public static bool InViCommandMode()
+        private static bool InViCommandMode()
         {
             return Singleton._dispatchTable == _viCmdKeyMap;
         }
@@ -357,7 +357,7 @@ namespace Microsoft.PowerShell
         /// <summary>
         ///     Returns true if in Vi Insert mode, otherwise false.
         /// </summary>
-        public static bool InViInsertMode()
+        private static bool InViInsertMode()
         {
             return Singleton._dispatchTable == _viInsKeyMap;
         }
@@ -1180,7 +1180,7 @@ namespace Microsoft.PowerShell
 
         private class ViCharacterSearcher
         {
-            public static readonly ViCharacterSearcher instance = new();
+            private static readonly ViCharacterSearcher instance = new();
             private char searchChar = '\0';
             private bool wasBackoff;
             private bool wasBackward;
