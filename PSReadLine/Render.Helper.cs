@@ -38,7 +38,7 @@ namespace Microsoft.PowerShell
             RLConsole.SetCursorPosition(savedCursorLeft, savedCursorTop);
         }
 
-        private static string Spaces(int cnt)
+        internal static string Spaces(int cnt)
         {
             return cnt < _spaces.Length
                 ? (_spaces[cnt] ?? (_spaces[cnt] = new string(' ', cnt)))

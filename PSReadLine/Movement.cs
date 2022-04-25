@@ -224,7 +224,7 @@ namespace Microsoft.PowerShell
                     Y = Math.Max(newY, InitialY)
                 };
 
-                newCurrent = ConvertLineAndColumnToOffset(newPoint);
+                newCurrent = _renderer.ConvertLineAndColumnToOffset(newPoint);
             }
 
             if (newCurrent != -1)

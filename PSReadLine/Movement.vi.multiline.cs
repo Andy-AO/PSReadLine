@@ -25,7 +25,7 @@ namespace Microsoft.PowerShell
 
             pos.Y -= currentLine -1;
 
-            var newCurrent = ConvertLineAndColumnToOffset(pos);
+            var newCurrent = _renderer.ConvertLineAndColumnToOffset(pos);
             var position = GetBeginningOfLinePos(newCurrent);
 
             Singleton.MoveCursor(position);
@@ -53,7 +53,7 @@ namespace Microsoft.PowerShell
 
             pos.Y += (count - currentLine);
 
-            var newCurrent = ConvertLineAndColumnToOffset(pos);
+            var newCurrent = _renderer.ConvertLineAndColumnToOffset(pos);
             var position = GetBeginningOfLinePos(newCurrent);
 
             Singleton.MoveCursor(position);

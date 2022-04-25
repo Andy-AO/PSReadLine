@@ -65,7 +65,7 @@ namespace Microsoft.PowerShell
 
         private Ast RLAst => Parser.ParseInput(buffer.ToString(), out _, out _);
 
-        private ParseError[] ParseErrors
+        public ParseError[] ParseErrors
         {
             get
             {
@@ -114,7 +114,6 @@ namespace Microsoft.PowerShell
         private int _mark;
         private bool _inputAccepted;
         private readonly Queue<PSKeyInfo> _queuedKeys;
-        private Stopwatch _lastRenderTime;
         private static readonly Stopwatch _readkeyStopwatch = new Stopwatch();
 
         // Save a fixed # of keys so we can reconstruct a repro after a crash
@@ -806,8 +805,6 @@ namespace Microsoft.PowerShell
                 RLConsole.OutputEncoding = Encoding.UTF8;
             }
 
-            _lastRenderTime = Stopwatch.StartNew();
-
             _killCommandCount = 0;
             _yankCommandCount = 0;
             _yankLastArgCommandCount = 0;
@@ -1101,9 +1098,7 @@ namespace Microsoft.PowerShell
                 console.SetCursorPosition(0, newY);
             }
 
-            string newPrompt = GetPrompt();
-
-            console.Write(newPrompt);
+            console.Write(Prompt);
             Singleton.InitialX = console.CursorLeft;
             Singleton.InitialY = console.CursorTop;
             Singleton.PreviousRender = InitialPrevRender;
@@ -1112,71 +1107,74 @@ namespace Microsoft.PowerShell
             console.CursorVisible = true;
         }
 
-        private static string GetPrompt()
+        public static string Prompt
         {
-            string newPrompt = null;
-
-            try
+            get
             {
-                if (Singleton._runspace?.Debugger != null && Singleton._runspace.Debugger.InBreakpoint)
-                {
-                    // Run prompt command in debugger API to ensure it is run correctly on the runspace.
-                    // This handles remote runspace debugging and nested debugger scenarios.
-                    PSDataCollection<PSObject> results = new PSDataCollection<PSObject>();
-                    var command = new PSCommand();
-                    command.AddCommand("prompt");
-                    Singleton._runspace.Debugger.ProcessCommand(
-                        command,
-                        results);
+                string newPrompt = null;
 
-                    if (results.Count == 1)
-                        newPrompt = results[0].BaseObject as string;
-                }
-                else
+                try
                 {
-                    var runspaceIsRemote = Singleton._mockableMethods.RunspaceIsRemote(Singleton._runspace);
-
-                    System.Management.Automation.PowerShell ps;
-                    if (!runspaceIsRemote)
+                    if (Singleton._runspace?.Debugger != null && Singleton._runspace.Debugger.InBreakpoint)
                     {
-                        ps = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace);
+                        // Run prompt command in debugger API to ensure it is run correctly on the runspace.
+                        // This handles remote runspace debugging and nested debugger scenarios.
+                        PSDataCollection<PSObject> results = new PSDataCollection<PSObject>();
+                        var command = new PSCommand();
+                        command.AddCommand("prompt");
+                        Singleton._runspace.Debugger.ProcessCommand(
+                            command,
+                            results);
+
+                        if (results.Count == 1)
+                            newPrompt = results[0].BaseObject as string;
                     }
                     else
                     {
-                        ps = System.Management.Automation.PowerShell.Create();
-                        ps.Runspace = Singleton._runspace;
-                    }
+                        var runspaceIsRemote = Singleton._mockableMethods.RunspaceIsRemote(Singleton._runspace);
 
-                    using (ps)
-                    {
-                        ps.AddCommand("prompt");
-                        var result = ps.Invoke<string>();
-                        if (result.Count == 1)
+                        System.Management.Automation.PowerShell ps;
+                        if (!runspaceIsRemote)
                         {
-                            newPrompt = result[0];
+                            ps = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace);
+                        }
+                        else
+                        {
+                            ps = System.Management.Automation.PowerShell.Create();
+                            ps.Runspace = Singleton._runspace;
+                        }
 
-                            if (runspaceIsRemote)
+                        using (ps)
+                        {
+                            ps.AddCommand("prompt");
+                            var result = ps.Invoke<string>();
+                            if (result.Count == 1)
                             {
-                                if (!string.IsNullOrEmpty(Singleton._runspace?.ConnectionInfo?.ComputerName))
+                                newPrompt = result[0];
+
+                                if (runspaceIsRemote)
                                 {
-                                    newPrompt = "[" + (Singleton._runspace?.ConnectionInfo).ComputerName + "]: " +
-                                                newPrompt;
+                                    if (!string.IsNullOrEmpty(Singleton._runspace?.ConnectionInfo?.ComputerName))
+                                    {
+                                        newPrompt = "[" + (Singleton._runspace?.ConnectionInfo).ComputerName + "]: " +
+                                                    newPrompt;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            catch
-            {
-                // Catching all exceptions makes debugging problems a bit harder, but it avoids some noise if
-                // the remote doesn't define a prompt.
-            }
+                catch
+                {
+                    // Catching all exceptions makes debugging problems a bit harder, but it avoids some noise if
+                    // the remote doesn't define a prompt.
+                }
 
-            if (string.IsNullOrEmpty(newPrompt))
-                newPrompt = "PS>";
+                if (string.IsNullOrEmpty(newPrompt))
+                    newPrompt = "PS>";
 
-            return newPrompt;
+                return newPrompt;
+            }
         }
 
         internal static bool IsRunningCI(IConsole console)
