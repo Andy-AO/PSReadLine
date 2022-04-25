@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -10,6 +11,323 @@ namespace Microsoft.PowerShell
 {
     internal class Renderer
     {
+        internal string GetTokenColor(Token token)
+        {
+            if ((token.TokenFlags & TokenFlags.CommandName) != 0)
+            {
+                return Options._commandColor;
+            }
+
+            switch (token.Kind)
+            {
+                case TokenKind.Comment:
+                    return Options._commentColor;
+
+                case TokenKind.Parameter:
+                case TokenKind.Generic when token is StringLiteralToken slt && slt.Text.StartsWith("--"):
+                    return Options._parameterColor;
+
+                case TokenKind.Variable:
+                case TokenKind.SplattedVariable:
+                    return Options._variableColor;
+
+                case TokenKind.StringExpandable:
+                case TokenKind.StringLiteral:
+                case TokenKind.HereStringExpandable:
+                case TokenKind.HereStringLiteral:
+                    return Options._stringColor;
+
+                case TokenKind.Number:
+                    return Options._numberColor;
+            }
+
+            if ((token.TokenFlags & TokenFlags.Keyword) != 0)
+            {
+                return Options._keywordColor;
+            }
+
+            if (token.Kind != TokenKind.Generic && (token.TokenFlags &
+                                                    (TokenFlags.BinaryOperator | TokenFlags.UnaryOperator |
+                                                     TokenFlags.AssignmentOperator)) != 0)
+            {
+                return Options._operatorColor;
+            }
+
+            if ((token.TokenFlags & TokenFlags.TypeName) != 0)
+            {
+                return Options._typeColor;
+            }
+
+            if ((token.TokenFlags & TokenFlags.MemberName) != 0)
+            {
+                return Options._memberColor;
+            }
+
+            return Options._defaultTokenColor;
+        }
+        internal void GetRegion(out int start, out int length)
+        {
+            if (_rl._mark < Current)
+            {
+                start = _rl._mark;
+                length = Current - start;
+            }
+            else
+            {
+                start = Current;
+                length = _rl._mark - start;
+            }
+        }
+                private int GenerateRender(string defaultColor)
+        {
+            var text = _rl.buffer.ToString();
+            _rl._Prediction.QueryForSuggestion(text);
+
+            string color = defaultColor;
+            string activeColor = string.Empty;
+            bool afterLastToken = false;
+            int currentLogicalLine = 0;
+            bool inSelectedRegion = false;
+
+            void UpdateColorsIfNecessary(string newColor)
+            {
+                if (!ReferenceEquals(newColor, activeColor))
+                {
+                    if (!inSelectedRegion)
+                    {
+                        ConsoleBufferLines[currentLogicalLine]
+                            .Append(VTColorUtils.AnsiReset)
+                            .Append(newColor);
+                    }
+
+                    activeColor = newColor;
+                }
+            }
+
+            void RenderOneChar(char charToRender, bool toEmphasize)
+            {
+                if (charToRender == '\n')
+                {
+                    if (inSelectedRegion)
+                    {
+                        // Turn off inverse before end of line, turn on after continuation prompt
+                        ConsoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                    }
+
+                    currentLogicalLine += 1;
+                    if (currentLogicalLine == ConsoleBufferLines.Count)
+                    {
+                        ConsoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
+                    }
+
+                    // Reset the color for continuation prompt so the color sequence will always be explicitly
+                    // specified for continuation prompt in the generated render strings.
+                    // This is necessary because we will likely not rewrite all texts during rendering, and thus
+                    // we cannot assume the continuation prompt can continue to use the active color setting from
+                    // the previous rendering string.
+                    activeColor = string.Empty;
+
+                    if (Options.ContinuationPrompt.Length > 0)
+                    {
+                        UpdateColorsIfNecessary(Options._continuationPromptColor);
+                        ConsoleBufferLines[currentLogicalLine].Append(Options.ContinuationPrompt);
+                    }
+
+                    if (inSelectedRegion)
+                    {
+                        // Turn off inverse before end of line, turn on after continuation prompt
+                        ConsoleBufferLines[currentLogicalLine].Append(Options.SelectionColor);
+                    }
+
+                    return;
+                }
+
+                UpdateColorsIfNecessary(toEmphasize ? Options._emphasisColor : color);
+
+                if (char.IsControl(charToRender))
+                {
+                    ConsoleBufferLines[currentLogicalLine].Append('^');
+                    ConsoleBufferLines[currentLogicalLine].Append((char) ('@' + charToRender));
+                }
+                else
+                {
+                    ConsoleBufferLines[currentLogicalLine].Append(charToRender);
+                }
+            }
+
+            foreach (var buf in ConsoleBufferLines)
+            {
+                buf.Clear();
+            }
+
+            var tokenStack = new Stack<SavedTokenState>();
+            tokenStack.Push(new SavedTokenState
+            {
+                Tokens = _rl.Tokens,
+                Index = 0,
+                Color = defaultColor
+            });
+
+            int selectionStart = -1;
+            int selectionEnd = -1;
+            if (_rl._visualSelectionCommandCount > 0)
+            {
+                GetRegion(out int regionStart, out int regionLength);
+                if (regionLength > 0)
+                {
+                    selectionStart = regionStart;
+                    selectionEnd = selectionStart + regionLength;
+                }
+            }
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (i == selectionStart)
+                {
+                    ConsoleBufferLines[currentLogicalLine].Append(Options.SelectionColor);
+                    inSelectedRegion = true;
+                }
+                else if (i == selectionEnd)
+                {
+                    ConsoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                    ConsoleBufferLines[currentLogicalLine].Append(activeColor);
+                    inSelectedRegion = false;
+                }
+
+                if (!afterLastToken)
+                {
+                    // Figure out the color of the character - if it's in a token,
+                    // use the tokens color otherwise use the initial color.
+                    var state = tokenStack.Peek();
+                    var token = state.Tokens[state.Index];
+                    while (i == token.Extent.EndOffset)
+                    {
+                        if (state.Index == state.Tokens.Length - 1)
+                        {
+                            tokenStack.Pop();
+                            if (tokenStack.Count == 0)
+                            {
+                                afterLastToken = true;
+                                token = null;
+                                color = defaultColor;
+                                break;
+                            }
+                            else
+                            {
+                                state = tokenStack.Peek();
+
+                                // It's possible that a 'StringExpandableToken' is the last available token, for example:
+                                //   'begin $a\abc def', 'process $a\abc | blah' and 'end $a\abc; hello'
+                                // due to the special handling of the keywords 'begin', 'process' and 'end', all the above 3 script inputs
+                                // generate only 2 tokens by the parser -- A KeywordToken, and a StringExpandableToken '$a\abc'. Text after
+                                // '$a\abc' is not tokenized at all.
+                                // We repeat the test to see if we fall into this case ('token' is the final one in the stack).
+                                continue;
+                            }
+                        }
+
+                        color = state.Color;
+                        token = state.Tokens[++state.Index];
+                    }
+
+                    if (!afterLastToken && i == token.Extent.StartOffset)
+                    {
+                        color = GetTokenColor(token);
+
+                        if (token is StringExpandableToken stringToken)
+                        {
+                            // We might have nested tokens.
+                            if (stringToken.NestedTokens != null && stringToken.NestedTokens.Any())
+                            {
+                                var tokens = new Token[stringToken.NestedTokens.Count + 1];
+                                stringToken.NestedTokens.CopyTo(tokens, 0);
+                                // NestedTokens doesn't have an "EOS" token, so we use
+                                // the string literal token for that purpose.
+                                tokens[tokens.Length - 1] = stringToken;
+
+                                tokenStack.Push(new SavedTokenState
+                                {
+                                    Tokens = tokens,
+                                    Index = 0,
+                                    Color = color
+                                });
+
+                                if (i == tokens[0].Extent.StartOffset)
+                                {
+                                    color = GetTokenColor(tokens[0]);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var charToRender = text[i];
+                var toEmphasize = i >= EmphasisStart && i < (EmphasisStart + EmphasisLength);
+
+                RenderOneChar(charToRender, toEmphasize);
+            }
+
+            if (inSelectedRegion)
+            {
+                ConsoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                inSelectedRegion = false;
+            }
+
+            _rl._Prediction.ActiveView.RenderSuggestion(ConsoleBufferLines, ref currentLogicalLine);
+            activeColor = string.Empty;
+
+            if (_rl._statusLinePrompt != null)
+            {
+                currentLogicalLine += 1;
+                if (currentLogicalLine > ConsoleBufferLines.Count - 1)
+                {
+                    ConsoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
+                }
+
+                color = _rl._statusIsErrorMessage ? Options._errorColor : defaultColor;
+                UpdateColorsIfNecessary(color);
+
+                foreach (char c in _rl._statusLinePrompt)
+                {
+                    ConsoleBufferLines[currentLogicalLine].Append(c);
+                }
+
+                ConsoleBufferLines[currentLogicalLine].Append(_rl._statusBuffer);
+            }
+
+            return currentLogicalLine + 1;
+        }
+        internal void ForceRender()
+        {
+            var defaultColor = VTColorUtils.DefaultColor;
+
+            // Generate a sequence of logical lines with escape sequences for coloring.
+            int logicalLineCount = GenerateRender(defaultColor);
+
+            // Now write that out (and remember what we did so we can clear previous renders
+            // and minimize writing more than necessary on the next render.)
+
+            var renderLines = new RenderedLineData[logicalLineCount];
+            var renderData = new RenderData {lines = renderLines};
+            for (var i = 0; i < logicalLineCount; i++)
+            {
+                var line = ConsoleBufferLines[i].ToString();
+                renderLines[i].line = line;
+                renderLines[i].columns = LengthInBufferCells(line);
+            }
+
+            // And then do the real work of writing to the screen.
+            // Rendering data is in reused
+            ReallyRender(renderData, defaultColor);
+
+            // Cleanup some excess buffers, saving a few because we know we'll use them.
+            var bufferCount = ConsoleBufferLines.Count;
+            var excessBuffers = bufferCount - renderLines.Length;
+            if (excessBuffers > 5)
+            {
+                ConsoleBufferLines.RemoveRange(renderLines.Length, excessBuffers);
+            }
+        }
         internal int ConvertLineAndColumnToOffset(Point point)
         {
             int offset;

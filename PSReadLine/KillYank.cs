@@ -27,7 +27,7 @@ namespace Microsoft.PowerShell
             internal int startPoint = -1;
         }
         private YankLastArgState _yankLastArgState;
-        private int _visualSelectionCommandCount;
+        internal int _visualSelectionCommandCount;
 
         /// <summary>
         /// Mark the current location of the cursor for use in a subsequent editing command.
@@ -197,7 +197,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void KillRegion(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton.GetRegion(out var start, out var length);
+            _renderer.GetRegion(out var start, out var length);
             Singleton.Kill(start, length, true);
         }
 
@@ -652,7 +652,7 @@ namespace Microsoft.PowerShell
                 textToPaste = textToPaste.Replace("\t", "    ");
                 if (Singleton._visualSelectionCommandCount > 0)
                 {
-                    Singleton.GetRegion(out var start, out var length);
+                    _renderer.GetRegion(out var start, out var length);
                     Replace(start, length, textToPaste);
                 }
                 else
@@ -670,7 +670,7 @@ namespace Microsoft.PowerShell
             string textToSet;
             if (Singleton._visualSelectionCommandCount > 0)
             {
-                Singleton.GetRegion(out var start, out var length);
+                _renderer.GetRegion(out var start, out var length);
                 textToSet = Singleton.buffer.ToString(start, length);
             }
             else
@@ -705,7 +705,7 @@ namespace Microsoft.PowerShell
         {
             if (Singleton._visualSelectionCommandCount > 0)
             {
-                Singleton.GetRegion(out var start, out var length);
+                _renderer.GetRegion(out var start, out var length);
                 Clipboard.SetText(Singleton.buffer.ToString(start, length));
                 Delete(start, length);
             }

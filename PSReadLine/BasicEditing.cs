@@ -39,7 +39,7 @@ namespace Microsoft.PowerShell
 
             if (Singleton._visualSelectionCommandCount > 0)
             {
-                Singleton.GetRegion(out var start, out var length);
+                _renderer.GetRegion(out var start, out var length);
                 Replace(start, length, new string(keyChar, count));
             }
             else if (count > 1)
@@ -57,7 +57,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void RevertLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (Singleton._prediction.RevertSuggestion())
+            if (Singleton._Prediction.RevertSuggestion())
             {
                 return;
             }
@@ -85,8 +85,8 @@ namespace Microsoft.PowerShell
             Singleton.ClearStatusMessage(false);
             Singleton.Current = Singleton.buffer.Length;
 
-            using var _ = Singleton._prediction.DisableScoped();
-            Singleton.ForceRender();
+            using var _ = Singleton._Prediction.DisableScoped();
+            _renderer.ForceRender();
 
             Singleton.RLConsole.Write("\x1b[91m^C\x1b[0m");
 
@@ -179,7 +179,7 @@ namespace Microsoft.PowerShell
         {
             if (Singleton._visualSelectionCommandCount > 0)
             {
-                Singleton.GetRegion(out var start, out var length);
+                _renderer.GetRegion(out var start, out var length);
                 Delete(start, length);
                 return;
             }
@@ -202,7 +202,7 @@ namespace Microsoft.PowerShell
         {
             if (_visualSelectionCommandCount > 0)
             {
-                GetRegion(out var start, out var length);
+                _renderer.GetRegion(out var start, out var length);
                 Delete(start, length);
                 return;
             }
@@ -248,7 +248,7 @@ namespace Microsoft.PowerShell
 
         private bool AcceptLineImpl(bool validate)
         {
-            using var _ = _prediction.DisableScoped();
+            using var _ = _Prediction.DisableScoped();
 
             buffer.ToString();
             if (ParseErrors.Any(e => e.IncompleteInput))
@@ -273,7 +273,7 @@ namespace Microsoft.PowerShell
 
             if (renderNeeded)
             {
-                ForceRender();
+                _renderer.ForceRender();
             }
 
             // Only run validation if we haven't before.  If we have and status line shows an error,
@@ -311,14 +311,14 @@ namespace Microsoft.PowerShell
             // Let public API set cursor to end of line incase end of line is end of buffer
             SetCursorPosition(Current);
 
-            if (_prediction.ActiveView is PredictionListView listView)
+            if (_Prediction.ActiveView is PredictionListView listView)
             {
                 // Send feedback to prediction plugin if a list item is accepted as the final command line.
                 listView.OnSuggestionAccepted();
             }
 
             // Clear the prediction view if there is one.
-            _prediction.ActiveView.Clear(cursorAtEol: true);
+            _Prediction.ActiveView.Clear(cursorAtEol: true);
 
             RLConsole.Write("\n");
             _inputAccepted = true;

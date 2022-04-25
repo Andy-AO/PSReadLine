@@ -12,7 +12,7 @@ namespace Microsoft.PowerShell
         /// <summary>
         /// This type represents an individual suggestion entry.
         /// </summary>
-        private struct SuggestionEntry
+        internal struct SuggestionEntry
         {
             internal readonly Guid PredictorId;
             internal readonly uint? PredictorSession;

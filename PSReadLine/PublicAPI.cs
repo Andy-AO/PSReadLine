@@ -200,7 +200,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                Singleton.GetRegion(out start, out length);
+                _renderer.GetRegion(out start, out length);
             }
         }
 

@@ -54,7 +54,7 @@ namespace Microsoft.PowerShell
             private set => _singleton = value;
         }
 
-        private Token[] Tokens
+        internal Token[] Tokens
         {
             get
             {
@@ -104,14 +104,14 @@ namespace Microsoft.PowerShell
         private WaitHandle[] _requestKeyWaitHandles;
 
         public readonly StringBuilder buffer;
-        private readonly StringBuilder _statusBuffer;
-        private bool _statusIsErrorMessage;
-        private string _statusLinePrompt;
+        internal readonly StringBuilder _statusBuffer;
+        internal bool _statusIsErrorMessage;
+        internal string _statusLinePrompt;
         private string _acceptedCommandLine;
         private List<EditItem> _edits;
         private int _editGroupStart;
         private int _undoEditIndex;
-        private int _mark;
+        internal int _mark;
         private bool _inputAccepted;
         private readonly Queue<PSKeyInfo> _queuedKeys;
         private static readonly Stopwatch _readkeyStopwatch = new Stopwatch();
@@ -567,7 +567,7 @@ namespace Microsoft.PowerShell
                     _acceptedCommandLine = buffer.ToString();
                     MaybeAddToHistory(_acceptedCommandLine, _edits, _undoEditIndex);
 
-                    _prediction.OnCommandLineAccepted(_acceptedCommandLine);
+                    _Prediction.OnCommandLineAccepted(_acceptedCommandLine);
                     return _acceptedCommandLine;
                 }
 
@@ -759,7 +759,7 @@ namespace Microsoft.PowerShell
             }
 
             _options = new PSConsoleReadLineOptions(hostName);
-            _prediction = new Prediction(this);
+            _Prediction = new Prediction(this);
             SetDefaultBindings(_options.EditMode);
         }
 
@@ -792,7 +792,7 @@ namespace Microsoft.PowerShell
             _statusIsErrorMessage = false;
 
             _initialOutputEncoding = RLConsole.OutputEncoding;
-            _prediction.Reset();
+            _Prediction.Reset();
 
             // Don't change the OutputEncoding if already UTF8, no console, or using raster font on Windows
             _skipOutputEncodingChange = _initialOutputEncoding == Encoding.UTF8

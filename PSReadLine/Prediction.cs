@@ -50,7 +50,7 @@ namespace Microsoft.PowerShell
             CommandPrediction.OnCommandLineExecuted(s_predictionClient, commandLine, success);
         }
 
-        private readonly Prediction _prediction;
+        internal readonly Prediction _Prediction;
 
         /// <summary>
         /// Report the execution result (success or failure) of the last accepted command line.
@@ -58,7 +58,7 @@ namespace Microsoft.PowerShell
         /// <param name="success">Whether the execution was successful.</param>
         private void ReportExecutionStatus(bool success)
         {
-            _prediction.OnCommandLineExecuted(_acceptedCommandLine, success);
+            _Prediction.OnCommandLineExecuted(_acceptedCommandLine, success);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void AcceptSuggestion(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Prediction prediction = Singleton._prediction;
+            Prediction prediction = Singleton._Prediction;
             if (prediction.ActiveView is PredictionInlineView inlineView && inlineView.HasActiveSuggestion)
             {
                 // Ignore the visual selection.
@@ -102,7 +102,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private static void AcceptNextSuggestionWord(int numericArg)
         {
-            if (Singleton._prediction.ActiveView is PredictionInlineView inlineView && inlineView.HasActiveSuggestion)
+            if (Singleton._Prediction.ActiveView is PredictionInlineView inlineView && inlineView.HasActiveSuggestion)
             {
                 // Ignore the visual selection.
                 Singleton._visualSelectionCommandCount = 0;
@@ -149,7 +149,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         private static bool UpdateListSelection(int numericArg)
         {
-            if (Singleton._prediction.ActiveView is PredictionListView listView && listView.HasActiveSuggestion)
+            if (Singleton._Prediction.ActiveView is PredictionListView listView && listView.HasActiveSuggestion)
             {
                 // Ignore the visual selection.
                 Singleton._visualSelectionCommandCount = 0;
@@ -216,7 +216,7 @@ namespace Microsoft.PowerShell
             var style = (PredictionViewStyle)((value + 1) % count);
 
             Singleton._options.PredictionViewStyle = style;
-            Singleton._prediction.SetViewStyle(style);
+            Singleton._Prediction.SetViewStyle(style);
             Singleton.Render();
         }
 
@@ -243,7 +243,7 @@ namespace Microsoft.PowerShell
         /// <summary>
         /// The type that controls the predictive suggestion feature and exposes the active view.
         /// </summary>
-        private class Prediction
+        internal class Prediction
         {
             private readonly PSConsoleReadLine _singleton;
 

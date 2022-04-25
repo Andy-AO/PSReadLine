@@ -17,7 +17,7 @@ namespace Microsoft.PowerShell
         /// <summary>
         /// The base type of the prediction view.
         /// </summary>
-        private abstract class PredictionViewBase
+        internal abstract class PredictionViewBase
         {
             protected readonly PSConsoleReadLine _singleton;
             protected Task<List<PredictionResult>> _predictionTask;

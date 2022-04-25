@@ -209,7 +209,7 @@ namespace Microsoft.PowerShell
             }
 
             // Do not show suggestion text during tab completion.
-            using var _ = _prediction.DisableScoped();
+            using var _ = _Prediction.DisableScoped();
 
             var completions = GetCompletions();
             if (completions == null || completions.CompletionMatches.Count == 0)
