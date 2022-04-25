@@ -554,8 +554,7 @@ namespace Test
 
             _console = console ?? new TestConsole(_);
             _mockedMethods = new MockedMethods();
-            var aRL = (PSConsoleReadLine)typeof(PSConsoleReadLine)
-                .GetField("_singleton", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+            var aRL = PSConsoleReadLine.Singleton;
 
             typeof(PSConsoleReadLine)
                 .GetField("_mockableMethods", BindingFlags.Instance | BindingFlags.NonPublic)

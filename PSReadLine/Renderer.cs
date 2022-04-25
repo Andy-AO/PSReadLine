@@ -12,7 +12,7 @@ namespace Microsoft.PowerShell
 {
     internal class Renderer
     {
-        internal static readonly Renderer Singleton = new();
+        private static readonly Renderer _s = new();
         private static readonly RL _rl = RL.Singleton;
         private readonly Stopwatch _lastRenderTime = Stopwatch.StartNew();
 
@@ -46,9 +46,7 @@ namespace Microsoft.PowerShell
         internal readonly IConsole _console = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? PlatformWindows.OneTimeInit(_rl)
             : new VirtualTerminal();
-        private StringBuilder RLBuffer => _rl.buffer;
-
-        private PSConsoleReadLineOptions Options => _rl.Options;
+        internal static Renderer Singleton => _s;
 
         internal void RenderWithPredictionQueryPaused()
         {
@@ -168,43 +166,43 @@ namespace Microsoft.PowerShell
 
         private string GetTokenColor(Token token)
         {
-            if ((token.TokenFlags & TokenFlags.CommandName) != 0) return Options._commandColor;
+            if ((token.TokenFlags & TokenFlags.CommandName) != 0) return _rl.Options._commandColor;
 
             switch (token.Kind)
             {
                 case TokenKind.Comment:
-                    return Options._commentColor;
+                    return _rl.Options._commentColor;
 
                 case TokenKind.Parameter:
                 case TokenKind.Generic when token is StringLiteralToken slt && slt.Text.StartsWith("--"):
-                    return Options._parameterColor;
+                    return _rl.Options._parameterColor;
 
                 case TokenKind.Variable:
                 case TokenKind.SplattedVariable:
-                    return Options._variableColor;
+                    return _rl.Options._variableColor;
 
                 case TokenKind.StringExpandable:
                 case TokenKind.StringLiteral:
                 case TokenKind.HereStringExpandable:
                 case TokenKind.HereStringLiteral:
-                    return Options._stringColor;
+                    return _rl.Options._stringColor;
 
                 case TokenKind.Number:
-                    return Options._numberColor;
+                    return _rl.Options._numberColor;
             }
 
-            if ((token.TokenFlags & TokenFlags.Keyword) != 0) return Options._keywordColor;
+            if ((token.TokenFlags & TokenFlags.Keyword) != 0) return _rl.Options._keywordColor;
 
             if (token.Kind != TokenKind.Generic && (token.TokenFlags &
                                                     (TokenFlags.BinaryOperator | TokenFlags.UnaryOperator |
                                                      TokenFlags.AssignmentOperator)) != 0)
-                return Options._operatorColor;
+                return _rl.Options._operatorColor;
 
-            if ((token.TokenFlags & TokenFlags.TypeName) != 0) return Options._typeColor;
+            if ((token.TokenFlags & TokenFlags.TypeName) != 0) return _rl.Options._typeColor;
 
-            if ((token.TokenFlags & TokenFlags.MemberName) != 0) return Options._memberColor;
+            if ((token.TokenFlags & TokenFlags.MemberName) != 0) return _rl.Options._memberColor;
 
-            return Options._defaultTokenColor;
+            return _rl.Options._defaultTokenColor;
         }
 
         internal void GetRegion(out int start, out int length)
@@ -264,20 +262,20 @@ namespace Microsoft.PowerShell
                     // the previous rendering string.
                     activeColor = string.Empty;
 
-                    if (Options.ContinuationPrompt.Length > 0)
+                    if (_rl.Options.ContinuationPrompt.Length > 0)
                     {
-                        UpdateColorsIfNecessary(Options._continuationPromptColor);
-                        ConsoleBufferLines[currentLogicalLine].Append(Options.ContinuationPrompt);
+                        UpdateColorsIfNecessary(_rl.Options._continuationPromptColor);
+                        ConsoleBufferLines[currentLogicalLine].Append(_rl.Options.ContinuationPrompt);
                     }
 
                     if (inSelectedRegion)
                         // Turn off inverse before end of line, turn on after continuation prompt
-                        ConsoleBufferLines[currentLogicalLine].Append(Options.SelectionColor);
+                        ConsoleBufferLines[currentLogicalLine].Append(_rl.Options.SelectionColor);
 
                     return;
                 }
 
-                UpdateColorsIfNecessary(toEmphasize ? Options._emphasisColor : color);
+                UpdateColorsIfNecessary(toEmphasize ? _rl.Options._emphasisColor : color);
 
                 if (char.IsControl(charToRender))
                 {
@@ -316,7 +314,7 @@ namespace Microsoft.PowerShell
             {
                 if (i == selectionStart)
                 {
-                    ConsoleBufferLines[currentLogicalLine].Append(Options.SelectionColor);
+                    ConsoleBufferLines[currentLogicalLine].Append(_rl.Options.SelectionColor);
                     inSelectedRegion = true;
                 }
                 else if (i == selectionEnd)
@@ -407,7 +405,7 @@ namespace Microsoft.PowerShell
                 if (currentLogicalLine > ConsoleBufferLines.Count - 1)
                     ConsoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
 
-                color = _rl._statusIsErrorMessage ? Options._errorColor : defaultColor;
+                color = _rl._statusIsErrorMessage ? _rl.Options._errorColor : defaultColor;
                 UpdateColorsIfNecessary(color);
 
                 foreach (var c in _rl._statusLinePrompt) ConsoleBufferLines[currentLogicalLine].Append(c);
@@ -454,7 +452,7 @@ namespace Microsoft.PowerShell
             var y = InitialY;
 
             var bufferWidth = _console.BufferWidth;
-            var continuationPromptLength = LengthInBufferCells(Options.ContinuationPrompt);
+            var continuationPromptLength = LengthInBufferCells(_rl.Options.ContinuationPrompt);
             for (offset = 0; offset < _rl.buffer.Length; offset++)
             {
                 // If we are on the correct line, return when we find
@@ -762,9 +760,9 @@ namespace Microsoft.PowerShell
         private bool RenderErrorPrompt(RenderData renderData, string defaultColor)
         {
             if (InitialY < 0
-                || Options.PromptText == null
-                || Options.PromptText.Length == 0
-                || string.IsNullOrEmpty(Options.PromptText[0]))
+                || _rl.Options.PromptText == null
+                || _rl.Options.PromptText.Length == 0
+                || string.IsNullOrEmpty(_rl.Options.PromptText[0]))
                 // No need to flip the prompt color if either the error prompt is not defined
                 // or the initial cursor point has already been scrolled off the buffer.
                 return false;
@@ -780,9 +778,9 @@ namespace Microsoft.PowerShell
             _console.SetCursorPosition(InitialX, InitialY);
 
             var promptText =
-                renderData.errorPrompt && Options.PromptText.Length == 2
-                    ? Options.PromptText[1]
-                    : Options.PromptText[0];
+                renderData.errorPrompt && _rl.Options.PromptText.Length == 2
+                    ? _rl.Options.PromptText[1]
+                    : _rl.Options.PromptText[0];
 
             // promptBufferCells is the number of visible characters in the prompt
             var promptBufferCells = LengthInBufferCells(promptText);
@@ -820,7 +818,7 @@ namespace Microsoft.PowerShell
             {
                 if (!promptText.Contains("\x1b"))
                 {
-                    var color = renderData.errorPrompt ? Options._errorColor : defaultColor;
+                    var color = renderData.errorPrompt ? _rl.Options._errorColor : defaultColor;
                     _console.Write(color);
                     _console.Write(promptText);
                     _console.Write(VTColorUtils.AnsiReset);
@@ -1050,11 +1048,11 @@ namespace Microsoft.PowerShell
             var y = InitialY;
 
             var bufferWidth = _console.BufferWidth;
-            var continuationPromptLength = LengthInBufferCells(Options.ContinuationPrompt);
+            var continuationPromptLength = LengthInBufferCells(_rl.Options.ContinuationPrompt);
 
             for (var i = 0; i < offset; i++)
             {
-                var c = RLBuffer[i];
+                var c = _rl.buffer[i];
                 if (c == '\n')
                 {
                     y += 1;
@@ -1072,15 +1070,15 @@ namespace Microsoft.PowerShell
 
                         // If cursor is at column 0 and the next character is newline, let the next loop
                         // iteration increment y.
-                        if (x != 0 || !(i + 1 < offset && RLBuffer[i + 1] == '\n')) y += 1;
+                        if (x != 0 || !(i + 1 < offset && _rl.buffer[i + 1] == '\n')) y += 1;
                     }
                 }
             }
 
             // If next character actually exists, and isn't newline, check if wider than the space left on the current line.
-            if (RLBuffer.Length > offset && RLBuffer[offset] != '\n')
+            if (_rl.buffer.Length > offset && _rl.buffer[offset] != '\n')
             {
-                var size = LengthInBufferCells(RLBuffer[offset]);
+                var size = LengthInBufferCells(_rl.buffer[offset]);
                 if (x + size > bufferWidth)
                 {
                     // Character was wider than remaining space, so character, and cursor, appear on next line.
@@ -1098,7 +1096,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayUp(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = _s._console;
             var newTop = console.WindowTop - numericArg * console.WindowHeight;
             if (newTop < 0) newTop = 0;
 
@@ -1114,7 +1112,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayUpLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = _s._console;
             var newTop = console.WindowTop - numericArg;
             if (newTop < 0) newTop = 0;
 
@@ -1127,7 +1125,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayDown(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = _s._console;
             var newTop = console.WindowTop + numericArg * console.WindowHeight;
             if (newTop > console.BufferHeight - console.WindowHeight)
                 newTop = console.BufferHeight - console.WindowHeight;
@@ -1141,7 +1139,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayDownLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = _s._console;
             var newTop = console.WindowTop + numericArg;
             if (newTop > console.BufferHeight - console.WindowHeight)
                 newTop = console.BufferHeight - console.WindowHeight;
@@ -1154,7 +1152,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ScrollDisplayTop(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton._console.SetWindowPosition(0, 0);
+            _s._console.SetWindowPosition(0, 0);
         }
 
         /// <summary>
@@ -1164,9 +1162,9 @@ namespace Microsoft.PowerShell
         {
             // Ideally, we'll put the last input line at the bottom of the window
             var offset = _rl.buffer.Length;
-            var point = Singleton.ConvertOffsetToPoint(offset);
+            var point = _s.ConvertOffsetToPoint(offset);
 
-            var console = Singleton._console;
+            var console = _s._console;
             var newTop = point.Y - console.WindowHeight + 1;
 
             // If the cursor is already visible, and we're on the first
