@@ -46,7 +46,7 @@ namespace Microsoft.PowerShell
                         qty -= 1;
                         if (qty == 0)
                         {
-                            Singleton.MoveCursor(backoff ? i - 1 : i);
+                            _renderer.MoveCursor(backoff ? i - 1 : i);
                             return;
                         }
                     }
@@ -85,7 +85,7 @@ namespace Microsoft.PowerShell
                         qty -= 1;
                         if (qty == 0)
                         {
-                            Singleton.MoveCursor(backoff ? i + 1 : i);
+                            _renderer.MoveCursor(backoff ? i + 1 : i);
                             return;
                         }
                     }
@@ -645,7 +645,7 @@ namespace Microsoft.PowerShell
 
                     Singleton.buffer[Singleton.Current] = newChar;
                 }
-                Singleton.MoveCursor(Math.Min(Singleton.Current + 1, Singleton.buffer.Length));
+                _renderer.MoveCursor(Math.Min(Singleton.Current + 1, Singleton.buffer.Length));
             }
             _renderer.Render();
         }
@@ -671,7 +671,7 @@ namespace Microsoft.PowerShell
             Singleton.SaveEditItem(EditItemSwapCharacters.Create(cursor));
             Singleton.SwapCharactersImpl(cursor);
 
-            Singleton.MoveCursor(Math.Min(cursor + 1, cursorRightLimit));
+            _renderer.MoveCursor(Math.Min(cursor + 1, cursorRightLimit));
             _renderer.Render();
         }
 

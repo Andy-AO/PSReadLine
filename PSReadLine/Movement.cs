@@ -30,7 +30,7 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            Singleton.MoveCursor((i == Singleton.Current) ? Singleton.buffer.Length : i);
+            _renderer.MoveCursor((i == Singleton.Current) ? Singleton.buffer.Length : i);
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Microsoft.PowerShell
             var newCurrent = GetBeginningOfLinePos(Singleton.Current);
             newCurrent = newCurrent == Singleton.Current ? 0 : newCurrent;
 
-            Singleton.MoveCursor(newCurrent);
+            _renderer.MoveCursor(newCurrent);
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace Microsoft.PowerShell
                 var newCurrent = Math.Max(start, Singleton.Current + count);
                 if (Singleton.Current != newCurrent)
                 {
-                    Singleton.MoveCursor(newCurrent);
+                    _renderer.MoveCursor(newCurrent);
                 }
             }
             else if (Singleton.Current < Singleton.buffer.Length)
@@ -129,7 +129,7 @@ namespace Microsoft.PowerShell
                 var newCurrent = Math.Min(end, Singleton.Current + count);
                 if (Singleton.Current != newCurrent)
                 {
-                    Singleton.MoveCursor(newCurrent);
+                    _renderer.MoveCursor(newCurrent);
                 }
             }
         }
@@ -229,7 +229,7 @@ namespace Microsoft.PowerShell
 
             if (newCurrent != -1)
             {
-                MoveCursor(newCurrent);
+                _renderer.MoveCursor(newCurrent);
             }
         }
 
@@ -274,7 +274,7 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                Singleton.MoveCursor(Singleton.FindNextWordPoint(Singleton.Options.WordDelimiters));
+                _renderer.MoveCursor(Singleton.FindNextWordPoint(Singleton.Options.WordDelimiters));
             }
         }
 
@@ -301,7 +301,7 @@ namespace Microsoft.PowerShell
 
                 Debug.Assert(token != null, "We'll always find EOF");
 
-                Singleton.MoveCursor(token.Kind == TokenKind.EndOfInput
+                _renderer.MoveCursor(token.Kind == TokenKind.EndOfInput
                     ? Singleton.buffer.Length
                     : token.Extent.StartOffset);
             }
@@ -333,7 +333,7 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                Singleton.MoveCursor(Singleton.FindForwardWordPoint(Singleton.Options.WordDelimiters));
+                _renderer.MoveCursor(Singleton.FindForwardWordPoint(Singleton.Options.WordDelimiters));
             }
         }
 
@@ -360,7 +360,7 @@ namespace Microsoft.PowerShell
 
                 Debug.Assert(token != null, "We'll always find EOF");
 
-                Singleton.MoveCursor(token.Kind == TokenKind.EndOfInput
+                _renderer.MoveCursor(token.Kind == TokenKind.EndOfInput
                     ? Singleton.buffer.Length
                     : token.Extent.EndOffset);
             }
@@ -403,7 +403,7 @@ namespace Microsoft.PowerShell
 
             while (numericArg-- > 0)
             {
-                Singleton.MoveCursor(Singleton.FindBackwardWordPoint(Singleton.Options.WordDelimiters));
+                _renderer.MoveCursor(Singleton.FindBackwardWordPoint(Singleton.Options.WordDelimiters));
             }
         }
 
@@ -434,7 +434,7 @@ namespace Microsoft.PowerShell
             while (numericArg-- > 0)
             {
                 var token = Singleton.FindToken(Singleton.Current, FindTokenMode.Previous);
-                Singleton.MoveCursor(token?.Extent.StartOffset ?? 0);
+                _renderer.MoveCursor(token?.Extent.StartOffset ?? 0);
             }
         }
 
@@ -491,7 +491,7 @@ namespace Microsoft.PowerShell
                     matchCount--;
                     if (matchCount == 0)
                     {
-                        Singleton.MoveCursor(t.Extent.StartOffset);
+                        _renderer.MoveCursor(t.Extent.StartOffset);
                         return;
                     }
                 }
@@ -552,7 +552,7 @@ namespace Microsoft.PowerShell
                     occurence -= 1;
                     if (occurence == 0)
                     {
-                        Singleton.MoveCursor(i);
+                        _renderer.MoveCursor(i);
                         break;
                     }
                 }
@@ -590,7 +590,7 @@ namespace Microsoft.PowerShell
                     occurence -= 1;
                     if (occurence == 0)
                     {
-                        Singleton.MoveCursor(i);
+                        _renderer.MoveCursor(i);
                         return;
                     }
                 }

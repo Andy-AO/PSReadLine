@@ -28,7 +28,7 @@ namespace Microsoft.PowerShell
             var newCurrent = _renderer.ConvertLineAndColumnToOffset(pos);
             var position = GetBeginningOfLinePos(newCurrent);
 
-            Singleton.MoveCursor(position);
+            _renderer.MoveCursor(position);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Microsoft.PowerShell
             var newCurrent = _renderer.ConvertLineAndColumnToOffset(pos);
             var position = GetBeginningOfLinePos(newCurrent);
 
-            Singleton.MoveCursor(position);
+            _renderer.MoveCursor(position);
         }
 
         private void ViMoveToLine(int lineOffset)
@@ -120,7 +120,7 @@ namespace Microsoft.PowerShell
                 ? endOfTargetLinePos
                 : Math.Min(startOfTargetLinePos + _moveToLineDesiredColumn, endOfTargetLinePos);
 
-            MoveCursor(newCurrent);
+            _renderer.MoveCursor(newCurrent);
         }
     }
 }

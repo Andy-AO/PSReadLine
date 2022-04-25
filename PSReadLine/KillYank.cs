@@ -45,7 +45,7 @@ namespace Microsoft.PowerShell
         {
             var tmp = Singleton._mark;
             Singleton._mark = Singleton.Current;
-            Singleton.MoveCursor(Math.Min(tmp, Singleton.buffer.Length));
+            _renderer.MoveCursor(Math.Min(tmp, Singleton.buffer.Length));
         }
 
         /// <summary>

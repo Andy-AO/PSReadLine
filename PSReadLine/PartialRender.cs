@@ -64,49 +64,6 @@ namespace Microsoft.PowerShell
             _renderer.Render();
         }
 
-        private void MoveCursor(int newCursor)
-        {
-            // Only update screen cursor if the buffer is fully rendered.
-            if (!_renderer.WaitingToRender)
-            {
-                // In case the buffer was resized
-                _renderer.RecomputeInitialCoords();
-                PreviousRender.bufferWidth = RLConsole.BufferWidth;
-                PreviousRender.bufferHeight = RLConsole.BufferHeight;
-
-                var point = _renderer.ConvertOffsetToPoint(newCursor);
-                if (point.Y < 0)
-                {
-                    Ding();
-                    return;
-                }
-
-                if (point.Y == RLConsole.BufferHeight)
-                {
-                    // The cursor top exceeds the buffer height, so adjust the initial cursor
-                    // position and the to-be-set cursor position for scrolling up the buffer.
-                    InitialY -= 1;
-                    point.Y -= 1;
-
-                    // Insure the cursor is on the last line of the buffer prior
-                    // to issuing a newline to scroll the buffer.
-                    RLConsole.SetCursorPosition(point.X, point.Y);
-
-                    // Scroll up the buffer by 1 line.
-                    RLConsole.Write("\n");
-                }
-                else
-                {
-                    RLConsole.SetCursorPosition(point.X, point.Y);
-                }
-            }
-
-            // While waiting to render, and a keybinding has occured that is moving the cursor,
-            // converting offset to point could potentially result in an invalid screen position,
-            // but the insertion point should reflect the move.
-            Current = newCursor;
-        }
-
         /// <summary>
         /// Returns the logical line number under the cursor in a multi-line buffer.
         /// When rendering, a logical line may span multiple physical lines.

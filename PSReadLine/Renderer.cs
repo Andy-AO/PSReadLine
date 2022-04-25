@@ -6,11 +6,55 @@ using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.PowerShell.Internal;
+using RL = Microsoft.PowerShell.PSConsoleReadLine;
 
 namespace Microsoft.PowerShell
 {
     internal class Renderer
     {
+        internal void MoveCursor(int newCursor)
+        {
+            // Only update screen cursor if the buffer is fully rendered.
+            if (!WaitingToRender)
+            {
+                // In case the buffer was resized
+                RecomputeInitialCoords();
+                PreviousRender.bufferWidth = RLConsole.BufferWidth;
+                PreviousRender.bufferHeight = RLConsole.BufferHeight;
+
+                var point = ConvertOffsetToPoint(newCursor);
+                if (point.Y < 0)
+                {
+                    RL.Ding();
+                    return;
+                }
+
+                if (point.Y == RLConsole.BufferHeight)
+                {
+                    // The cursor top exceeds the buffer height, so adjust the initial cursor
+                    // position and the to-be-set cursor position for scrolling up the buffer.
+                    InitialY -= 1;
+                    point.Y -= 1;
+
+                    // Insure the cursor is on the last line of the buffer prior
+                    // to issuing a newline to scroll the buffer.
+                    RLConsole.SetCursorPosition(point.X, point.Y);
+
+                    // Scroll up the buffer by 1 line.
+                    RLConsole.Write("\n");
+                }
+                else
+                {
+                    RLConsole.SetCursorPosition(point.X, point.Y);
+                }
+            }
+
+            // While waiting to render, and a keybinding has occured that is moving the cursor,
+            // converting offset to point could potentially result in an invalid screen position,
+            // but the insertion point should reflect the move.
+            Current = newCursor;
+        }
+
         internal void Render()
         {
             // If there are a bunch of keys queued up, skip rendering if we've rendered
@@ -493,7 +537,7 @@ namespace Microsoft.PowerShell
                 if (lenToClear > 0)
                 {
                     UpdateColorsIfNecessary(defaultColor);
-                    RLConsole.Write(PSConsoleReadLine.Spaces(lenToClear));
+                    RLConsole.Write(RL.Spaces(lenToClear));
                 }
             }
 
@@ -508,7 +552,7 @@ namespace Microsoft.PowerShell
                 var lenToClear = currentLines == previousPhysicalLine ? lenPrevLastLine : bufferWidth;
                 if (lenToClear > 0)
                 {
-                    RLConsole.Write(PSConsoleReadLine.Spaces(lenToClear));
+                    RLConsole.Write(RL.Spaces(lenToClear));
                 }
             }
 
@@ -528,7 +572,7 @@ namespace Microsoft.PowerShell
                 }
 
                 // No need to write new line if all we need is to clear the extra previous render.
-                RLConsole.Write(PSConsoleReadLine.Spaces(previousRenderLines[line].columns));
+                RLConsole.Write(RL.Spaces(previousRenderLines[line].columns));
             }
 
             // Preserve the current render data.
@@ -872,7 +916,7 @@ namespace Microsoft.PowerShell
                     RLConsole.Write("\x1b[2J");
                     RLConsole.SetCursorPosition(0, RLConsole.WindowTop);
 
-                    string newPrompt = PSConsoleReadLine.Prompt;
+                    string newPrompt = RL.Prompt;
                     if (!string.IsNullOrEmpty(newPrompt))
                     {
                         RLConsole.Write(newPrompt);
@@ -899,7 +943,7 @@ namespace Microsoft.PowerShell
 
         internal readonly Stopwatch _lastRenderTime = Stopwatch.StartNew();
         internal static readonly Renderer Singleton = new();
-        private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
+        private static readonly PSConsoleReadLine _rl = RL.Singleton;
 
         private static readonly string[] _spacesArr = new string[80];
 
@@ -1135,7 +1179,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ScrollDisplayUp(ConsoleKeyInfo? key = null, object arg = null)
         {
-            PSConsoleReadLine.TryGetArgAsInt(arg, out var numericArg, +1);
+            RL.TryGetArgAsInt(arg, out var numericArg, +1);
             var console = Singleton.RLConsole;
             var newTop = console.WindowTop - (numericArg * console.WindowHeight);
             if (newTop < 0)
@@ -1161,7 +1205,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ScrollDisplayUpLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            PSConsoleReadLine.TryGetArgAsInt(arg, out var numericArg, +1);
+            RL.TryGetArgAsInt(arg, out var numericArg, +1);
             var console = Singleton.RLConsole;
             var newTop = console.WindowTop - numericArg;
             if (newTop < 0)
@@ -1177,7 +1221,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ScrollDisplayDown(ConsoleKeyInfo? key = null, object arg = null)
         {
-            PSConsoleReadLine.TryGetArgAsInt(arg, out var numericArg, +1);
+            RL.TryGetArgAsInt(arg, out var numericArg, +1);
             var console = Singleton.RLConsole;
             var newTop = console.WindowTop + (numericArg * console.WindowHeight);
             if (newTop > (console.BufferHeight - console.WindowHeight))
@@ -1193,7 +1237,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ScrollDisplayDownLine(ConsoleKeyInfo? key = null, object arg = null)
         {
-            PSConsoleReadLine.TryGetArgAsInt(arg, out var numericArg, +1);
+            RL.TryGetArgAsInt(arg, out var numericArg, +1);
             var console = Singleton.RLConsole;
             var newTop = console.WindowTop + numericArg;
             if (newTop > (console.BufferHeight - console.WindowHeight))

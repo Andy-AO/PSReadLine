@@ -286,7 +286,7 @@ namespace Microsoft.PowerShell
             if (length > 0)
             {
                 Singleton.SaveToClipboard(start, length);
-                Singleton.MoveCursor(start);
+                _renderer.MoveCursor(start);
             }
         }
 
@@ -300,7 +300,7 @@ namespace Microsoft.PowerShell
             if (length > 0)
             {
                 Singleton.SaveToClipboard(start, length);
-                Singleton.MoveCursor(start);
+                _renderer.MoveCursor(start);
             }
         }
 
