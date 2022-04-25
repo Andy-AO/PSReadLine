@@ -9,26 +9,20 @@ namespace Microsoft.PowerShell
     public partial class PSConsoleReadLine
     {
         /// <summary>
-        /// Ends the current edit group, if needed, and invokes TabCompleteNext.
+        ///     Ends the current edit group, if needed, and invokes TabCompleteNext.
         /// </summary>
         public static void ViTabCompleteNext(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (Singleton._editGroupStart >= 0)
-            {
-                Singleton._groupUndoHelper.EndGroup();
-            }
+            if (Singleton._editGroupStart >= 0) Singleton._groupUndoHelper.EndGroup();
             TabCompleteNext(key, arg);
         }
 
         /// <summary>
-        /// Ends the current edit group, if needed, and invokes TabCompletePrevious.
+        ///     Ends the current edit group, if needed, and invokes TabCompletePrevious.
         /// </summary>
         public static void ViTabCompletePrevious(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (Singleton._editGroupStart >= 0)
-            {
-                Singleton._groupUndoHelper.EndGroup();
-            }
+            if (Singleton._editGroupStart >= 0) Singleton._groupUndoHelper.EndGroup();
             TabCompletePrevious(key, arg);
         }
     }

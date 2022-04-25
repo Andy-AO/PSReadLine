@@ -3,7 +3,6 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 --********************************************************************/
 
 using System;
-using System.Text;
 
 namespace Microsoft.PowerShell
 {
@@ -15,7 +14,7 @@ namespace Microsoft.PowerShell
         private static readonly ViRegister _viRegister;
 
         /// <summary>
-        /// Paste the clipboard after the cursor, moving the cursor to the end of the pasted text.
+        ///     Paste the clipboard after the cursor, moving the cursor to the end of the pasted text.
         /// </summary>
         public static void PasteAfter(ConsoleKeyInfo? key = null, object arg = null)
         {
@@ -29,7 +28,7 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Paste the clipboard before the cursor, moving the cursor to the end of the pasted text.
+        ///     Paste the clipboard before the cursor, moving the cursor to the end of the pasted text.
         /// </summary>
         public static void PasteBefore(ConsoleKeyInfo? key = null, object arg = null)
         {
@@ -38,6 +37,7 @@ namespace Microsoft.PowerShell
                 Ding();
                 return;
             }
+
             Singleton.PasteBeforeImpl();
         }
 
@@ -59,8 +59,8 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Saves a number of logical lines in the unnamed register
-        /// starting at the specified line number and specified count.
+        ///     Saves a number of logical lines in the unnamed register
+        ///     starting at the specified line number and specified count.
         /// </summary>
         /// <param name="lineIndex">The logical number of the current line, starting at 0.</param>
         /// <param name="lineCount">The number of lines to record to the unnamed register</param>
@@ -71,17 +71,17 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Remove a portion of text from the buffer, save it to the vi register
-        /// and also save it to the edit list to support undo.
+        ///     Remove a portion of text from the buffer, save it to the vi register
+        ///     and also save it to the edit list to support undo.
         /// </summary>
         /// <param name="start"></param>
         /// <param name="count"></param>
         /// <param name="instigator"></param>
         /// <param name="arg"></param>
         /// <param name="moveCursorToEndWhenUndoDelete">
-        /// Use 'false' as the default value because this method is used a lot by VI operations,
-        /// and for VI opeartions, we do NOT want to move the cursor to the end when undoing a
-        /// deletion.
+        ///     Use 'false' as the default value because this method is used a lot by VI operations,
+        ///     and for VI opeartions, we do NOT want to move the cursor to the end when undoing a
+        ///     deletion.
         /// </param>
         private void RemoveTextToViRegister(
             int start,
@@ -101,7 +101,7 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Yank the entire buffer.
+        ///     Yank the entire buffer.
         /// </summary>
         public static void ViYankLine(ConsoleKeyInfo? key = null, object arg = null)
         {
@@ -111,178 +111,128 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Yank character(s) under and to the right of the cursor.
+        ///     Yank character(s) under and to the right of the cursor.
         /// </summary>
         public static void ViYankRight(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (!TryGetArgAsInt(arg, out var numericArg, 1))
-            {
-                return;
-            }
+            if (!TryGetArgAsInt(arg, out var numericArg, 1)) return;
 
-            int start = _renderer.Current;
-            int length = 0;
+            var start = _renderer.Current;
+            var length = 0;
 
-            while (numericArg-- > 0)
-            {
-                length++;
-            }
+            while (numericArg-- > 0) length++;
 
             Singleton.SaveToClipboard(start, length);
         }
 
         /// <summary>
-        /// Yank character(s) to the left of the cursor.
+        ///     Yank character(s) to the left of the cursor.
         /// </summary>
         public static void ViYankLeft(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (!TryGetArgAsInt(arg, out var numericArg, 1))
-            {
-                return;
-            }
+            if (!TryGetArgAsInt(arg, out var numericArg, 1)) return;
 
-            int start = _renderer.Current;
+            var start = _renderer.Current;
             if (start == 0)
             {
                 Singleton.SaveToClipboard(start, 1);
                 return;
             }
 
-            int length = 0;
+            var length = 0;
 
             while (numericArg-- > 0)
-            {
                 if (start > 0)
                 {
                     start--;
                     length++;
                 }
-            }
 
             Singleton.SaveToClipboard(start, length);
         }
 
         /// <summary>
-        /// Yank from the cursor to the end of the buffer.
+        ///     Yank from the cursor to the end of the buffer.
         /// </summary>
         public static void ViYankToEndOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             var start = _renderer.Current;
             var end = GetEndOfLogicalLinePos(_renderer.Current);
             var length = end - start + 1;
-            if (length > 0)
-            {
-                Singleton.SaveToClipboard(start, length);
-            }
+            if (length > 0) Singleton.SaveToClipboard(start, length);
         }
 
         /// <summary>
-        /// Yank the word(s) before the cursor.
+        ///     Yank the word(s) before the cursor.
         /// </summary>
         public static void ViYankPreviousWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (!TryGetArgAsInt(arg, out var numericArg, 1))
-            {
-                return;
-            }
+            if (!TryGetArgAsInt(arg, out var numericArg, 1)) return;
 
-            int start = _renderer.Current;
+            var start = _renderer.Current;
 
-            while (numericArg-- > 0)
-            {
-                start = Singleton.ViFindPreviousWordPoint(start, Singleton.Options.WordDelimiters);
-            }
+            while (numericArg-- > 0) start = Singleton.ViFindPreviousWordPoint(start, Singleton.Options.WordDelimiters);
 
-            int length = _renderer.Current - start;
-            if (length > 0)
-            {
-                Singleton.SaveToClipboard(start, length);
-            }
+            var length = _renderer.Current - start;
+            if (length > 0) Singleton.SaveToClipboard(start, length);
         }
 
         /// <summary>
-        /// Yank the word(s) after the cursor.
+        ///     Yank the word(s) after the cursor.
         /// </summary>
         public static void ViYankNextWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (!TryGetArgAsInt(arg, out var numericArg, 1))
-            {
-                return;
-            }
+            if (!TryGetArgAsInt(arg, out var numericArg, 1)) return;
 
-            int end = _renderer.Current;
+            var end = _renderer.Current;
 
-            while (numericArg-- > 0)
-            {
-                end = Singleton.ViFindNextWordPoint(end, Singleton.Options.WordDelimiters);
-            }
+            while (numericArg-- > 0) end = Singleton.ViFindNextWordPoint(end, Singleton.Options.WordDelimiters);
 
-            int length = end - _renderer.Current;
+            var length = end - _renderer.Current;
             //if (_singleton.IsAtEndOfLine(end))
             //{
             //    length++;
             //}
-            if (length > 0)
-            {
-                Singleton.SaveToClipboard(_renderer.Current, length);
-            }
+            if (length > 0) Singleton.SaveToClipboard(_renderer.Current, length);
         }
 
         /// <summary>
-        /// Yank from the cursor to the end of the word(s).
+        ///     Yank from the cursor to the end of the word(s).
         /// </summary>
         public static void ViYankEndOfWord(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (!TryGetArgAsInt(arg, out var numericArg, 1))
-            {
-                return;
-            }
+            if (!TryGetArgAsInt(arg, out var numericArg, 1)) return;
 
-            int end = _renderer.Current;
+            var end = _renderer.Current;
 
-            while (numericArg-- > 0)
-            {
-                end = Singleton.ViFindNextWordEnd(end, Singleton.Options.WordDelimiters);
-            }
+            while (numericArg-- > 0) end = Singleton.ViFindNextWordEnd(end, Singleton.Options.WordDelimiters);
 
-            int length = 1 + end - _renderer.Current;
-            if (length > 0)
-            {
-                Singleton.SaveToClipboard(_renderer.Current, length);
-            }
+            var length = 1 + end - _renderer.Current;
+            if (length > 0) Singleton.SaveToClipboard(_renderer.Current, length);
         }
 
         /// <summary>
-        /// Yank from the cursor to the end of the WORD(s).
+        ///     Yank from the cursor to the end of the WORD(s).
         /// </summary>
         public static void ViYankEndOfGlob(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (!TryGetArgAsInt(arg, out var numericArg, 1))
-            {
-                return;
-            }
+            if (!TryGetArgAsInt(arg, out var numericArg, 1)) return;
 
-            int end = _renderer.Current;
+            var end = _renderer.Current;
 
-            while (numericArg-- > 0)
-            {
-                end = Singleton.ViFindGlobEnd(end);
-            }
+            while (numericArg-- > 0) end = Singleton.ViFindGlobEnd(end);
 
-            int length = 1 + end - _renderer.Current;
-            if (length > 0)
-            {
-                Singleton.SaveToClipboard(_renderer.Current, length);
-            }
+            var length = 1 + end - _renderer.Current;
+            if (length > 0) Singleton.SaveToClipboard(_renderer.Current, length);
         }
 
         /// <summary>
-        /// Yank from the beginning of the buffer to the cursor.
+        ///     Yank from the beginning of the buffer to the cursor.
         /// </summary>
         public static void ViYankBeginningOfLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             var start = GetBeginningOfLinePos(_renderer.Current);
-            var length = _renderer.Current - start; 
+            var length = _renderer.Current - start;
             if (length > 0)
             {
                 Singleton.SaveToClipboard(start, length);
@@ -291,7 +241,7 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Yank from the first non-whitespace character to the cursor.
+        ///     Yank from the first non-whitespace character to the cursor.
         /// </summary>
         public static void ViYankToFirstChar(ConsoleKeyInfo? key = null, object arg = null)
         {
@@ -305,65 +255,43 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Yank to/from matching brace.
+        ///     Yank to/from matching brace.
         /// </summary>
         public static void ViYankPercent(ConsoleKeyInfo? key = null, object arg = null)
         {
-            int start = Singleton.ViFindBrace(_renderer.Current);
+            var start = Singleton.ViFindBrace(_renderer.Current);
             if (_renderer.Current < start)
-            {
                 Singleton.SaveToClipboard(_renderer.Current, start - _renderer.Current + 1);
-            }
             else if (start < _renderer.Current)
-            {
                 Singleton.SaveToClipboard(start, _renderer.Current - start + 1);
-            }
             else
-            {
                 Ding();
-            }
         }
 
         /// <summary>
-        /// Yank from beginning of the WORD(s) to cursor.
+        ///     Yank from beginning of the WORD(s) to cursor.
         /// </summary>
         public static void ViYankPreviousGlob(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (!TryGetArgAsInt(arg, out var numericArg, 1))
-            {
-                return;
-            }
+            if (!TryGetArgAsInt(arg, out var numericArg, 1)) return;
 
-            int start = _renderer.Current;
-            while (numericArg-- > 0)
-            {
-                start = Singleton.ViFindPreviousGlob(start - 1);
-            }
+            var start = _renderer.Current;
+            while (numericArg-- > 0) start = Singleton.ViFindPreviousGlob(start - 1);
             if (start < _renderer.Current)
-            {
                 Singleton.SaveToClipboard(start, _renderer.Current - start);
-            }
             else
-            {
                 Ding();
-            }
         }
 
         /// <summary>
-        /// Yank from cursor to the start of the next WORD(s).
+        ///     Yank from cursor to the start of the next WORD(s).
         /// </summary>
         public static void ViYankNextGlob(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (!TryGetArgAsInt(arg, out var numericArg, 1))
-            {
-                return;
-            }
+            if (!TryGetArgAsInt(arg, out var numericArg, 1)) return;
 
-            int end = _renderer.Current;
-            while (numericArg-- > 0)
-            {
-                end = Singleton.ViFindNextGlob(end);
-            }
+            var end = _renderer.Current;
+            while (numericArg-- > 0) end = Singleton.ViFindNextGlob(end);
             Singleton.SaveToClipboard(_renderer.Current, end - _renderer.Current);
         }
     }

@@ -10,33 +10,40 @@ namespace Microsoft.PowerShell
 {
     public partial class PSConsoleReadLine
     {
+        private bool IsLastEditItemReplaceable
+        {
+            get
+            {
+                RemoveEditsAfterUndo();
+
+                var lastEditIndex = _edits.Count - 1;
+                return lastEditIndex >= 0 && _edits[lastEditIndex].Replaceable;
+            }
+        }
+
         private void RemoveEditsAfterUndo()
         {
             // If there is some sort of edit after an undo, forget
             // any edit items that were undone.
-            int removeCount = _edits.Count - _undoEditIndex;
+            var removeCount = _edits.Count - _undoEditIndex;
             if (removeCount > 0)
             {
                 _edits.RemoveRange(_undoEditIndex, removeCount);
                 if (_edits.Count < _editGroupStart)
-                {
                     // Reset the group start index if any edits after setting the start mark were undone.
                     _editGroupStart = -1;
-                }
             }
         }
 
         private void SaveEditItem(EditItem editItem)
         {
             if (_statusIsErrorMessage)
-            {
                 // After an edit, clear the error message
-                ClearStatusMessage(render: true);
-            }
+                ClearStatusMessage(true);
 
             if (IsLastEditItemReplaceable)
             {
-                int lastEditIndex = _edits.Count - 1;
+                var lastEditIndex = _edits.Count - 1;
                 if (editItem.Replaceable)
                 {
                     if (_edits[lastEditIndex] is GroupedEdit groupedEdit)
@@ -62,10 +69,8 @@ namespace Microsoft.PowerShell
         private void StartEditGroup()
         {
             if (_editGroupStart != -1)
-            {
                 // Nesting not supported.
                 throw new InvalidOperationException();
-            }
 
             RemoveEditsAfterUndo();
             _editGroupStart = _edits.Count;
@@ -79,10 +84,7 @@ namespace Microsoft.PowerShell
 
             // If any edits before the start mark were done, the start mark will be reset
             // and no need to generate the edit group.
-            if (_editGroupStart < 0)
-            {
-                return;
-            }
+            if (_editGroupStart < 0) return;
 
             var groupEditCount = _edits.Count - _editGroupStart;
 
@@ -94,39 +96,25 @@ namespace Microsoft.PowerShell
                 _edits.RemoveRange(_editGroupStart, groupEditCount);
                 SaveEditItem(GroupedEdit.Create(groupedEditItems, instigator, instigatorArg));
             }
+
             _editGroupStart = -1;
         }
 
-        private bool IsLastEditItemReplaceable
-        {
-            get
-            {
-                RemoveEditsAfterUndo();
-
-                int lastEditIndex = _edits.Count - 1;
-                return lastEditIndex >= 0 && _edits[lastEditIndex].Replaceable;
-            }
-        }
-
         /// <summary>
-        /// Undo a previous edit.
+        ///     Undo a previous edit.
         /// </summary>
         public static void Undo(ConsoleKeyInfo? key = null, object arg = null)
         {
             if (Singleton._undoEditIndex > 0)
             {
                 if (Singleton._statusIsErrorMessage)
-                {
                     // After an edit, clear the error message
-                    Singleton.ClearStatusMessage(render: false);
-                }
+                    Singleton.ClearStatusMessage(false);
                 Singleton._edits[Singleton._undoEditIndex - 1].Undo();
                 Singleton._undoEditIndex--;
 
-                if (Singleton._options.EditMode == EditMode.Vi && _renderer.Current >= Singleton.buffer.Length)
-                {
+                if (Singleton.Options.EditMode == EditMode.Vi && _renderer.Current >= Singleton.buffer.Length)
                     _renderer.Current = Math.Max(0, Singleton.buffer.Length + ViEndOfLineFactor);
-                }
                 _renderer.Render();
             }
             else
@@ -136,7 +124,7 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Undo an undo.
+        ///     Undo an undo.
         /// </summary>
         public static void Redo(ConsoleKeyInfo? key = null, object arg = null)
         {
@@ -156,14 +144,14 @@ namespace Microsoft.PowerShell
         {
             public Action<ConsoleKeyInfo?, object> _instigator;
             public object _instigatorArg;
+            public virtual bool Replaceable { get; set; }
 
             public abstract void Undo();
             public abstract void Redo();
-            public virtual bool Replaceable { get; set; }
         }
 
         [DebuggerDisplay("Insert '{_insertedCharacter}' ({_insertStartPosition})")]
-        class EditItemInsertChar : EditItem
+        private class EditItemInsertChar : EditItem
         {
             // The character inserted is not needed for undo, only for redo
             private char _insertedCharacter;
@@ -180,7 +168,8 @@ namespace Microsoft.PowerShell
 
             public override void Undo()
             {
-                Debug.Assert(Singleton.buffer[_insertStartPosition] == _insertedCharacter, "Character to undo is not what it should be");
+                Debug.Assert(Singleton.buffer[_insertStartPosition] == _insertedCharacter,
+                    "Character to undo is not what it should be");
                 Singleton.buffer.Remove(_insertStartPosition, 1);
                 _renderer.Current = _insertStartPosition;
             }
@@ -193,7 +182,7 @@ namespace Microsoft.PowerShell
         }
 
         [DebuggerDisplay("Insert '{_insertedString}' ({_insertStartPosition})")]
-        class EditItemInsertString : EditItem
+        private class EditItemInsertString : EditItem
         {
             // The string inserted tells us the length to delete on undo.
             // The contents of the string are only needed for redo.
@@ -213,7 +202,8 @@ namespace Microsoft.PowerShell
 
             public override void Undo()
             {
-                Debug.Assert(Singleton.buffer.ToString(_insertStartPosition, _insertedString.Length).Equals(_insertedString),
+                Debug.Assert(
+                    Singleton.buffer.ToString(_insertStartPosition, _insertedString.Length).Equals(_insertedString),
                     "Character to undo is not what it should be");
                 Singleton.buffer.Remove(_insertStartPosition, _insertedString.Length);
                 _renderer.Current = _insertStartPosition;
@@ -227,7 +217,7 @@ namespace Microsoft.PowerShell
         }
 
         [DebuggerDisplay("Insert '{_insertedString}' ({_insertStartPosition}, Anchor: {_insertAnchor})")]
-        class EditItemInsertLines : EditItemInsertString
+        private class EditItemInsertLines : EditItemInsertString
         {
             // in linewise pastes, the _insertAnchor represents the position
             // of the cursor at the time paste was invoked. This is recorded
@@ -235,7 +225,7 @@ namespace Microsoft.PowerShell
             private readonly int _insertAnchor;
 
             private EditItemInsertLines(string str, int position, int anchor)
-                :base(str, position)
+                : base(str, position)
             {
                 _insertAnchor = anchor;
             }
@@ -253,7 +243,7 @@ namespace Microsoft.PowerShell
         }
 
         [DebuggerDisplay("Delete '{_deletedString}' ({_deleteStartPosition})")]
-        class EditItemDelete : EditItem
+        private class EditItemDelete : EditItem
         {
             private readonly string _deletedString;
             private readonly int _deleteStartPosition;
@@ -262,7 +252,8 @@ namespace Microsoft.PowerShell
             // The '_moveCursorToEndWhenUndo' flag specifies whether the cursor should be moved to the end of the inserted text.
             private readonly bool _moveCursorToEndWhenUndo;
 
-            protected EditItemDelete(string str, int position, Action<ConsoleKeyInfo?, object> instigator, object instigatorArg, bool moveCursorToEndWhenUndo)
+            protected EditItemDelete(string str, int position, Action<ConsoleKeyInfo?, object> instigator,
+                object instigatorArg, bool moveCursorToEndWhenUndo)
             {
                 _deletedString = str;
                 _deleteStartPosition = position;
@@ -302,20 +293,22 @@ namespace Microsoft.PowerShell
         }
 
         [DebuggerDisplay("DeleteLines '{_deletedString}' ({_deleteStartPosition}, Anchor: {_deleteAnchor})")]
-        class EditItemDeleteLines : EditItemDelete
+        private class EditItemDeleteLines : EditItemDelete
         {
             // in linewise deletes, the _deleteAnchor represents the position
             // of the cursor at the time delete was invoked. This is recorded
             // so as to be restored when undoing the delete.
             private readonly int _deleteAnchor;
 
-            private EditItemDeleteLines(string str, int position, int anchor, Action<ConsoleKeyInfo?, object> instigator, object instigatorArg)
-                : base(str, position, instigator, instigatorArg, moveCursorToEndWhenUndo: false)
+            private EditItemDeleteLines(string str, int position, int anchor,
+                Action<ConsoleKeyInfo?, object> instigator, object instigatorArg)
+                : base(str, position, instigator, instigatorArg, false)
             {
                 _deleteAnchor = anchor;
             }
 
-            public static EditItem Create(string str, int position, int anchor, Action<ConsoleKeyInfo?, object> instigator = null, object instigatorArg = null)
+            public static EditItem Create(string str, int position, int anchor,
+                Action<ConsoleKeyInfo?, object> instigator = null, object instigatorArg = null)
             {
                 return new EditItemDeleteLines(str, position, anchor, instigator, instigatorArg);
             }
@@ -328,7 +321,7 @@ namespace Microsoft.PowerShell
         }
 
         [DebuggerDisplay("SwapCharacters (position: {_swapPosition})")]
-        class EditItemSwapCharacters : EditItem
+        private class EditItemSwapCharacters : EditItem
         {
             private readonly int _swapPosition;
 
@@ -338,7 +331,7 @@ namespace Microsoft.PowerShell
             }
 
             public static EditItem Create(int swapPosition)
-            { 
+            {
                 return new EditItemSwapCharacters(swapPosition);
             }
 
@@ -353,11 +346,18 @@ namespace Microsoft.PowerShell
             }
         }
 
-        class GroupedEdit : EditItem
+        private class GroupedEdit : EditItem
         {
             internal List<EditItem> _groupedEditItems;
 
-            public static EditItem Create(List<EditItem> groupedEditItems, Action<ConsoleKeyInfo?, object> instigator = null, object instigatorArg = null)
+            public override bool Replaceable
+            {
+                get => _groupedEditItems[_groupedEditItems.Count - 1].Replaceable;
+                set => _groupedEditItems[_groupedEditItems.Count - 1].Replaceable = value;
+            }
+
+            public static EditItem Create(List<EditItem> groupedEditItems,
+                Action<ConsoleKeyInfo?, object> instigator = null, object instigatorArg = null)
             {
                 return new GroupedEdit
                 {
@@ -369,24 +369,12 @@ namespace Microsoft.PowerShell
 
             public override void Undo()
             {
-                for (int i = _groupedEditItems.Count - 1; i >= 0; i--)
-                {
-                    _groupedEditItems[i].Undo();
-                }
+                for (var i = _groupedEditItems.Count - 1; i >= 0; i--) _groupedEditItems[i].Undo();
             }
 
             public override void Redo()
             {
-                foreach (var editItem in _groupedEditItems)
-                {
-                    editItem.Redo();
-                }
-            }
-
-            public override bool Replaceable
-            {
-                get => _groupedEditItems[_groupedEditItems.Count - 1].Replaceable;
-                set => _groupedEditItems[_groupedEditItems.Count - 1].Replaceable = value;
+                foreach (var editItem in _groupedEditItems) editItem.Redo();
             }
         }
     }

@@ -5,8 +5,8 @@ namespace Microsoft.PowerShell
     public partial class PSConsoleReadLine
     {
         /// <summary>
-        /// Moves the cursor to the beginning of the first logical line
-        /// of a multi-line buffer.
+        ///     Moves the cursor to the beginning of the first logical line
+        ///     of a multi-line buffer.
         /// </summary>
         /// <param name="key" />
         /// <param name="arg" />
@@ -18,12 +18,12 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            var currentLine =  _renderer.GetLogicalLineNumber();
+            var currentLine = _renderer.GetLogicalLineNumber();
 
-            int offset = _renderer.Current;
+            var offset = _renderer.Current;
             var pos = _renderer.ConvertOffsetToPoint(offset);
 
-            pos.Y -= currentLine -1;
+            pos.Y -= currentLine - 1;
 
             var newCurrent = _renderer.ConvertLineAndColumnToOffset(pos);
             var position = GetBeginningOfLinePos(newCurrent);
@@ -32,8 +32,8 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Moves the cursor to the beginning of the last logical logical line.
-        /// of a multi-line buffer.
+        ///     Moves the cursor to the beginning of the last logical logical line.
+        ///     of a multi-line buffer.
         /// </summary>
         /// <param name="key" />
         /// <param name="arg" />
@@ -48,10 +48,10 @@ namespace Microsoft.PowerShell
 
             var currentLine = _renderer.GetLogicalLineNumber();
 
-            int offset = _renderer.Current;
+            var offset = _renderer.Current;
             var pos = _renderer.ConvertOffsetToPoint(offset);
 
-            pos.Y += (count - currentLine);
+            pos.Y += count - currentLine;
 
             var newCurrent = _renderer.ConvertLineAndColumnToOffset(pos);
             var position = GetBeginningOfLinePos(newCurrent);
@@ -94,10 +94,7 @@ namespace Microsoft.PowerShell
             // Nothing needs to be done when:
             //  - actually not moving the line, or
             //  - moving the line down when it's at the end of the last logical line.
-            if (lineOffset == 0 || (lineOffset > 0 && _renderer.Current == buffer.Length))
-            {
-                return;
-            }
+            if (lineOffset == 0 || lineOffset > 0 && _renderer.Current == buffer.Length) return;
 
             int targetLineOffset;
 

@@ -1,36 +1,35 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Microsoft.PowerShell
 {
     public partial class PSConsoleReadLine
     {
         /// <summary>
-        /// Returns the position of the beginning of line
-        /// starting from the specified "current" position.
+        ///     Returns the position of the beginning of line
+        ///     starting from the specified "current" position.
         /// </summary>
         /// <param name="current">The position in the current logical line.</param>
         private static int GetBeginningOfLinePos(int current)
         {
-            int i = Math.Max(0, current);
+            var i = Math.Max(0, current);
             while (i > 0)
-            {
                 if (Singleton.buffer[--i] == '\n')
                 {
                     i += 1;
                     break;
                 }
-            }
 
             return i;
         }
 
         /// <summary>
-        /// Returns the position of the beginning of line
-        /// for the 0-based specified line number.
+        ///     Returns the position of the beginning of line
+        ///     for the 0-based specified line number.
         /// </summary>
         private static int GetBeginningOfNthLinePos(int lineIndex)
         {
-            System.Diagnostics.Debug.Assert(lineIndex >= 0 || lineIndex < _renderer.GetLogicalLineCount());
+            Debug.Assert(lineIndex >= 0 || lineIndex < _renderer.GetLogicalLineCount());
 
             var nth = 0;
             var index = 0;
@@ -44,24 +43,18 @@ namespace Microsoft.PowerShell
                     break;
                 }
 
-                if (Singleton.buffer[index] == '\n')
-                {
-                    nth++;
-                }
+                if (Singleton.buffer[index] == '\n') nth++;
             }
 
-            if (nth == lineIndex)
-            {
-                result = index;
-            }
+            if (nth == lineIndex) result = index;
 
 
             return result;
         }
 
         /// <summary>
-        /// Returns the position of the end of the logical line
-        /// as specified by the "current" position.
+        ///     Returns the position of the end of the logical line
+        ///     as specified by the "current" position.
         /// </summary>
         /// <param name="current"></param>
         /// <returns></returns>
@@ -71,10 +64,7 @@ namespace Microsoft.PowerShell
 
             for (var position = current; position < Singleton.buffer.Length; position++)
             {
-                if (Singleton.buffer[position] == '\n')
-                {
-                    break;
-                }
+                if (Singleton.buffer[position] == '\n') break;
 
                 newCurrent = position;
             }
@@ -83,8 +73,8 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Returns the position of the end of the logical line
-        /// for the 0-based specified line number.
+        ///     Returns the position of the end of the logical line
+        ///     for the 0-based specified line number.
         /// </summary>
         private static int GetEndOfNthLogicalLinePos(int lineIndex)
         {
@@ -93,8 +83,8 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Returns the position of the first non whitespace character in
-        /// the current logical line as specified by the "current" position.
+        ///     Returns the position of the first non whitespace character in
+        ///     the current logical line as specified by the "current" position.
         /// </summary>
         /// <param name="current">The position in the current logical line.</param>
         private static int GetFirstNonBlankOfLogicalLinePos(int current)
@@ -103,10 +93,7 @@ namespace Microsoft.PowerShell
 
             var newCurrent = beginningOfLine;
 
-            while (newCurrent < Singleton.buffer.Length && IsVisibleBlank(newCurrent))
-            {
-                newCurrent++;
-            }
+            while (newCurrent < Singleton.buffer.Length && IsVisibleBlank(newCurrent)) newCurrent++;
 
             return newCurrent;
         }

@@ -2,8 +2,6 @@
 Copyright (c) Microsoft Corporation.  All rights reserved.
 --********************************************************************/
 
-using System;
-
 namespace Microsoft.PowerShell
 {
     public partial class PSConsoleReadLine
@@ -11,7 +9,7 @@ namespace Microsoft.PowerShell
         private void WriteBlankLines(int count)
         {
             RLConsole.BlankRestOfLine();
-            for (int i = 1; i < count; i++)
+            for (var i = 1; i < count; i++)
             {
                 RLConsole.Write("\n");
                 RLConsole.BlankRestOfLine();
@@ -23,7 +21,7 @@ namespace Microsoft.PowerShell
             var savedCursorLeft = RLConsole.CursorLeft;
             var savedCursorTop = RLConsole.CursorTop;
 
-            RLConsole.SetCursorPosition(left: 0, top);
+            RLConsole.SetCursorPosition(0, top);
             WriteBlankLines(count);
             RLConsole.SetCursorPosition(savedCursorLeft, savedCursorTop);
         }
@@ -41,7 +39,7 @@ namespace Microsoft.PowerShell
         internal static string Spaces(int cnt)
         {
             return cnt < Renderer.SpacesArr.Length
-                ? (Renderer.SpacesArr[cnt] ?? (Renderer.SpacesArr[cnt] = new string(' ', cnt)))
+                ? Renderer.SpacesArr[cnt] ?? (Renderer.SpacesArr[cnt] = new string(' ', cnt))
                 : new string(' ', cnt);
         }
 
@@ -52,7 +50,7 @@ namespace Microsoft.PowerShell
 
         private static string SubstringByCells(string text, int start, int countOfCells)
         {
-            int length = SubstringLengthByCells(text, start, countOfCells);
+            var length = SubstringLengthByCells(text, start, countOfCells);
             return length == 0 ? string.Empty : text.Substring(start, length);
         }
 
@@ -63,24 +61,18 @@ namespace Microsoft.PowerShell
 
         private static int SubstringLengthByCells(string text, int start, int countOfCells)
         {
-            int cellLength = 0;
-            int charLength = 0;
+            var cellLength = 0;
+            var charLength = 0;
 
-            for (int i = start; i < text.Length; i++)
+            for (var i = start; i < text.Length; i++)
             {
                 cellLength += _renderer.LengthInBufferCells(text[i]);
 
-                if (cellLength > countOfCells)
-                {
-                    return charLength;
-                }
+                if (cellLength > countOfCells) return charLength;
 
                 charLength++;
 
-                if (cellLength == countOfCells)
-                {
-                    return charLength;
-                }
+                if (cellLength == countOfCells) return charLength;
             }
 
             return charLength;
@@ -88,24 +80,18 @@ namespace Microsoft.PowerShell
 
         private static int SubstringLengthByCellsFromEnd(string text, int start, int countOfCells)
         {
-            int cellLength = 0;
-            int charLength = 0;
+            var cellLength = 0;
+            var charLength = 0;
 
-            for (int i = start; i >= 0; i--)
+            for (var i = start; i >= 0; i--)
             {
                 cellLength += _renderer.LengthInBufferCells(text[i]);
 
-                if (cellLength > countOfCells)
-                {
-                    return charLength;
-                }
+                if (cellLength > countOfCells) return charLength;
 
                 charLength++;
 
-                if (cellLength == countOfCells)
-                {
-                    return charLength;
-                }
+                if (cellLength == countOfCells) return charLength;
             }
 
             return charLength;

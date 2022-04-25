@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 
 namespace Microsoft.PowerShell
@@ -10,7 +9,7 @@ namespace Microsoft.PowerShell
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.InvariantCulture, "{0},{1}", X, Y);
+            return string.Format(CultureInfo.InvariantCulture, "{0},{1}", X, Y);
         }
     }
 }

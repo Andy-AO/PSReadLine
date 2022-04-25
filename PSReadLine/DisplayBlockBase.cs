@@ -2,7 +2,6 @@
 Copyright (c) Microsoft Corporation.  All rights reserved.
 --********************************************************************/
 
-using System;
 using Microsoft.PowerShell.Internal;
 
 namespace Microsoft.PowerShell
@@ -11,16 +10,15 @@ namespace Microsoft.PowerShell
     {
         private class DisplayBlockBase
         {
+            private int _savedCursorLeft;
+            private int _savedCursorTop;
             internal PSConsoleReadLine Singleton;
             internal int Top;
 
             protected void MoveCursorDown(int cnt)
             {
-                IConsole console = Singleton.RLConsole;
-                while (cnt-- > 0)
-                {
-                    console.Write("\n");
-                }
+                var console = Singleton.RLConsole;
+                while (cnt-- > 0) console.Write("\n");
             }
 
             protected void AdjustForActualScroll(int scrollCnt)
@@ -35,7 +33,7 @@ namespace Microsoft.PowerShell
 
             protected void AdjustForPossibleScroll(int cnt)
             {
-                IConsole console = Singleton.RLConsole;
+                var console = Singleton.RLConsole;
                 var scrollCnt = console.CursorTop + cnt + 1 - console.BufferHeight;
                 if (scrollCnt > 0)
                 {
@@ -48,7 +46,7 @@ namespace Microsoft.PowerShell
             protected void MoveCursorToStartDrawingPosition(IConsole console)
             {
                 // Calculate the coord to place the cursor at the end of current input.
-                Point bufferEndPoint = _renderer.ConvertOffsetToPoint(Singleton.buffer.Length);
+                var bufferEndPoint = _renderer.ConvertOffsetToPoint(Singleton.buffer.Length);
                 // Top must be initialized before any possible adjustion by 'AdjustForPossibleScroll' or 'AdjustForActualScroll',
                 // otherwise its value would be corrupted and cause rendering issue.
                 Top = bufferEndPoint.Y + 1;
@@ -73,17 +71,17 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            private int _savedCursorLeft;
-            private int _savedCursorTop;
-
             public void SaveCursor()
             {
-                IConsole console = Singleton.RLConsole;
+                var console = Singleton.RLConsole;
                 _savedCursorLeft = console.CursorLeft;
                 _savedCursorTop = console.CursorTop;
             }
 
-            public void RestoreCursor() => Singleton.RLConsole.SetCursorPosition(_savedCursorLeft, _savedCursorTop);
+            public void RestoreCursor()
+            {
+                Singleton.RLConsole.SetCursorPosition(_savedCursorLeft, _savedCursorTop);
+            }
         }
     }
 }
