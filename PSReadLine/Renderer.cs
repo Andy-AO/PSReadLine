@@ -16,7 +16,7 @@ namespace Microsoft.PowerShell
         private static readonly RL _rl = RL.Singleton;
         private readonly Stopwatch _lastRenderTime = Stopwatch.StartNew();
 
-        private Renderer()
+        public Renderer()
         {
         }
 
