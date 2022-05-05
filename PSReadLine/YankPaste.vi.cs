@@ -83,7 +83,7 @@ namespace Microsoft.PowerShell
         ///     and for VI opeartions, we do NOT want to move the cursor to the end when undoing a
         ///     deletion.
         /// </param>
-        private void RemoveTextToViRegister(
+        public void RemoveTextToViRegister(
             int start,
             int count,
             Action<ConsoleKeyInfo?, object> instigator = null,

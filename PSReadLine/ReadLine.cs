@@ -244,7 +244,7 @@ namespace Microsoft.PowerShell
             }
         }
 
-        private void ClearStatusMessage(bool render)
+        public void ClearStatusMessage(bool render)
         {
             _statusBuffer.Clear();
             _statusLinePrompt = null;
@@ -452,7 +452,7 @@ namespace Microsoft.PowerShell
             return key;
         }
 
-        private void PrependQueuedKeys(PSKeyInfo key)
+        internal void PrependQueuedKeys(PSKeyInfo key)
         {
             if (_queuedKeys.Count > 0)
             {

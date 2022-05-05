@@ -162,7 +162,7 @@ namespace Microsoft.PowerShell
             return _hs.Historys.ToArray();
         }
 
-        private void UpdateFromHistory(HistoryMoveCursor moveCursor)
+        public void UpdateFromHistory(HistoryMoveCursor moveCursor)
         {
             string line;
             if (_hs.CurrentHistoryIndex == _hs.Historys.Count)
@@ -362,7 +362,7 @@ namespace Microsoft.PowerShell
             GoToEndOfHistory();
         }
 
-        private static void GoToEndOfHistory()
+        public static void GoToEndOfHistory()
         {
             _hs.CurrentHistoryIndex = _hs.Historys.Count;
             Singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);
@@ -393,49 +393,6 @@ namespace Microsoft.PowerShell
             Singleton.HistorySearch(numericArg);
         }
 
-        private void UpdateHistoryDuringInteractiveSearch(string toMatch, int direction, ref int searchFromPoint)
-        {
-            searchFromPoint += direction;
-            for (; searchFromPoint >= 0 && searchFromPoint < _hs.Historys.Count; searchFromPoint += direction)
-            {
-                var line = _hs.Historys[searchFromPoint].CommandLine;
-                var startIndex = line.IndexOf(toMatch, Options.HistoryStringComparison);
-                if (startIndex >= 0)
-                {
-                    if (Options.HistoryNoDuplicates)
-                    {
-                        if (!_hs.HashedHistory.TryGetValue(line, out var index))
-                            _hs.HashedHistory.Add(line, searchFromPoint);
-                        else if (index != searchFromPoint) continue;
-                    }
-
-                    _statusLinePrompt = direction > 0 ? History._forwardISearchPrompt : History._backwardISearchPrompt;
-                    _renderer.Current = startIndex;
-                    _renderer.EmphasisStart = startIndex;
-                    _renderer.EmphasisLength = toMatch.Length;
-                    _hs.CurrentHistoryIndex = searchFromPoint;
-                    var moveCursor = Options.HistorySearchCursorMovesToEnd
-                        ? HistoryMoveCursor.ToEnd
-                        : HistoryMoveCursor.DontMove;
-                    UpdateFromHistory(moveCursor);
-                    return;
-                }
-            }
-
-            // Make sure we're never more than 1 away from being in range so if they
-            // reverse direction, the first time they reverse they are back in range.
-            if (searchFromPoint < 0)
-                searchFromPoint = -1;
-            else if (searchFromPoint >= _hs.Historys.Count)
-                searchFromPoint = _hs.Historys.Count;
-
-            _renderer.EmphasisStart = -1;
-            _renderer.EmphasisLength = 0;
-            _statusLinePrompt =
-                direction > 0 ? History._failedForwardISearchPrompt : History._failedBackwardISearchPrompt;
-            _renderer.Render();
-        }
-
         private void InteractiveHistorySearchLoop(int direction)
         {
             var searchFromPoint = _hs.CurrentHistoryIndex;
@@ -450,13 +407,13 @@ namespace Microsoft.PowerShell
                 var key = ReadKey();
                 _dispatchTable.TryGetValue(key, out var handler);
                 var function = handler?.Action;
-                if (function == ReverseSearchHistory)
+                if (function == History.ReverseSearchHistory)
                 {
-                    UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), -1, ref searchFromPoint);
+                    _hs.UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), -1, ref searchFromPoint);
                 }
-                else if (function == ForwardSearchHistory)
+                else if (function == History.ForwardSearchHistory)
                 {
-                    UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), +1, ref searchFromPoint);
+                    _hs.UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), +1, ref searchFromPoint);
                 }
                 else if (function == BackwardDeleteChar
                          || key == Keys.Backspace
@@ -527,7 +484,7 @@ namespace Microsoft.PowerShell
                     var startIndex = buffer.ToString().IndexOf(toMatchStr, Options.HistoryStringComparison);
                     if (startIndex < 0)
                     {
-                        UpdateHistoryDuringInteractiveSearch(toMatchStr, direction, ref searchFromPoint);
+                        _hs.UpdateHistoryDuringInteractiveSearch(toMatchStr, direction, ref searchFromPoint);
                     }
                     else
                     {
@@ -561,23 +518,7 @@ namespace Microsoft.PowerShell
             ClearStatusMessage(true);
         }
 
-        /// <summary>
-        ///     Perform an incremental forward search through history.
-        /// </summary>
-        public static void ForwardSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            Singleton.InteractiveHistorySearch(+1);
-        }
-
-        /// <summary>
-        ///     Perform an incremental backward search through history.
-        /// </summary>
-        public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            Singleton.InteractiveHistorySearch(-1);
-        }
-
-        private enum HistoryMoveCursor
+        public enum HistoryMoveCursor
         {
             ToEnd,
             ToBeginning,

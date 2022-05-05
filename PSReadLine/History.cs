@@ -13,6 +13,43 @@ namespace Microsoft.PowerShell.PSReadLine
     public class History
     {
         private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
+        private static readonly Renderer _renderer = Renderer.Singleton;
+
+        /// <summary>
+        ///     Delete the character before the cursor.
+        /// </summary>
+        public static void BackwardDeleteChar(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            if (_rl._visualSelectionCommandCount > 0)
+            {
+                _renderer.GetRegion(out var start, out var length);
+                PSConsoleReadLine.Delete(start, length);
+                return;
+            }
+
+            if (_rl.buffer.Length > 0 && _renderer.Current > 0)
+            {
+                var qty = arg as int? ?? 1;
+                if (qty < 1) return; // Ignore useless counts
+                qty = Math.Min(qty, _renderer.Current);
+
+                var startDeleteIndex = _renderer.Current - qty;
+
+                _rl.RemoveTextToViRegister(startDeleteIndex, qty, BackwardDeleteChar, arg,
+                    !(PSConsoleReadLine.InViEditMode()));
+                _renderer.Current = startDeleteIndex;
+                _renderer.Render();
+            }
+        }
+
+
+        /// <summary>
+        ///     Perform an incremental forward search through history.
+        /// </summary>
+        public static void ForwardSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            Singleton.InteractiveHistorySearch(+1);
+        }
 
         public void UpdateHistoryFromFile(IEnumerable<string> historyLines, bool fromDifferentSession,
             bool fromInitialRead)
@@ -206,8 +243,7 @@ namespace Microsoft.PowerShell.PSReadLine
                     case StringConstantExpressionAst strConst:
                         // If it's not a command name, or it's not one of the secret management commands that
                         // we can ignore, we consider it sensitive.
-                        isSensitive = !PSConsoleReadLine.
-                            IsSecretMgmtCommand(strConst, out var command);
+                        isSensitive = !PSConsoleReadLine.IsSecretMgmtCommand(strConst, out var command);
 
                         if (!isSensitive)
                             // We can safely skip the whole command text.
@@ -473,11 +509,187 @@ namespace Microsoft.PowerShell.PSReadLine
         private int _anyHistoryCommandCount;
         private int _currentHistoryIndex;
         private int _getNextHistoryIndex;
-        private HistoryQueue<HistoryItem> _history;
+        private HistoryQueue<HistoryItem> _history = new HistoryQueue<HistoryItem>();
         private Dictionary<string, int> _hashedHistory;
         private int historyErrorReportedCount;
         private long _historyFileLastSavedSize;
         private Mutex _historyFileMutex;
+
+        private void InteractiveHistorySearch(int direction)
+        {
+            using var _ = _rl._Prediction.DisableScoped();
+            SaveCurrentLine();
+
+            // Add a status line that will contain the search prompt and string
+            _rl._statusLinePrompt = direction > 0 ? History._forwardISearchPrompt : History._backwardISearchPrompt;
+            _rl._statusBuffer.Append("_");
+
+            _renderer.Render(); // Render prompt
+            InteractiveHistorySearchLoop(direction);
+            _renderer.EmphasisStart = -1;
+            _renderer.EmphasisLength = 0;
+
+            // Remove our status line, this will render
+            _rl.ClearStatusMessage(true);
+        }
+
+        public void UpdateHistoryDuringInteractiveSearch(string toMatch, int direction, ref int searchFromPoint)
+        {
+            searchFromPoint += direction;
+            for (; searchFromPoint >= 0 && searchFromPoint < Historys.Count; searchFromPoint += direction)
+            {
+                var line = Historys[searchFromPoint].CommandLine;
+                var startIndex = line.IndexOf(toMatch, _rl.Options.HistoryStringComparison);
+                if (startIndex >= 0)
+                {
+                    if (_rl.Options.HistoryNoDuplicates)
+                    {
+                        if (!HashedHistory.TryGetValue(line, out var index))
+                            HashedHistory.Add(line, searchFromPoint);
+                        else if (index != searchFromPoint) continue;
+                    }
+
+                    _rl._statusLinePrompt =
+                        direction > 0 ? History._forwardISearchPrompt : History._backwardISearchPrompt;
+                    _renderer.Current = startIndex;
+                    _renderer.EmphasisStart = startIndex;
+                    _renderer.EmphasisLength = toMatch.Length;
+                    CurrentHistoryIndex = searchFromPoint;
+                    var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
+                        ? PSConsoleReadLine.HistoryMoveCursor.ToEnd
+                        : PSConsoleReadLine.HistoryMoveCursor.DontMove;
+                    _rl.UpdateFromHistory(moveCursor);
+                    return;
+                }
+            }
+
+            // Make sure we're never more than 1 away from being in range so if they
+            // reverse direction, the first time they reverse they are back in range.
+            if (searchFromPoint < 0)
+                searchFromPoint = -1;
+            else if (searchFromPoint >= Historys.Count)
+                searchFromPoint = Historys.Count;
+
+            _renderer.EmphasisStart = -1;
+            _renderer.EmphasisLength = 0;
+            _rl._statusLinePrompt =
+                direction > 0 ? History._failedForwardISearchPrompt : History._failedBackwardISearchPrompt;
+            _renderer.Render();
+        }
+
+        private void InteractiveHistorySearchLoop(int direction)
+        {
+            var searchFromPoint = CurrentHistoryIndex;
+            var searchPositions = new Stack<int>();
+            searchPositions.Push(CurrentHistoryIndex);
+
+            if (_rl.Options.HistoryNoDuplicates) HashedHistory = new Dictionary<string, int>();
+
+            var toMatch = new StringBuilder(64);
+            while (true)
+            {
+                var key = PSConsoleReadLine.ReadKey();
+                _rl._dispatchTable.TryGetValue(key, out var handler);
+                var function = handler?.Action;
+                if (function == ReverseSearchHistory)
+                {
+                    UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), -1, ref searchFromPoint);
+                }
+                else if (function == ForwardSearchHistory)
+                {
+                    UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), +1, ref searchFromPoint);
+                }
+                else if (function == BackwardDeleteChar
+                         || key == Keys.Backspace
+                         || key == Keys.CtrlH)
+                {
+                    if (toMatch.Length > 0)
+                    {
+                        toMatch.Remove(toMatch.Length - 1, 1);
+                        _rl._statusBuffer.Remove(_rl._statusBuffer.Length - 2, 1);
+                        searchPositions.Pop();
+                        searchFromPoint = CurrentHistoryIndex = searchPositions.Peek();
+                        var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
+                            ? PSConsoleReadLine.HistoryMoveCursor.ToEnd
+                            : PSConsoleReadLine.HistoryMoveCursor.DontMove;
+                        _rl.UpdateFromHistory(moveCursor);
+
+                        if (HashedHistory != null)
+                            // Remove any entries with index < searchFromPoint because
+                            // we are starting the search from this new index - we always
+                            // want to find the latest entry that matches the search string
+                            foreach (var pair in HashedHistory.ToArray())
+                                if (pair.Value < searchFromPoint)
+                                    HashedHistory.Remove(pair.Key);
+
+                        // Prompt may need to have 'failed-' removed.
+                        var toMatchStr = toMatch.ToString();
+                        var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
+                        if (startIndex >= 0)
+                        {
+                            _rl._statusLinePrompt = direction > 0
+                                ? History._forwardISearchPrompt
+                                : History._backwardISearchPrompt;
+                            _renderer.Current = startIndex;
+                            _renderer.EmphasisStart = startIndex;
+                            _renderer.EmphasisLength = toMatch.Length;
+                            _renderer.Render();
+                        }
+                    }
+                    else
+                    {
+                        PSConsoleReadLine.Ding();
+                    }
+                }
+                else if (key == Keys.Escape)
+                {
+                    // End search
+                    break;
+                }
+                else if (function == PSConsoleReadLine.Abort)
+                {
+                    // Abort search
+                    PSConsoleReadLine.GoToEndOfHistory();
+                    break;
+                }
+                else
+                {
+                    var toAppend = key.KeyChar;
+                    if (char.IsControl(toAppend))
+                    {
+                        _rl.PrependQueuedKeys(key);
+                        break;
+                    }
+
+                    toMatch.Append(toAppend);
+                    _rl._statusBuffer.Insert(_rl._statusBuffer.Length - 1, toAppend);
+
+                    var toMatchStr = toMatch.ToString();
+                    var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
+                    if (startIndex < 0)
+                    {
+                        UpdateHistoryDuringInteractiveSearch(toMatchStr, direction, ref searchFromPoint);
+                    }
+                    else
+                    {
+                        _renderer.Current = startIndex;
+                        _renderer.EmphasisStart = startIndex;
+                        _renderer.EmphasisLength = toMatch.Length;
+                        _renderer.Render();
+                    }
+
+                    searchPositions.Push(CurrentHistoryIndex);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Perform an incremental backward search through history.
+        /// </summary>
+        public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            Singleton.InteractiveHistorySearch(-1);
+        }
 
         public int GetNextHistoryIndex
         {
