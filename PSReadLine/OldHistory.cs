@@ -46,18 +46,6 @@ namespace Microsoft.PowerShell
     {
         private static History _hs = History.Singleton;
 
-        private string GetHistorySaveFileMutexName()
-        {
-            // Return a reasonably unique name - it's not too important as there will rarely
-            // be any contention.
-            var hashFromPath = FNV1a32Hash.ComputeHash(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                    ? Options.HistorySavePath.ToLower()
-                    : Options.HistorySavePath);
-
-            return "PSReadLineHistoryFile_" + hashFromPath;
-        }
-
         private void SaveHistoryAtExit()
         {
             int end = _hs.Historys.Count - 1;
@@ -357,13 +345,7 @@ namespace Microsoft.PowerShell
         public static void EndOfHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
             _hs.SaveCurrentLine();
-            GoToEndOfHistory();
-        }
-
-        public static void GoToEndOfHistory()
-        {
-            _hs.CurrentHistoryIndex = _hs.Historys.Count;
-            Singleton.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
+            History.GoToEndOfHistory();
         }
 
         /// <summary>

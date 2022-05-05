@@ -73,7 +73,7 @@ namespace Microsoft.PowerShell
             {
                 Options.HistorySavePath = options.HistorySavePath;
                 _hs.HistoryFileMutex?.Dispose();
-                _hs.HistoryFileMutex = new Mutex(false, GetHistorySaveFileMutexName());
+                _hs.HistoryFileMutex = new Mutex(false, _hs.GetHistorySaveFileMutexName());
                 _hs.HistoryFileLastSavedSize = 0;
             }
 

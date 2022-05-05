@@ -892,7 +892,7 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            _hs.HistoryFileMutex = new Mutex(false, GetHistorySaveFileMutexName());
+            _hs.HistoryFileMutex = new Mutex(false, _hs.GetHistorySaveFileMutexName());
 
             _hs.Historys = new HistoryQueue<HistoryItem>(Options.MaximumHistoryCount);
             _hs.RecentHistory = new HistoryQueue<string>(5);

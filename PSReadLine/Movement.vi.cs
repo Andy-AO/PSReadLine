@@ -12,7 +12,7 @@ namespace Microsoft.PowerShell
         ///     Returns 0 if the cursor is allowed to go past the last character in the line, -1 otherwise.
         /// </summary>
         /// <seealso cref="ForwardChar" />
-        private static int ViEndOfLineFactor => InViCommandMode() ? -1 : 0;
+        public static int ViEndOfLineFactor => InViCommandMode() ? -1 : 0;
 
         /// <summary>
         ///     Move the cursor forward to the start of the next word.

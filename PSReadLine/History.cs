@@ -4,9 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using RL = Microsoft.PowerShell.PSConsoleReadLine;
 
 namespace Microsoft.PowerShell.PSReadLine
 {
@@ -14,6 +16,17 @@ namespace Microsoft.PowerShell.PSReadLine
     {
         private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
         private static readonly Renderer _renderer = Renderer.Singleton;
+
+        public string GetHistorySaveFileMutexName()
+        {
+            // Return a reasonably unique name - it's not too important as there will rarely
+            // be any contention.
+            var hashFromPath = FNV1a32Hash.ComputeHash(
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    ? _rl.Options.HistorySavePath.ToLower()
+                    : _rl.Options.HistorySavePath);
+            return "PSReadLineHistoryFile_" + hashFromPath;
+        }
 
         /// <summary>
         ///     Delete the character before the cursor.
@@ -41,7 +54,6 @@ namespace Microsoft.PowerShell.PSReadLine
                 _renderer.Render();
             }
         }
-
 
 
         public void UpdateHistoryFromFile(IEnumerable<string> historyLines, bool fromDifferentSession,
@@ -508,6 +520,45 @@ namespace Microsoft.PowerShell.PSReadLine
         private long _historyFileLastSavedSize;
         private Mutex _historyFileMutex;
 
+        public void UpdateFromHistory(History.HistoryMoveCursor moveCursor)
+        {
+            string line;
+            if (CurrentHistoryIndex == Historys.Count)
+            {
+                line = _savedCurrentLine.CommandLine;
+                _rl._edits = new List<EditItem>(_savedCurrentLine._edits);
+                _rl._undoEditIndex = _savedCurrentLine._undoEditIndex;
+                _rl._editGroupStart = _savedCurrentLine._editGroupStart;
+            }
+            else
+            {
+                line = Historys[CurrentHistoryIndex].CommandLine;
+                _rl._edits = new List<EditItem>(Historys[CurrentHistoryIndex]._edits);
+                _rl._undoEditIndex = Historys[CurrentHistoryIndex]._undoEditIndex;
+                _rl._editGroupStart = Historys[CurrentHistoryIndex]._editGroupStart;
+            }
+
+            _rl.buffer.Clear();
+            _rl.buffer.Append(line);
+
+            switch (moveCursor)
+            {
+                case History.HistoryMoveCursor.ToEnd:
+                    _renderer.Current = Math.Max(0, _rl.buffer.Length + PSConsoleReadLine.ViEndOfLineFactor);
+                    break;
+                case History.HistoryMoveCursor.ToBeginning:
+                    _renderer.Current = 0;
+                    break;
+                default:
+                    if (_renderer.Current > _rl.buffer.Length)
+                        _renderer.Current = Math.Max(0, _rl.buffer.Length + RL.ViEndOfLineFactor);
+                    break;
+            }
+
+            using var _ = _rl._Prediction.DisableScoped();
+            _renderer.Render();
+        }
+
         public void InteractiveHistorySearch(int direction)
         {
             using var _ = _rl._Prediction.DisableScoped();
@@ -603,8 +654,8 @@ namespace Microsoft.PowerShell.PSReadLine
                         searchPositions.Pop();
                         searchFromPoint = CurrentHistoryIndex = searchPositions.Peek();
                         var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                            ? History.HistoryMoveCursor.ToEnd
-                            : History.HistoryMoveCursor.DontMove;
+                            ? HistoryMoveCursor.ToEnd
+                            : HistoryMoveCursor.DontMove;
                         _rl.UpdateFromHistory(moveCursor);
 
                         if (HashedHistory != null)
@@ -642,7 +693,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 else if (function == PSConsoleReadLine.Abort)
                 {
                     // Abort search
-                    PSConsoleReadLine.GoToEndOfHistory();
+                    History.GoToEndOfHistory();
                     break;
                 }
                 else
@@ -753,6 +804,12 @@ namespace Microsoft.PowerShell.PSReadLine
         private HistoryQueue<string> _recentHistory;
         private int _searchHistoryCommandCount;
         private string _searchHistoryPrefix;
+
+        public static void GoToEndOfHistory()
+        {
+            _s.CurrentHistoryIndex = _s.Historys.Count;
+            _rl.UpdateFromHistory(HistoryMoveCursor.ToEnd);
+        }
 
         public enum HistoryMoveCursor
         {
