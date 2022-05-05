@@ -508,7 +508,7 @@ namespace Microsoft.PowerShell.PSReadLine
         private long _historyFileLastSavedSize;
         private Mutex _historyFileMutex;
 
-        private void InteractiveHistorySearch(int direction)
+        public void InteractiveHistorySearch(int direction)
         {
             using var _ = _rl._Prediction.DisableScoped();
             SaveCurrentLine();

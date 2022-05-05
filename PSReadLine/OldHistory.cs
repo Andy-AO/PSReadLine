@@ -5,11 +5,9 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.PowerShell.PSReadLine;
@@ -393,136 +391,12 @@ namespace Microsoft.PowerShell
             Singleton.HistorySearch(numericArg);
         }
 
-        private void InteractiveHistorySearchLoop(int direction)
-        {
-            var searchFromPoint = _hs.CurrentHistoryIndex;
-            var searchPositions = new Stack<int>();
-            searchPositions.Push(_hs.CurrentHistoryIndex);
-
-            if (Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
-
-            var toMatch = new StringBuilder(64);
-            while (true)
-            {
-                var key = ReadKey();
-                _dispatchTable.TryGetValue(key, out var handler);
-                var function = handler?.Action;
-                if (function == ReverseSearchHistory)
-                {
-                    _hs.UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), -1, ref searchFromPoint);
-                }
-                else if (function == ForwardSearchHistory)
-                {
-                    _hs.UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), +1, ref searchFromPoint);
-                }
-                else if (function == BackwardDeleteChar
-                         || key == Keys.Backspace
-                         || key == Keys.CtrlH)
-                {
-                    if (toMatch.Length > 0)
-                    {
-                        toMatch.Remove(toMatch.Length - 1, 1);
-                        _statusBuffer.Remove(_statusBuffer.Length - 2, 1);
-                        searchPositions.Pop();
-                        searchFromPoint = _hs.CurrentHistoryIndex = searchPositions.Peek();
-                        var moveCursor = Options.HistorySearchCursorMovesToEnd
-                            ? HistoryMoveCursor.ToEnd
-                            : HistoryMoveCursor.DontMove;
-                        UpdateFromHistory(moveCursor);
-
-                        if (_hs.HashedHistory != null)
-                            // Remove any entries with index < searchFromPoint because
-                            // we are starting the search from this new index - we always
-                            // want to find the latest entry that matches the search string
-                            foreach (var pair in _hs.HashedHistory.ToArray())
-                                if (pair.Value < searchFromPoint)
-                                    _hs.HashedHistory.Remove(pair.Key);
-
-                        // Prompt may need to have 'failed-' removed.
-                        var toMatchStr = toMatch.ToString();
-                        var startIndex = buffer.ToString().IndexOf(toMatchStr, Options.HistoryStringComparison);
-                        if (startIndex >= 0)
-                        {
-                            _statusLinePrompt = direction > 0
-                                ? History._forwardISearchPrompt
-                                : History._backwardISearchPrompt;
-                            _renderer.Current = startIndex;
-                            _renderer.EmphasisStart = startIndex;
-                            _renderer.EmphasisLength = toMatch.Length;
-                            _renderer.Render();
-                        }
-                    }
-                    else
-                    {
-                        Ding();
-                    }
-                }
-                else if (key == Keys.Escape)
-                {
-                    // End search
-                    break;
-                }
-                else if (function == Abort)
-                {
-                    // Abort search
-                    GoToEndOfHistory();
-                    break;
-                }
-                else
-                {
-                    var toAppend = key.KeyChar;
-                    if (char.IsControl(toAppend))
-                    {
-                        PrependQueuedKeys(key);
-                        break;
-                    }
-
-                    toMatch.Append(toAppend);
-                    _statusBuffer.Insert(_statusBuffer.Length - 1, toAppend);
-
-                    var toMatchStr = toMatch.ToString();
-                    var startIndex = buffer.ToString().IndexOf(toMatchStr, Options.HistoryStringComparison);
-                    if (startIndex < 0)
-                    {
-                        _hs.UpdateHistoryDuringInteractiveSearch(toMatchStr, direction, ref searchFromPoint);
-                    }
-                    else
-                    {
-                        _renderer.Current = startIndex;
-                        _renderer.EmphasisStart = startIndex;
-                        _renderer.EmphasisLength = toMatch.Length;
-                        _renderer.Render();
-                    }
-
-                    searchPositions.Push(_hs.CurrentHistoryIndex);
-                }
-            }
-        }
         /// <summary>
         ///     Perform an incremental backward search through history.
         /// </summary>
         public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton.InteractiveHistorySearch(-1);
-        }
-
-        private void InteractiveHistorySearch(int direction)
-        {
-            using var _ = _Prediction.DisableScoped();
-            _hs.SaveCurrentLine();
-
-            // Add a status line that will contain the search prompt and string
-            _statusLinePrompt = direction > 0 ? History._forwardISearchPrompt : History._backwardISearchPrompt;
-            _statusBuffer.Append("_");
-
-            _renderer.Render(); // Render prompt
-            InteractiveHistorySearchLoop(direction);
-
-            _renderer.EmphasisStart = -1;
-            _renderer.EmphasisLength = 0;
-
-            // Remove our status line, this will render
-            ClearStatusMessage(true);
+            _hs.InteractiveHistorySearch(-1);
         }
 
         public enum HistoryMoveCursor
