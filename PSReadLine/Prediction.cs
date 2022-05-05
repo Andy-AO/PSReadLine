@@ -138,7 +138,7 @@ namespace Microsoft.PowerShell
         /// <summary>
         ///     Implementation for updating the selected item in list view.
         /// </summary>
-        private static bool UpdateListSelection(int numericArg)
+        public static bool UpdateListSelection(int numericArg)
         {
             if (Singleton._Prediction.ActiveView is PredictionListView listView && listView.HasActiveSuggestion)
             {

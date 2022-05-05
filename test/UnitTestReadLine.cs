@@ -568,7 +568,7 @@ namespace Test
 
             _emptyLine ??= new string(' ', _console.BufferWidth);
 
-            PSConsoleReadLine.ClearHistory();
+            Microsoft.PowerShell.PSReadLine.History.ClearHistory(null,null);
             PSConsoleReadLine.ClearKillRing();
 
             var options = new SetPSReadLineOption

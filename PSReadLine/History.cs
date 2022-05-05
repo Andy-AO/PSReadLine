@@ -15,6 +15,62 @@ namespace Microsoft.PowerShell.PSReadLine
     public class History
     {
         //class start
+
+        /// <summary>
+        ///     Perform an incremental backward search through history.
+        /// </summary>
+        public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            _s.InteractiveHistorySearch(-1);
+        }
+
+        /// <summary>
+        ///     Replace the current input with the 'previous' item from PSReadLine history
+        ///     that matches the characters between the start and the input and the cursor.
+        /// </summary>
+        public static void HistorySearchBackward(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            RL.TryGetArgAsInt(arg, out var numericArg, -1);
+            if (numericArg > 0) numericArg = -numericArg;
+
+            _s.SaveCurrentLine();
+            _rl.HistorySearch(numericArg);
+        }
+
+        /// <summary>
+        ///     Replace the current input with the 'previous' item from PSReadLine history.
+        /// </summary>
+        public static void PreviousHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            RL.TryGetArgAsInt(arg, out var numericArg, -1);
+            if (numericArg > 0) numericArg = -numericArg;
+
+            if (RL.UpdateListSelection(numericArg)) return;
+
+            _s.SaveCurrentLine();
+            _s.HistoryRecall(numericArg);
+        }
+
+        /// <summary>
+        ///     Replace the current input with the 'next' item from PSReadLine history.
+        /// </summary>
+        public static void NextHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            RL.TryGetArgAsInt(arg, out var numericArg, +1);
+            if (RL.UpdateListSelection(numericArg)) return;
+
+            _s.SaveCurrentLine();
+            _s.HistoryRecall(numericArg);
+        }
+
+        /// <summary>
+        ///     Return a collection of history items.
+        /// </summary>
+        public static HistoryItem[] GetHistoryItems()
+        {
+            return _s.Historys.ToArray();
+        }
+
         /// <summary>
         ///     Move to the first item in the history.
         /// </summary>
@@ -23,6 +79,17 @@ namespace Microsoft.PowerShell.PSReadLine
             _s.SaveCurrentLine();
             _s.CurrentHistoryIndex = 0;
             _s.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
+        }
+
+
+        /// <summary>
+        ///     Clears history in PSReadLine.  This does not affect PowerShell history.
+        /// </summary>
+        public static void ClearHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            _s.Historys?.Clear();
+            _s.RecentHistory?.Clear();
+            _s.CurrentHistoryIndex = 0;
         }
 
         /// <summary>
@@ -791,7 +858,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 var key = PSConsoleReadLine.ReadKey();
                 _rl._dispatchTable.TryGetValue(key, out var handler);
                 var function = handler?.Action;
-                if (function == PSConsoleReadLine.ReverseSearchHistory)
+                if (function == (History.ReverseSearchHistory))
                 {
                     UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), -1, ref searchFromPoint);
                 }

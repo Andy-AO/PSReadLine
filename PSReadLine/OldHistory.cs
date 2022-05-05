@@ -46,50 +46,6 @@ namespace Microsoft.PowerShell
     {
         private static History _hs = History.Singleton;
 
-        /// <summary>
-        ///     Clears history in PSReadLine.  This does not affect PowerShell history.
-        /// </summary>
-        public static void ClearHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            _hs.Historys?.Clear();
-            _hs.RecentHistory?.Clear();
-            _hs.CurrentHistoryIndex = 0;
-        }
-
-        /// <summary>
-        ///     Return a collection of history items.
-        /// </summary>
-        public static HistoryItem[] GetHistoryItems()
-        {
-            return _hs.Historys.ToArray();
-        }
-
-        /// <summary>
-        ///     Replace the current input with the 'previous' item from PSReadLine history.
-        /// </summary>
-        public static void PreviousHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            TryGetArgAsInt(arg, out var numericArg, -1);
-            if (numericArg > 0) numericArg = -numericArg;
-
-            if (UpdateListSelection(numericArg)) return;
-
-            _hs.SaveCurrentLine();
-            _hs.HistoryRecall(numericArg);
-        }
-
-        /// <summary>
-        ///     Replace the current input with the 'next' item from PSReadLine history.
-        /// </summary>
-        public static void NextHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            TryGetArgAsInt(arg, out var numericArg, +1);
-            if (UpdateListSelection(numericArg)) return;
-
-            _hs.SaveCurrentLine();
-            _hs.HistoryRecall(numericArg);
-        }
-
         public void HistorySearch(int direction)
         {
             if (_hs.SearchHistoryCommandCount == 0)
@@ -153,27 +109,6 @@ namespace Microsoft.PowerShell
                         : History.HistoryMoveCursor.DontMove;
                 _hs.UpdateFromHistory(moveCursor);
             }
-        }
-
-        /// <summary>
-        ///     Replace the current input with the 'previous' item from PSReadLine history
-        ///     that matches the characters between the start and the input and the cursor.
-        /// </summary>
-        public static void HistorySearchBackward(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            TryGetArgAsInt(arg, out var numericArg, -1);
-            if (numericArg > 0) numericArg = -numericArg;
-
-            _hs.SaveCurrentLine();
-            Singleton.HistorySearch(numericArg);
-        }
-
-        /// <summary>
-        ///     Perform an incremental backward search through history.
-        /// </summary>
-        public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            _hs.InteractiveHistorySearch(-1);
         }
     }
 }

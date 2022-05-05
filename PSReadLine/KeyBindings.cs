@@ -169,8 +169,8 @@ namespace Microsoft.PowerShell
                 {Keys.ShiftRightArrow, MakeKeyHandler(SelectForwardChar, "SelectForwardChar")},
                 {Keys.CtrlShiftLeftArrow, MakeKeyHandler(SelectBackwardWord, "SelectBackwardWord")},
                 {Keys.CtrlShiftRightArrow, MakeKeyHandler(SelectNextWord, "SelectNextWord")},
-                {Keys.UpArrow, MakeKeyHandler(PreviousHistory, "PreviousHistory")},
-                {Keys.DownArrow, MakeKeyHandler(NextHistory, "NextHistory")},
+                {Keys.UpArrow, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
+                {Keys.DownArrow, MakeKeyHandler(History.NextHistory, "NextHistory")},
                 {Keys.Home, MakeKeyHandler(BeginningOfLine, "BeginningOfLine")},
                 {Keys.End, MakeKeyHandler(EndOfLine, "EndOfLine")},
                 {Keys.ShiftHome, MakeKeyHandler(SelectBackwardsLine, "SelectBackwardsLine")},
@@ -183,7 +183,7 @@ namespace Microsoft.PowerShell
                 {Keys.CtrlC, MakeKeyHandler(CopyOrCancelLine, "CopyOrCancelLine")},
                 {Keys.CtrlShiftC, MakeKeyHandler(Copy, "Copy")},
                 {Keys.CtrlL, MakeKeyHandler(ClearScreen, "ClearScreen")},
-                {Keys.CtrlR, MakeKeyHandler((key, arg) => ReverseSearchHistory(key, arg), "ReverseSearchHistory")},
+                {Keys.CtrlR, MakeKeyHandler(History.ReverseSearchHistory, "ReverseSearchHistory")},
                 {Keys.CtrlS, MakeKeyHandler((key, arg) => ForwardSearchHistory(key, arg), "ForwardSearchHistory")},
                 {Keys.CtrlV, MakeKeyHandler(Paste, "Paste")},
                 {Keys.ShiftInsert, MakeKeyHandler(Paste, "Paste")},
@@ -211,7 +211,7 @@ namespace Microsoft.PowerShell
                 {Keys.F2, MakeKeyHandler(SwitchPredictionView, "SwitchPredictionView")},
                 {Keys.F3, MakeKeyHandler(CharacterSearch, "CharacterSearch")},
                 {Keys.ShiftF3, MakeKeyHandler(CharacterSearchBackward, "CharacterSearchBackward")},
-                {Keys.F8, MakeKeyHandler(HistorySearchBackward, "HistorySearchBackward")},
+                {Keys.F8, MakeKeyHandler(History.HistorySearchBackward, "HistorySearchBackward")},
                 {Keys.ShiftF8, MakeKeyHandler(History.HistorySearchForward, "HistorySearchForward")},
                 // Added for xtermjs-based terminals that send different key combinations.
                 {Keys.AltD, MakeKeyHandler(KillWord, "KillWord")},
@@ -225,7 +225,7 @@ namespace Microsoft.PowerShell
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 _dispatchTable.Add(Keys.CtrlSpace, MakeKeyHandler(MenuComplete, "MenuComplete"));
-                _dispatchTable.Add(Keys.AltF7, MakeKeyHandler(ClearHistory, "ClearHistory"));
+                _dispatchTable.Add(Keys.AltF7, MakeKeyHandler((key, arg) => History.ClearHistory(key,arg), "ClearHistory"));
                 _dispatchTable.Add(Keys.CtrlDelete, MakeKeyHandler(KillWord, "KillWord"));
                 _dispatchTable.Add(Keys.CtrlEnd, MakeKeyHandler(ForwardDeleteInput, "ForwardDeleteInput"));
                 _dispatchTable.Add(Keys.CtrlH, MakeKeyHandler(BackwardDeleteChar, "BackwardDeleteChar"));
@@ -255,8 +255,8 @@ namespace Microsoft.PowerShell
                 {Keys.RightArrow, MakeKeyHandler(ForwardChar, "ForwardChar")},
                 {Keys.ShiftLeftArrow, MakeKeyHandler(SelectBackwardChar, "SelectBackwardChar")},
                 {Keys.ShiftRightArrow, MakeKeyHandler(SelectForwardChar, "SelectForwardChar")},
-                {Keys.UpArrow, MakeKeyHandler(PreviousHistory, "PreviousHistory")},
-                {Keys.DownArrow, MakeKeyHandler(NextHistory, "NextHistory")},
+                {Keys.UpArrow, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
+                {Keys.DownArrow, MakeKeyHandler(History.NextHistory, "NextHistory")},
                 {Keys.AltLess, MakeKeyHandler(History.BeginningOfHistory, "BeginningOfHistory")},
                 {Keys.AltGreater, MakeKeyHandler(History.EndOfHistory, "EndOfHistory")},
                 {Keys.Home, MakeKeyHandler(BeginningOfLine, "BeginningOfLine")},
@@ -276,10 +276,10 @@ namespace Microsoft.PowerShell
                 {Keys.CtrlL, MakeKeyHandler(ClearScreen, "ClearScreen")},
                 {Keys.CtrlK, MakeKeyHandler(KillLine, "KillLine")},
                 {Keys.CtrlM, MakeKeyHandler(ValidateAndAcceptLine, "ValidateAndAcceptLine")},
-                {Keys.CtrlN, MakeKeyHandler(NextHistory, "NextHistory")},
+                {Keys.CtrlN, MakeKeyHandler(History.NextHistory, "NextHistory")},
                 {Keys.CtrlO, MakeKeyHandler(AcceptAndGetNext, "AcceptAndGetNext")},
-                {Keys.CtrlP, MakeKeyHandler(PreviousHistory, "PreviousHistory")},
-                {Keys.CtrlR, MakeKeyHandler(ReverseSearchHistory, "ReverseSearchHistory")},
+                {Keys.CtrlP, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
+                {Keys.CtrlR, MakeKeyHandler(History.ReverseSearchHistory, "ReverseSearchHistory")},
                 {Keys.CtrlS, MakeKeyHandler(ForwardSearchHistory, "ForwardSearchHistory")},
                 {Keys.CtrlT, MakeKeyHandler(SwapCharacters, "SwapCharacters")},
                 {Keys.CtrlU, MakeKeyHandler(BackwardKillInput, "BackwardKillInput")},
@@ -516,14 +516,14 @@ namespace Microsoft.PowerShell
                     return KeyHandlerGroup.CursorMovement;
 
                 case nameof(History.BeginningOfHistory):
-                case nameof(ClearHistory):
+                case nameof(History.ClearHistory):
                 case nameof(History.EndOfHistory):
                 case nameof(ForwardSearchHistory):
-                case nameof(HistorySearchBackward):
+                case nameof(History.HistorySearchBackward):
                 case nameof(History.HistorySearchForward):
-                case nameof(NextHistory):
-                case nameof(PreviousHistory):
-                case nameof(ReverseSearchHistory):
+                case nameof(History.NextHistory):
+                case nameof(History.PreviousHistory):
+                case nameof(History.ReverseSearchHistory):
                 case nameof(ViSearchHistoryBackward):
                     return KeyHandlerGroup.History;
 
