@@ -49,20 +49,6 @@ namespace Microsoft.PowerShell
     {
         private static History _hs = History.Singleton;
 
-        private static readonly HashSet<string> s_SecretMgmtCommands = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "Get-Secret",
-            "Get-SecretInfo",
-            "Get-SecretVault",
-            "Register-SecretVault",
-            "Remove-Secret",
-            "Set-SecretInfo",
-            "Set-SecretVaultDefault",
-            "Test-SecretVault",
-            "Unlock-SecretVault",
-            "Unregister-SecretVault"
-        };
-
         // When cycling through history, the current line (not yet added to history)
         // is saved here so it can be restored.
         private readonly HistoryItem _savedCurrentLine;
@@ -426,7 +412,7 @@ namespace Microsoft.PowerShell
 
             if (command is not null)
                 result = ReferenceEquals(command.CommandElements[0], strConst)
-                         && s_SecretMgmtCommands.Contains(strConst.Value);
+                         && History.SecretMgmtCommands.Contains(strConst.Value);
 
             return result;
         }
