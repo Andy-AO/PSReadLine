@@ -212,7 +212,7 @@ namespace Microsoft.PowerShell
                 {Keys.F3, MakeKeyHandler(CharacterSearch, "CharacterSearch")},
                 {Keys.ShiftF3, MakeKeyHandler(CharacterSearchBackward, "CharacterSearchBackward")},
                 {Keys.F8, MakeKeyHandler(HistorySearchBackward, "HistorySearchBackward")},
-                {Keys.ShiftF8, MakeKeyHandler(HistorySearchForward, "HistorySearchForward")},
+                {Keys.ShiftF8, MakeKeyHandler(History.HistorySearchForward, "HistorySearchForward")},
                 // Added for xtermjs-based terminals that send different key combinations.
                 {Keys.AltD, MakeKeyHandler(KillWord, "KillWord")},
                 {Keys.CtrlAt, MakeKeyHandler(MenuComplete, "MenuComplete")},
@@ -520,7 +520,7 @@ namespace Microsoft.PowerShell
                 case nameof(EndOfHistory):
                 case nameof(ForwardSearchHistory):
                 case nameof(HistorySearchBackward):
-                case nameof(HistorySearchForward):
+                case nameof(History.HistorySearchForward):
                 case nameof(NextHistory):
                 case nameof(PreviousHistory):
                 case nameof(ReverseSearchHistory):

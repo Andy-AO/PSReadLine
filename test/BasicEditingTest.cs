@@ -288,7 +288,7 @@ namespace Test
         {
             TestSetup(KeyMode.Emacs,
                       new KeyHandler("UpArrow", PSConsoleReadLine.HistorySearchBackward),
-                      new KeyHandler("DownArrow", PSConsoleReadLine.HistorySearchForward));
+                      new KeyHandler("DownArrow",Microsoft.PowerShell.PSReadLine.History.HistorySearchForward));
 
             // Test that after AcceptAndGetNext, the previous search is not applied
             SetHistory("echo 1", "echo 2", "zzz");

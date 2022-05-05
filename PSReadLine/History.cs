@@ -676,6 +676,17 @@ namespace Microsoft.PowerShell.PSReadLine
             }
         }
 
+        /// <summary>
+        ///     Replace the current input with the 'next' item from PSReadLine history
+        ///     that matches the characters between the start and the input and the cursor.
+        /// </summary>
+        public static void HistorySearchForward(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            PSConsoleReadLine.TryGetArgAsInt(arg, out var numericArg, +1);
+
+            _s.SaveCurrentLine();
+            _rl.HistorySearch(numericArg);
+        }
 
         public int GetNextHistoryIndex
         {

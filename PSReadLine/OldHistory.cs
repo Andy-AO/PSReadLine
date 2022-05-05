@@ -276,7 +276,7 @@ namespace Microsoft.PowerShell
             Singleton.HistoryRecall(numericArg);
         }
 
-        private void HistorySearch(int direction)
+        public void HistorySearch(int direction)
         {
             if (_hs.SearchHistoryCommandCount == 0)
             {
@@ -379,17 +379,7 @@ namespace Microsoft.PowerShell
             Singleton.HistorySearch(numericArg);
         }
 
-        /// <summary>
-        ///     Replace the current input with the 'next' item from PSReadLine history
-        ///     that matches the characters between the start and the input and the cursor.
-        /// </summary>
-        public static void HistorySearchForward(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            TryGetArgAsInt(arg, out var numericArg, +1);
 
-            _hs.SaveCurrentLine();
-            Singleton.HistorySearch(numericArg);
-        }
 
         /// <summary>
         ///     Perform an incremental backward search through history.

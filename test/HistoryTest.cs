@@ -592,7 +592,7 @@ namespace Test
         {
             TestSetup(KeyMode.Cmd,
                       new KeyHandler("UpArrow", PSConsoleReadLine.HistorySearchBackward),
-                      new KeyHandler("DownArrow", PSConsoleReadLine.HistorySearchForward));
+                      new KeyHandler("DownArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchForward));
 
             // Search history backward and forward.
             SetHistory("echo foo", "echo bar");
@@ -716,7 +716,7 @@ namespace Test
         {
             TestSetup(KeyMode.Cmd,
                       new KeyHandler("UpArrow", PSConsoleReadLine.HistorySearchBackward),
-                      new KeyHandler("DownArrow", PSConsoleReadLine.HistorySearchForward));
+                      new KeyHandler("DownArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchForward));
 
             // No history
             SetHistory();
@@ -781,7 +781,7 @@ namespace Test
         {
             TestSetup(KeyMode.Cmd,
                       new KeyHandler("UpArrow", PSConsoleReadLine.HistorySearchBackward),
-                      new KeyHandler("DownArrow", PSConsoleReadLine.HistorySearchForward));
+                      new KeyHandler("DownArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchForward));
 
             PSConsoleReadLine.SetOptions(new SetPSReadLineOption {HistorySearchCursorMovesToEnd = true});
             var emphasisColors = Tuple.Create(PSConsoleReadLineOptions.DefaultEmphasisColor, _console.BackgroundColor);
@@ -1132,7 +1132,7 @@ namespace Test
         {
             TestSetup(KeyMode.Cmd,
                       new KeyHandler("UpArrow", PSConsoleReadLine.HistorySearchBackward),
-                      new KeyHandler("DownArrow", PSConsoleReadLine.HistorySearchForward));
+                      new KeyHandler("DownArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchForward));
 
             PSConsoleReadLine.SetOptions(new SetPSReadLineOption {HistoryNoDuplicates = true});
             SetHistory("0000", "echo aaaa", "1111", "echo bbbb", "2222", "echo bbbb", "3333", "echo cccc", "4444");
