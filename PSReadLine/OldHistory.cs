@@ -160,7 +160,7 @@ namespace Microsoft.PowerShell
             return _hs.Historys.ToArray();
         }
 
-        public void UpdateFromHistory(HistoryMoveCursor moveCursor)
+        public void UpdateFromHistory(History.HistoryMoveCursor moveCursor)
         {
             string line;
             if (_hs.CurrentHistoryIndex == _hs.Historys.Count)
@@ -183,10 +183,10 @@ namespace Microsoft.PowerShell
 
             switch (moveCursor)
             {
-                case HistoryMoveCursor.ToEnd:
+                case History.HistoryMoveCursor.ToEnd:
                     _renderer.Current = Math.Max(0, buffer.Length + ViEndOfLineFactor);
                     break;
-                case HistoryMoveCursor.ToBeginning:
+                case History.HistoryMoveCursor.ToBeginning:
                     _renderer.Current = 0;
                     break;
                 default:
@@ -244,8 +244,8 @@ namespace Microsoft.PowerShell
             {
                 _hs.CurrentHistoryIndex = newHistoryIndex;
                 var moveCursor = InViCommandMode() && !Options.HistorySearchCursorMovesToEnd
-                    ? HistoryMoveCursor.ToBeginning
-                    : HistoryMoveCursor.ToEnd;
+                    ? History.HistoryMoveCursor.ToBeginning
+                    : History.HistoryMoveCursor.ToEnd;
                 UpdateFromHistory(moveCursor);
             }
         }
@@ -292,7 +292,7 @@ namespace Microsoft.PowerShell
                 if (Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
             }
 
-            _hs.SearchHistoryCommandCount = _hs.SearchHistoryCommandCount + 1;
+            _hs.SearchHistoryCommandCount += 1;
 
             var count = Math.Abs(direction);
             direction = direction < 0 ? -1 : +1;
@@ -333,10 +333,10 @@ namespace Microsoft.PowerShell
                 _renderer.Current = _renderer.EmphasisLength;
                 _hs.CurrentHistoryIndex = newHistoryIndex;
                 var moveCursor = InViCommandMode()
-                    ? HistoryMoveCursor.ToBeginning
+                    ? History.HistoryMoveCursor.ToBeginning
                     : Options.HistorySearchCursorMovesToEnd
-                        ? HistoryMoveCursor.ToEnd
-                        : HistoryMoveCursor.DontMove;
+                        ? History.HistoryMoveCursor.ToEnd
+                        : History.HistoryMoveCursor.DontMove;
                 UpdateFromHistory(moveCursor);
             }
         }
@@ -348,7 +348,7 @@ namespace Microsoft.PowerShell
         {
             _hs.SaveCurrentLine();
             _hs.CurrentHistoryIndex = 0;
-            Singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);
+            Singleton.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
         }
 
         /// <summary>
@@ -363,7 +363,7 @@ namespace Microsoft.PowerShell
         public static void GoToEndOfHistory()
         {
             _hs.CurrentHistoryIndex = _hs.Historys.Count;
-            Singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);
+            Singleton.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
         }
 
         /// <summary>
@@ -378,22 +378,12 @@ namespace Microsoft.PowerShell
             _hs.SaveCurrentLine();
             Singleton.HistorySearch(numericArg);
         }
-
-
-
-        /// <summary>
+       /// <summary>
         ///     Perform an incremental backward search through history.
         /// </summary>
         public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
             _hs.InteractiveHistorySearch(-1);
-        }
-
-        public enum HistoryMoveCursor
-        {
-            ToEnd,
-            ToBeginning,
-            DontMove
         }
     }
 }

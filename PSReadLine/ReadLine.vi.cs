@@ -905,8 +905,8 @@ namespace Microsoft.PowerShell
 
             var incr = _searchHistoryBackward ? -1 : +1;
             var moveCursor = Options.HistorySearchCursorMovesToEnd
-                ? HistoryMoveCursor.ToEnd
-                : HistoryMoveCursor.DontMove;
+                ? History.HistoryMoveCursor.ToEnd
+                : History.HistoryMoveCursor.DontMove;
             for (var i = _hs.CurrentHistoryIndex + incr; i >= 0 && i < _hs.Historys.Count; i += incr)
                 if (Options.HistoryStringComparison.HasFlag(StringComparison.OrdinalIgnoreCase))
                 {

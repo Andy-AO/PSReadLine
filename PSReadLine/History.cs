@@ -549,8 +549,8 @@ namespace Microsoft.PowerShell.PSReadLine
                     _renderer.EmphasisLength = toMatch.Length;
                     CurrentHistoryIndex = searchFromPoint;
                     var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                        ? PSConsoleReadLine.HistoryMoveCursor.ToEnd
-                        : PSConsoleReadLine.HistoryMoveCursor.DontMove;
+                        ? History.HistoryMoveCursor.ToEnd
+                        : History.HistoryMoveCursor.DontMove;
                     _rl.UpdateFromHistory(moveCursor);
                     return;
                 }
@@ -603,8 +603,8 @@ namespace Microsoft.PowerShell.PSReadLine
                         searchPositions.Pop();
                         searchFromPoint = CurrentHistoryIndex = searchPositions.Peek();
                         var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                            ? PSConsoleReadLine.HistoryMoveCursor.ToEnd
-                            : PSConsoleReadLine.HistoryMoveCursor.DontMove;
+                            ? History.HistoryMoveCursor.ToEnd
+                            : History.HistoryMoveCursor.DontMove;
                         _rl.UpdateFromHistory(moveCursor);
 
                         if (HashedHistory != null)
@@ -753,5 +753,12 @@ namespace Microsoft.PowerShell.PSReadLine
         private HistoryQueue<string> _recentHistory;
         private int _searchHistoryCommandCount;
         private string _searchHistoryPrefix;
+
+        public enum HistoryMoveCursor
+        {
+            ToEnd,
+            ToBeginning,
+            DontMove
+        }
     }
 }
