@@ -126,45 +126,6 @@ namespace Microsoft.PowerShell
             return _hs.Historys.ToArray();
         }
 
-        public void UpdateFromHistory(History.HistoryMoveCursor moveCursor)
-        {
-            string line;
-            if (_hs.CurrentHistoryIndex == _hs.Historys.Count)
-            {
-                line = _hs._savedCurrentLine.CommandLine;
-                _edits = new List<EditItem>(_hs._savedCurrentLine._edits);
-                _undoEditIndex = _hs._savedCurrentLine._undoEditIndex;
-                _editGroupStart = _hs._savedCurrentLine._editGroupStart;
-            }
-            else
-            {
-                line = _hs.Historys[_hs.CurrentHistoryIndex].CommandLine;
-                _edits = new List<EditItem>(_hs.Historys[_hs.CurrentHistoryIndex]._edits);
-                _undoEditIndex = _hs.Historys[_hs.CurrentHistoryIndex]._undoEditIndex;
-                _editGroupStart = _hs.Historys[_hs.CurrentHistoryIndex]._editGroupStart;
-            }
-
-            buffer.Clear();
-            buffer.Append(line);
-
-            switch (moveCursor)
-            {
-                case History.HistoryMoveCursor.ToEnd:
-                    _renderer.Current = Math.Max(0, buffer.Length + ViEndOfLineFactor);
-                    break;
-                case History.HistoryMoveCursor.ToBeginning:
-                    _renderer.Current = 0;
-                    break;
-                default:
-                    if (_renderer.Current > buffer.Length)
-                        _renderer.Current = Math.Max(0, buffer.Length + ViEndOfLineFactor);
-                    break;
-            }
-
-            using var _ = _Prediction.DisableScoped();
-            _renderer.Render();
-        }
-
         /// <summary>
         ///     Replace the current input with the 'previous' item from PSReadLine history.
         /// </summary>
@@ -252,7 +213,7 @@ namespace Microsoft.PowerShell
                     : Options.HistorySearchCursorMovesToEnd
                         ? History.HistoryMoveCursor.ToEnd
                         : History.HistoryMoveCursor.DontMove;
-                UpdateFromHistory(moveCursor);
+                _hs.UpdateFromHistory(moveCursor);
             }
         }
 
@@ -263,7 +224,7 @@ namespace Microsoft.PowerShell
         {
             _hs.SaveCurrentLine();
             _hs.CurrentHistoryIndex = 0;
-            Singleton.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
+            _hs.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
         }
 
         /// <summary>

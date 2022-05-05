@@ -593,7 +593,7 @@ namespace Microsoft.PowerShell.PSReadLine
         private long _historyFileLastSavedSize;
         private Mutex _historyFileMutex;
 
-        public void UpdateFromHistory(History.HistoryMoveCursor moveCursor)
+        public void UpdateFromHistory(HistoryMoveCursor moveCursor)
         {
             string line;
             if (CurrentHistoryIndex == Historys.Count)
@@ -675,7 +675,7 @@ namespace Microsoft.PowerShell.PSReadLine
                     var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
                         ? History.HistoryMoveCursor.ToEnd
                         : History.HistoryMoveCursor.DontMove;
-                    _rl.UpdateFromHistory(moveCursor);
+                    UpdateFromHistory(moveCursor);
                     return;
                 }
             }
@@ -729,7 +729,7 @@ namespace Microsoft.PowerShell.PSReadLine
                         var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
                             ? HistoryMoveCursor.ToEnd
                             : HistoryMoveCursor.DontMove;
-                        _rl.UpdateFromHistory(moveCursor);
+                        UpdateFromHistory(moveCursor);
 
                         if (HashedHistory != null)
                             // Remove any entries with index < searchFromPoint because
@@ -881,7 +881,7 @@ namespace Microsoft.PowerShell.PSReadLine
         public static void GoToEndOfHistory()
         {
             _s.CurrentHistoryIndex = _s.Historys.Count;
-            _rl.UpdateFromHistory(HistoryMoveCursor.ToEnd);
+            _s.UpdateFromHistory(HistoryMoveCursor.ToEnd);
         }
 
         public enum HistoryMoveCursor
