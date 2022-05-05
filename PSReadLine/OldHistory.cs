@@ -407,11 +407,11 @@ namespace Microsoft.PowerShell
                 var key = ReadKey();
                 _dispatchTable.TryGetValue(key, out var handler);
                 var function = handler?.Action;
-                if (function == History.ReverseSearchHistory)
+                if (function == ReverseSearchHistory)
                 {
                     _hs.UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), -1, ref searchFromPoint);
                 }
-                else if (function == History.ForwardSearchHistory)
+                else if (function == ForwardSearchHistory)
                 {
                     _hs.UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), +1, ref searchFromPoint);
                 }
@@ -497,6 +497,13 @@ namespace Microsoft.PowerShell
                     searchPositions.Push(_hs.CurrentHistoryIndex);
                 }
             }
+        }
+        /// <summary>
+        ///     Perform an incremental backward search through history.
+        /// </summary>
+        public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            Singleton.InteractiveHistorySearch(-1);
         }
 
         private void InteractiveHistorySearch(int direction)

@@ -43,13 +43,6 @@ namespace Microsoft.PowerShell.PSReadLine
         }
 
 
-        /// <summary>
-        ///     Perform an incremental forward search through history.
-        /// </summary>
-        public static void ForwardSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            Singleton.InteractiveHistorySearch(+1);
-        }
 
         public void UpdateHistoryFromFile(IEnumerable<string> historyLines, bool fromDifferentSession,
             bool fromInitialRead)
@@ -509,7 +502,7 @@ namespace Microsoft.PowerShell.PSReadLine
         private int _anyHistoryCommandCount;
         private int _currentHistoryIndex;
         private int _getNextHistoryIndex;
-        private HistoryQueue<HistoryItem> _history = new HistoryQueue<HistoryItem>();
+        private HistoryQueue<HistoryItem> _history;
         private Dictionary<string, int> _hashedHistory;
         private int historyErrorReportedCount;
         private long _historyFileLastSavedSize;
@@ -591,11 +584,11 @@ namespace Microsoft.PowerShell.PSReadLine
                 var key = PSConsoleReadLine.ReadKey();
                 _rl._dispatchTable.TryGetValue(key, out var handler);
                 var function = handler?.Action;
-                if (function == ReverseSearchHistory)
+                if (function == PSConsoleReadLine.ReverseSearchHistory)
                 {
                     UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), -1, ref searchFromPoint);
                 }
-                else if (function == ForwardSearchHistory)
+                else if (function == PSConsoleReadLine.ForwardSearchHistory)
                 {
                     UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), +1, ref searchFromPoint);
                 }
@@ -683,13 +676,6 @@ namespace Microsoft.PowerShell.PSReadLine
             }
         }
 
-        /// <summary>
-        ///     Perform an incremental backward search through history.
-        /// </summary>
-        public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            Singleton.InteractiveHistorySearch(-1);
-        }
 
         public int GetNextHistoryIndex
         {
