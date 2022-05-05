@@ -49,11 +49,6 @@ namespace Microsoft.PowerShell
     {
         private static History _hs = History.Singleton;
 
-        // Pattern used to check for sensitive inputs.
-        private static readonly Regex s_sensitivePattern = new(
-            "password|asplaintext|token|apikey|secret",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
         private static readonly HashSet<string> s_SecretMgmtCommands = new(StringComparer.OrdinalIgnoreCase)
         {
             "Get-Secret",
@@ -458,7 +453,8 @@ namespace Microsoft.PowerShell
         {
             if (string.IsNullOrEmpty(line)) return AddToHistoryOption.SkipAdding;
 
-            var match = s_sensitivePattern.Match(line);
+            var sSensitivePattern = History.SensitivePattern;
+            var match = sSensitivePattern.Match(line);
             if (ReferenceEquals(match, Match.Empty)) return AddToHistoryOption.MemoryAndFile;
 
             // The input contains at least one match of some sensitive patterns, so now we need to further
@@ -509,7 +505,7 @@ namespace Microsoft.PowerShell
 
                         if (!isSensitive)
                             // We can safely skip the whole command text.
-                            match = s_sensitivePattern.Match(line, command.Extent.EndOffset);
+                            match = sSensitivePattern.Match(line, command.Extent.EndOffset);
                         break;
 
                     case CommandParameterAst param:
@@ -528,7 +524,7 @@ namespace Microsoft.PowerShell
                         else if (arg is VariableExpressionAst)
                             // Argument is a variable. It's fine to use a variable for a senstive parameter.
                             // e.g. `Invoke-WebRequest -Token $token`
-                            match = s_sensitivePattern.Match(line, arg.Extent.EndOffset);
+                            match = sSensitivePattern.Match(line, arg.Extent.EndOffset);
                         else if (arg is ParenExpressionAst paren
                                  && paren.Pipeline is PipelineAst pipeline
                                  && pipeline.PipelineElements[0] is not CommandExpressionAst)
