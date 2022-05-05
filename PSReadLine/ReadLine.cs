@@ -90,8 +90,7 @@ namespace Microsoft.PowerShell
             _charMap = new DotNetCharMap();
             buffer = new StringBuilder(8 * 1024);
             _statusBuffer = new StringBuilder(256);
-            _savedCurrentLine = new HistoryItem();
-            _queuedKeys = new Queue<PSKeyInfo>();
+  _queuedKeys = new Queue<PSKeyInfo>();
             string hostName = null;
             // This works mostly by luck - we're not doing anything to guarantee the constructor for our
             // _s is called on a thread with a runspace, but it is happening by coincidence.

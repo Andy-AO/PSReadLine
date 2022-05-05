@@ -48,9 +48,6 @@ namespace Microsoft.PowerShell
     {
         private static History _hs = History.Singleton;
 
-        // When cycling through history, the current line (not yet added to history)
-        // is saved here so it can be restored.
-        private readonly HistoryItem _savedCurrentLine;
         private int _anyHistoryCommandCount;
         private int _currentHistoryIndex;
         private int _getNextHistoryIndex;
@@ -72,10 +69,10 @@ namespace Microsoft.PowerShell
 
         private void ClearSavedCurrentLine()
         {
-            _savedCurrentLine.CommandLine = null;
-            _savedCurrentLine._edits = null;
-            _savedCurrentLine._undoEditIndex = 0;
-            _savedCurrentLine._editGroupStart = -1;
+            _hs._savedCurrentLine.CommandLine = null;
+            _hs._savedCurrentLine._edits = null;
+            _hs._savedCurrentLine._undoEditIndex = 0;
+            _hs._savedCurrentLine._editGroupStart = -1;
         }
 
         private AddToHistoryOption GetAddToHistoryOption(string line)
@@ -563,10 +560,10 @@ namespace Microsoft.PowerShell
             string line;
             if (_currentHistoryIndex == _history.Count)
             {
-                line = _savedCurrentLine.CommandLine;
-                _edits = new List<EditItem>(_savedCurrentLine._edits);
-                _undoEditIndex = _savedCurrentLine._undoEditIndex;
-                _editGroupStart = _savedCurrentLine._editGroupStart;
+                line = _hs._savedCurrentLine.CommandLine;
+                _edits = new List<EditItem>(_hs._savedCurrentLine._edits);
+                _undoEditIndex = _hs._savedCurrentLine._undoEditIndex;
+                _editGroupStart = _hs._savedCurrentLine._editGroupStart;
             }
             else
             {
@@ -604,12 +601,12 @@ namespace Microsoft.PowerShell
             MaybeReadHistoryFile();
 
             _anyHistoryCommandCount += 1;
-            if (_savedCurrentLine.CommandLine == null)
+            if (_hs._savedCurrentLine.CommandLine == null)
             {
-                _savedCurrentLine.CommandLine = buffer.ToString();
-                _savedCurrentLine._edits = _edits;
-                _savedCurrentLine._undoEditIndex = _undoEditIndex;
-                _savedCurrentLine._editGroupStart = _editGroupStart;
+                _hs._savedCurrentLine.CommandLine = buffer.ToString();
+                _hs._savedCurrentLine._edits = _edits;
+                _hs._savedCurrentLine._undoEditIndex = _undoEditIndex;
+                _hs._savedCurrentLine._editGroupStart = _editGroupStart;
             }
         }
 

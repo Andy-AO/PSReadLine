@@ -33,6 +33,10 @@ namespace Microsoft.PowerShell.PSReadLine
             "Unregister-SecretVault"
         };
 
+        // When cycling through history, the current line (not yet added to history)
+        // is saved here so it can be restored.
+        public readonly HistoryItem _savedCurrentLine = new HistoryItem();
+
         private static readonly Regex s_sensitivePattern = new(
             "password|asplaintext|token|apikey|secret",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
