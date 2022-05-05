@@ -156,23 +156,6 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        ///     Move to the first item in the history.
-        /// </summary>
-        public static void BeginningOfHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            History.BeginningOfHistory(key, arg);
-        }
-
-        /// <summary>
-        ///     Move to the last item (the current input) in the history.
-        /// </summary>
-        public static void EndOfHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            _hs.SaveCurrentLine();
-            History.GoToEndOfHistory();
-        }
-
-        /// <summary>
         ///     Replace the current input with the 'previous' item from PSReadLine history
         ///     that matches the characters between the start and the input and the cursor.
         /// </summary>

@@ -26,6 +26,15 @@ namespace Microsoft.PowerShell.PSReadLine
         }
 
         /// <summary>
+        ///     Move to the last item (the current input) in the history.
+        /// </summary>
+        public static void EndOfHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            _s.SaveCurrentLine();
+            History.GoToEndOfHistory();
+        }
+
+        /// <summary>
         ///     Add a command to the history - typically used to restore
         ///     history from a previous session.
         /// </summary>

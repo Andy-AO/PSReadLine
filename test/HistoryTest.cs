@@ -641,7 +641,7 @@ namespace Test
         {
             TestSetup(KeyMode.Cmd,
                       new KeyHandler("F3", (key, arg) => Microsoft.PowerShell.PSReadLine.History.BeginningOfHistory(key, arg)),
-                      new KeyHandler("Shift+F3", PSConsoleReadLine.EndOfHistory));
+                      new KeyHandler("Shift+F3", Microsoft.PowerShell.PSReadLine.History.EndOfHistory));
 
             // Mix different history commands to verify that the saved current line and
             // the history index stay the same while in a series of history commands.

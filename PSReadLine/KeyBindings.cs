@@ -258,7 +258,7 @@ namespace Microsoft.PowerShell
                 {Keys.UpArrow, MakeKeyHandler(PreviousHistory, "PreviousHistory")},
                 {Keys.DownArrow, MakeKeyHandler(NextHistory, "NextHistory")},
                 {Keys.AltLess, MakeKeyHandler(History.BeginningOfHistory, "BeginningOfHistory")},
-                {Keys.AltGreater, MakeKeyHandler(EndOfHistory, "EndOfHistory")},
+                {Keys.AltGreater, MakeKeyHandler(History.EndOfHistory, "EndOfHistory")},
                 {Keys.Home, MakeKeyHandler(BeginningOfLine, "BeginningOfLine")},
                 {Keys.End, MakeKeyHandler(EndOfLine, "EndOfLine")},
                 {Keys.ShiftHome, MakeKeyHandler(SelectBackwardsLine, "SelectBackwardsLine")},
@@ -517,7 +517,7 @@ namespace Microsoft.PowerShell
 
                 case nameof(History.BeginningOfHistory):
                 case nameof(ClearHistory):
-                case nameof(EndOfHistory):
+                case nameof(History.EndOfHistory):
                 case nameof(ForwardSearchHistory):
                 case nameof(HistorySearchBackward):
                 case nameof(History.HistorySearchForward):
