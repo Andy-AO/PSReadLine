@@ -236,7 +236,7 @@ namespace Microsoft.PowerShell
             {
                 var retry = true;
                 // Get the new content since the last sync.
-                var historyLines = overwritten ? null : ReadHistoryFileIncrementally();
+                var historyLines = overwritten ? null : _hs.ReadHistoryFileIncrementally();
 
                 try
                 {
@@ -286,37 +286,13 @@ namespace Microsoft.PowerShell
             });
         }
 
-        /// <summary>
-        ///     Helper method to read the incremental part of the history file.
-        ///     Note: the call to this method should be guarded by the mutex that protects the history file.
-        /// </summary>
-        private List<string> ReadHistoryFileIncrementally()
-        {
-            var fileInfo = new FileInfo(Options.HistorySavePath);
-            if (fileInfo.Exists && fileInfo.Length != _hs.HistoryFileLastSavedSize)
-            {
-                var historyLines = new List<string>();
-                using (var fs = new FileStream(Options.HistorySavePath, FileMode.Open))
-                using (var sr = new StreamReader(fs))
-                {
-                    fs.Seek(_hs.HistoryFileLastSavedSize, SeekOrigin.Begin);
-
-                    while (!sr.EndOfStream) historyLines.Add(sr.ReadLine());
-                }
-
-                _hs.HistoryFileLastSavedSize = fileInfo.Length;
-                return historyLines.Count > 0 ? historyLines : null;
-            }
-
-            return null;
-        }
 
         private bool MaybeReadHistoryFile()
         {
             if (Options.HistorySaveStyle == HistorySaveStyle.SaveIncrementally)
                 return WithHistoryFileMutexDo(1000, () =>
                 {
-                    var historyLines = ReadHistoryFileIncrementally();
+                    var historyLines = _hs.ReadHistoryFileIncrementally();
                     if (historyLines != null) UpdateHistoryFromFile(historyLines, true, false);
                 });
 

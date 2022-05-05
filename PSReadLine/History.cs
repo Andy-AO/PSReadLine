@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -7,6 +8,33 @@ namespace Microsoft.PowerShell.PSReadLine
 {
     public class History
     {
+        private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
+
+        /// <summary>
+        ///     Helper method to read the incremental part of the history file.
+        ///     Note: the call to this method should be guarded by the mutex that protects the history file.
+        /// </summary>
+        public List<string> ReadHistoryFileIncrementally()
+        {
+            var fileInfo = new FileInfo(_rl.Options.HistorySavePath);
+            if (fileInfo.Exists && fileInfo.Length != HistoryFileLastSavedSize)
+            {
+                var historyLines = new List<string>();
+                using (var fs = new FileStream(_rl.Options.HistorySavePath, FileMode.Open))
+                using (var sr = new StreamReader(fs))
+                {
+                    fs.Seek(HistoryFileLastSavedSize, SeekOrigin.Begin);
+
+                    while (!sr.EndOfStream) historyLines.Add(sr.ReadLine());
+                }
+
+                HistoryFileLastSavedSize = fileInfo.Length;
+                return historyLines.Count > 0 ? historyLines : null;
+            }
+
+            return null;
+        }
+
         private static readonly History _s = new();
         public static History Singleton => _s;
 
