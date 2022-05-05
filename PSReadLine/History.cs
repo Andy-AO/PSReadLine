@@ -14,6 +14,60 @@ namespace Microsoft.PowerShell.PSReadLine
 {
     public class History
     {
+
+        //class start
+        public static ExpressionAst GetArgumentForParameter(CommandParameterAst param)
+        {
+            if (param.Argument is not null) return param.Argument;
+
+            var command = (CommandAst) param.Parent;
+            var index = 1;
+            for (; index < command.CommandElements.Count; index++)
+                if (ReferenceEquals(command.CommandElements[index], param))
+                    break;
+
+            var argIndex = index + 1;
+            if (argIndex < command.CommandElements.Count
+                && command.CommandElements[argIndex] is ExpressionAst arg)
+                return arg;
+
+            return null;
+        }
+
+        public static bool IsSecretMgmtCommand(StringConstantExpressionAst strConst, out CommandAst command)
+        {
+            var result = false;
+            command = strConst.Parent as CommandAst;
+
+            if (command is not null)
+                result = ReferenceEquals(command.CommandElements[0], strConst)
+                         && History.SecretMgmtCommands.Contains(strConst.Value);
+
+            return result;
+        }
+
+        public static bool IsOnLeftSideOfAnAssignment(Ast ast, out Ast rhs)
+        {
+            var result = false;
+            rhs = null;
+
+            do
+            {
+                if (ast.Parent is AssignmentStatementAst assignment)
+                {
+                    rhs = assignment.Right;
+                    result = ReferenceEquals(assignment.Left, ast);
+
+                    break;
+                }
+
+                ast = ast.Parent;
+            } while (ast.Parent is not null);
+
+            return result;
+        }
+
+
         private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
         private static readonly Renderer _renderer = Renderer.Singleton;
 
@@ -312,7 +366,7 @@ namespace Microsoft.PowerShell.PSReadLine
                         // If it appears on the left-hand-side of an assignment, and the right-hand-side is
                         // not a command invocation, we consider it sensitive.
                         // e.g. `$token = Get-Secret` vs. `$token = 'token-text'` or `$token, $url = ...`
-                        isSensitive = PSConsoleReadLine.IsOnLeftSideOfAnAssignment(innerAst, out var rhs)
+                        isSensitive = IsOnLeftSideOfAnAssignment(innerAst, out var rhs)
                                       && rhs is not PipelineAst;
 
                         if (!isSensitive) match = match.NextMatch();
@@ -321,7 +375,7 @@ namespace Microsoft.PowerShell.PSReadLine
                     case StringConstantExpressionAst strConst:
                         // If it's not a command name, or it's not one of the secret management commands that
                         // we can ignore, we consider it sensitive.
-                        isSensitive = !PSConsoleReadLine.IsSecretMgmtCommand(strConst, out var command);
+                        isSensitive = !IsSecretMgmtCommand(strConst, out var command);
 
                         if (!isSensitive)
                             // We can safely skip the whole command text.
@@ -336,7 +390,7 @@ namespace Microsoft.PowerShell.PSReadLine
                             break;
                         }
 
-                        var arg = PSConsoleReadLine.GetArgumentForParameter(param);
+                        var arg = GetArgumentForParameter(param);
                         if (arg is null)
                             // If no argument is found following the parameter, then it could be a switching parameter
                             // such as '-UseDefaultPassword' or '-SaveToken', which we assume will not expose sensitive information.

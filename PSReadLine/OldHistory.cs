@@ -46,57 +46,6 @@ namespace Microsoft.PowerShell
     {
         private static History _hs = History.Singleton;
 
-       public static bool IsOnLeftSideOfAnAssignment(Ast ast, out Ast rhs)
-        {
-            var result = false;
-            rhs = null;
-
-            do
-            {
-                if (ast.Parent is AssignmentStatementAst assignment)
-                {
-                    rhs = assignment.Right;
-                    result = ReferenceEquals(assignment.Left, ast);
-
-                    break;
-                }
-
-                ast = ast.Parent;
-            } while (ast.Parent is not null);
-
-            return result;
-        }
-
-        public static bool IsSecretMgmtCommand(StringConstantExpressionAst strConst, out CommandAst command)
-        {
-            var result = false;
-            command = strConst.Parent as CommandAst;
-
-            if (command is not null)
-                result = ReferenceEquals(command.CommandElements[0], strConst)
-                         && History.SecretMgmtCommands.Contains(strConst.Value);
-
-            return result;
-        }
-
-        public static ExpressionAst GetArgumentForParameter(CommandParameterAst param)
-        {
-            if (param.Argument is not null) return param.Argument;
-
-            var command = (CommandAst) param.Parent;
-            var index = 1;
-            for (; index < command.CommandElements.Count; index++)
-                if (ReferenceEquals(command.CommandElements[index], param))
-                    break;
-
-            var argIndex = index + 1;
-            if (argIndex < command.CommandElements.Count
-                && command.CommandElements[argIndex] is ExpressionAst arg)
-                return arg;
-
-            return null;
-        }
-
         /// <summary>
         ///     Add a command to the history - typically used to restore
         ///     history from a previous session.
@@ -248,7 +197,8 @@ namespace Microsoft.PowerShell
             _hs.SaveCurrentLine();
             Singleton.HistorySearch(numericArg);
         }
-       /// <summary>
+
+        /// <summary>
         ///     Perform an incremental backward search through history.
         /// </summary>
         public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
