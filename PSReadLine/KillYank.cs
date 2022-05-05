@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.PowerShell.Internal;
+using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
 {
@@ -235,13 +236,13 @@ namespace Microsoft.PowerShell
 
         private void YankArgImpl(YankLastArgState yankLastArgState)
         {
-            if (yankLastArgState.historyIndex < 0 || yankLastArgState.historyIndex >= _history.Count)
+            if (yankLastArgState.historyIndex < 0 || yankLastArgState.historyIndex >= _hs.Historys.Count)
             {
                 Ding();
                 return;
             }
 
-            var buffer = _history[yankLastArgState.historyIndex];
+            var buffer = _hs.Historys[yankLastArgState.historyIndex];
             Parser.ParseInput(buffer.CommandLine, out var tokens, out var unused);
 
             var arg = yankLastArgState.argument < 0
@@ -275,7 +276,7 @@ namespace Microsoft.PowerShell
             var yankLastArgState = new YankLastArgState
             {
                 argument = arg as int? ?? 1,
-                historyIndex = Singleton._currentHistoryIndex - 1
+                historyIndex = _hs.CurrentHistoryIndex - 1
             };
             Singleton.YankArgImpl(yankLastArgState);
         }
@@ -302,7 +303,7 @@ namespace Microsoft.PowerShell
                 {
                     argument = (int?) arg ?? -1,
                     historyIncrement = -1,
-                    historyIndex = Singleton._currentHistoryIndex - 1
+                    historyIndex = _hs.CurrentHistoryIndex - 1
                 };
 
                 Singleton.YankArgImpl(Singleton._yankLastArgState);
@@ -321,10 +322,10 @@ namespace Microsoft.PowerShell
                 Ding();
                 yankLastArgState.historyIndex = 0;
             }
-            else if (yankLastArgState.historyIndex >= Singleton._history.Count)
+            else if (yankLastArgState.historyIndex >= _hs.Historys.Count)
             {
                 Ding();
-                yankLastArgState.historyIndex = Singleton._history.Count - 1;
+                yankLastArgState.historyIndex = _hs.Historys.Count - 1;
             }
             else
             {

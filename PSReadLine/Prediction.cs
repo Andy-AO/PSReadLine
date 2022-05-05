@@ -387,7 +387,7 @@ namespace Microsoft.PowerShell
             internal void OnCommandLineAccepted(string commandLine)
             {
                 if (ActiveView.UsePlugin && !string.IsNullOrWhiteSpace(commandLine))
-                    _singleton._mockableMethods.OnCommandLineAccepted(_singleton._recentHistory.ToArray());
+                    _singleton._mockableMethods.OnCommandLineAccepted(_hs.RecentHistory.ToArray());
             }
 
             /// <summary>

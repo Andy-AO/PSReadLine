@@ -25,7 +25,7 @@ namespace Microsoft.PowerShell
 
     [DebuggerDisplay("Count = {" + nameof(Count) + "}")]
     [DebuggerTypeProxy(typeof(QueueDebugView<>))]
-    internal class HistoryQueue<T>
+    public class HistoryQueue<T>
     {
         private readonly T[] _array;
         private int _head;

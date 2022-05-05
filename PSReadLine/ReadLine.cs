@@ -431,7 +431,7 @@ namespace Microsoft.PowerShell
                 // where we can return from ReadLine.
                 if (_s.Options.HistorySaveStyle == HistorySaveStyle.SaveAtExit) _s.SaveHistoryAtExit();
 
-                _s._historyFileMutex.Dispose();
+                _hs.HistoryFileMutex.Dispose();
 
                 throw new OperationCanceledException();
             }
@@ -441,7 +441,7 @@ namespace Microsoft.PowerShell
                 // ReadLine was cancelled. Save the current line to be restored next time ReadLine
                 // is called, clear the buffer and throw an exception so we can return an empty string.
                 _s.SaveCurrentLine();
-                _s._getNextHistoryIndex = _s._history.Count;
+                _hs.GetNextHistoryIndex = _hs.Historys.Count;
                 _renderer.Current = 0;
                 _s.buffer.Clear();
                 _renderer.Render();
@@ -624,9 +624,9 @@ namespace Microsoft.PowerShell
                 var killCommandCount = _killCommandCount;
                 var yankCommandCount = _yankCommandCount;
                 var tabCommandCount = _tabCommandCount;
-                var searchHistoryCommandCount = _searchHistoryCommandCount;
-                var recallHistoryCommandCount = _recallHistoryCommandCount;
-                var anyHistoryCommandCount = _anyHistoryCommandCount;
+                var searchHistoryCommandCount = _hs.SearchHistoryCommandCount;
+                var recallHistoryCommandCount = _hs.RecallHistoryCommandCount;
+                var anyHistoryCommandCount = _hs.AnyHistoryCommandCount;
                 var yankLastArgCommandCount = _yankLastArgCommandCount;
                 var visualSelectionCommandCount = _visualSelectionCommandCount;
                 var moveToLineCommandCount = _moveToLineCommandCount;
@@ -665,31 +665,31 @@ namespace Microsoft.PowerShell
                     _tabCompletions = null;
                 }
 
-                if (searchHistoryCommandCount == _searchHistoryCommandCount)
+                if (searchHistoryCommandCount == _hs.SearchHistoryCommandCount)
                 {
-                    if (_searchHistoryCommandCount > 0)
+                    if (_hs.SearchHistoryCommandCount > 0)
                     {
                         _renderer.EmphasisStart = -1;
                         _renderer.EmphasisLength = 0;
                         _renderer.RenderWithPredictionQueryPaused();
                     }
 
-                    _searchHistoryCommandCount = 0;
-                    _searchHistoryPrefix = null;
+                    _hs.SearchHistoryCommandCount = 0;
+                    _hs.SearchHistoryPrefix = null;
                 }
 
-                if (recallHistoryCommandCount == _recallHistoryCommandCount) _recallHistoryCommandCount = 0;
+                if (recallHistoryCommandCount == _hs.RecallHistoryCommandCount) _hs.RecallHistoryCommandCount = 0;
 
-                if (anyHistoryCommandCount == _anyHistoryCommandCount)
+                if (anyHistoryCommandCount == _hs.AnyHistoryCommandCount)
                 {
-                    if (_anyHistoryCommandCount > 0)
+                    if (_hs.AnyHistoryCommandCount > 0)
                     {
                         ClearSavedCurrentLine();
-                        _hashedHistory = null;
-                        _currentHistoryIndex = _history.Count;
+                        _hs.HashedHistory = null;
+                        _hs.CurrentHistoryIndex = _hs.Historys.Count;
                     }
 
-                    _anyHistoryCommandCount = 0;
+                    _hs.AnyHistoryCommandCount = 0;
                 }
 
                 if (visualSelectionCommandCount == _visualSelectionCommandCount && _visualSelectionCommandCount > 0)
@@ -822,30 +822,30 @@ namespace Microsoft.PowerShell
             _yankCommandCount = 0;
             _yankLastArgCommandCount = 0;
             _tabCommandCount = 0;
-            _recallHistoryCommandCount = 0;
-            _anyHistoryCommandCount = 0;
+            _hs.RecallHistoryCommandCount = 0;
+            _hs.AnyHistoryCommandCount = 0;
             _visualSelectionCommandCount = 0;
-            _hashedHistory = null;
+            _hs.HashedHistory = null;
 
-            if (_getNextHistoryIndex > 0)
+            if (_hs.GetNextHistoryIndex > 0)
             {
-                _currentHistoryIndex = _getNextHistoryIndex;
+                _hs.CurrentHistoryIndex = _hs.GetNextHistoryIndex;
                 UpdateFromHistory(HistoryMoveCursor.ToEnd);
-                _getNextHistoryIndex = 0;
-                if (_searchHistoryCommandCount > 0)
+                _hs.GetNextHistoryIndex = 0;
+                if (_hs.SearchHistoryCommandCount > 0)
                 {
-                    _searchHistoryPrefix = "";
-                    if (Options.HistoryNoDuplicates) _hashedHistory = new Dictionary<string, int>();
+                    _hs.SearchHistoryPrefix = "";
+                    if (Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
                 }
             }
             else
             {
-                _currentHistoryIndex = _history.Count;
-                _searchHistoryCommandCount = 0;
+                _hs.CurrentHistoryIndex = _hs.Historys.Count;
+                _hs.SearchHistoryCommandCount = 0;
             }
 
-            if (_previousHistoryItem != null)
-                _previousHistoryItem.ApproximateElapsedTime = DateTime.UtcNow - _previousHistoryItem.StartTime;
+            if (_hs.PreviousHistoryItem != null)
+                _hs.PreviousHistoryItem.ApproximateElapsedTime = DateTime.UtcNow - _hs.PreviousHistoryItem.StartTime;
         }
 
         private void DelayedOneTimeInitialize()
@@ -892,11 +892,11 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            _historyFileMutex = new Mutex(false, GetHistorySaveFileMutexName());
+            _hs.HistoryFileMutex = new Mutex(false, GetHistorySaveFileMutexName());
 
-            _history = new HistoryQueue<HistoryItem>(Options.MaximumHistoryCount);
-            _recentHistory = new HistoryQueue<string>(5);
-            _currentHistoryIndex = 0;
+            _hs.Historys = new HistoryQueue<HistoryItem>(Options.MaximumHistoryCount);
+            _hs.RecentHistory = new HistoryQueue<string>(5);
+            _hs.CurrentHistoryIndex = 0;
 
             var readHistoryFile = true;
             try

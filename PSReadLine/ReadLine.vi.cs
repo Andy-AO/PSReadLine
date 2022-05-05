@@ -5,6 +5,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
 {
@@ -831,13 +832,13 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void RepeatSearch(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (string.IsNullOrEmpty(Singleton._searchHistoryPrefix))
+            if (string.IsNullOrEmpty(_hs.SearchHistoryPrefix))
             {
                 Ding();
                 return;
             }
 
-            Singleton._anyHistoryCommandCount++;
+            _hs.AnyHistoryCommandCount++;
             Singleton.HistorySearch();
         }
 
@@ -866,7 +867,7 @@ namespace Microsoft.PowerShell
                 var nextKey = ReadKey();
                 if (nextKey == Keys.Enter || nextKey == Keys.Tab)
                 {
-                    _searchHistoryPrefix = argBuffer.ToString();
+                    _hs.SearchHistoryPrefix = argBuffer.ToString();
                     _searchHistoryBackward = backward;
                     HistorySearch();
                     break;
@@ -900,27 +901,27 @@ namespace Microsoft.PowerShell
         /// </summary>
         private void HistorySearch()
         {
-            _searchHistoryCommandCount++;
+            _hs.SearchHistoryCommandCount++;
 
             var incr = _searchHistoryBackward ? -1 : +1;
             var moveCursor = Options.HistorySearchCursorMovesToEnd
                 ? HistoryMoveCursor.ToEnd
                 : HistoryMoveCursor.DontMove;
-            for (var i = _currentHistoryIndex + incr; i >= 0 && i < _history.Count; i += incr)
+            for (var i = _hs.CurrentHistoryIndex + incr; i >= 0 && i < _hs.Historys.Count; i += incr)
                 if (Options.HistoryStringComparison.HasFlag(StringComparison.OrdinalIgnoreCase))
                 {
-                    if (_history[i].CommandLine.ToLower().Contains(_searchHistoryPrefix.ToLower()))
+                    if (_hs.Historys[i].CommandLine.ToLower().Contains(_hs.SearchHistoryPrefix.ToLower()))
                     {
-                        _currentHistoryIndex = i;
+                        _hs.CurrentHistoryIndex = i;
                         UpdateFromHistory(moveCursor);
                         return;
                     }
                 }
                 else
                 {
-                    if (_history[i].CommandLine.Contains(_searchHistoryPrefix))
+                    if (_hs.Historys[i].CommandLine.Contains(_hs.SearchHistoryPrefix))
                     {
-                        _currentHistoryIndex = i;
+                        _hs.CurrentHistoryIndex = i;
                         UpdateFromHistory(moveCursor);
                         return;
                     }

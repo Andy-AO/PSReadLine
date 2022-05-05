@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Management.Automation.Subsystem.Prediction;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
 {
@@ -88,7 +89,7 @@ namespace Microsoft.PowerShell
             /// </summary>
             protected string GetOneHistorySuggestion(string text)
             {
-                var history = _singleton._history;
+                var history = _hs.Historys;
                 var comparison = _singleton.Options.HistoryStringComparison;
 
                 for (var index = history.Count - 1; index >= 0; index--)
@@ -117,7 +118,7 @@ namespace Microsoft.PowerShell
                 List<SuggestionEntry> results = null;
                 var remainingCount = count;
 
-                var history = _singleton._history;
+                var history = _hs.Historys;
                 var comparison = _singleton.Options.HistoryStringComparison;
                 var comparer = _singleton.Options.HistoryStringComparer;
 
