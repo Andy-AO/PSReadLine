@@ -17,6 +17,28 @@ namespace Microsoft.PowerShell.PSReadLine
         private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
         private static readonly Renderer _renderer = Renderer.Singleton;
 
+        public void SaveHistoryAtExit()
+        {
+            int end = Historys.Count - 1;
+            WriteHistoryRange(0, end, true);
+        }
+
+        public void ReadHistoryFile()
+        {
+            if (File.Exists(_rl.Options.HistorySavePath))
+            {
+                Action action = () =>
+                {
+                    var historyLines = File.ReadAllLines(_rl.Options.HistorySavePath);
+                    UpdateHistoryFromFile(historyLines, false,
+                        true);
+                    var fileInfo = new FileInfo(_rl.Options.HistorySavePath);
+                    HistoryFileLastSavedSize = fileInfo.Length;
+                };
+                WithHistoryFileMutexDo(1000, action);
+            }
+        }
+
         public string GetHistorySaveFileMutexName()
         {
             // Return a reasonably unique name - it's not too important as there will rarely

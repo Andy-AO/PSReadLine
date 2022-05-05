@@ -429,7 +429,7 @@ namespace Microsoft.PowerShell
             {
                 // The console is exiting - throw an exception to unwind the stack to the point
                 // where we can return from ReadLine.
-                if (_s.Options.HistorySaveStyle == HistorySaveStyle.SaveAtExit) _s.SaveHistoryAtExit();
+                if (_s.Options.HistorySaveStyle == HistorySaveStyle.SaveAtExit) _hs.SaveHistoryAtExit();
 
                 _hs.HistoryFileMutex.Dispose();
 
@@ -914,7 +914,7 @@ namespace Microsoft.PowerShell
             {
             }
 
-            if (readHistoryFile) ReadHistoryFile();
+            if (readHistoryFile) _hs.ReadHistoryFile();
 
             _killIndex = -1; // So first add indexes 0.
             _killRing = new List<string>(Options.MaximumKillRingCount);

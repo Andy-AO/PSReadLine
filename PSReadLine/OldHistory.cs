@@ -46,27 +46,7 @@ namespace Microsoft.PowerShell
     {
         private static History _hs = History.Singleton;
 
-        private void SaveHistoryAtExit()
-        {
-            int end = _hs.Historys.Count - 1;
-            _hs.WriteHistoryRange(0, end, true);
-        }
 
-        private void ReadHistoryFile()
-        {
-            if (File.Exists(Options.HistorySavePath))
-            {
-                Action action = () =>
-                {
-                    var historyLines = File.ReadAllLines(Options.HistorySavePath);
-                    _hs.UpdateHistoryFromFile(historyLines, false,
-                        true);
-                    var fileInfo = new FileInfo(Options.HistorySavePath);
-                    _hs.HistoryFileLastSavedSize = fileInfo.Length;
-                };
-                _hs.WithHistoryFileMutexDo(1000, action);
-            }
-        }
 
         public static bool IsOnLeftSideOfAnAssignment(Ast ast, out Ast rhs)
         {
