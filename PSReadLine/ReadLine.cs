@@ -33,6 +33,7 @@ namespace Microsoft.PowerShell
 
     public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
     {
+        private static History _hs = History.Singleton;
         private const int ConsoleExiting = 1;
 
         private const int CancellationRequested = 2;
@@ -90,7 +91,7 @@ namespace Microsoft.PowerShell
             _charMap = new DotNetCharMap();
             buffer = new StringBuilder(8 * 1024);
             _statusBuffer = new StringBuilder(256);
-  _queuedKeys = new Queue<PSKeyInfo>();
+            _queuedKeys = new Queue<PSKeyInfo>();
             string hostName = null;
             // This works mostly by luck - we're not doing anything to guarantee the constructor for our
             // _s is called on a thread with a runspace, but it is happening by coincidence.
@@ -905,7 +906,8 @@ namespace Microsoft.PowerShell
                     using (var ps = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace))
                     {
                         ps.AddCommand("Microsoft.PowerShell.Core\\Get-History");
-                        foreach (var historyInfo in ps.Invoke<HistoryInfo>()) History.AddToHistory(historyInfo.CommandLine);
+                        foreach (var historyInfo in ps.Invoke<HistoryInfo>())
+                            History.AddToHistory(historyInfo.CommandLine);
 
                         readHistoryFile = false;
                     }
