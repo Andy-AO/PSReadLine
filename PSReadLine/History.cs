@@ -100,10 +100,10 @@ namespace Microsoft.PowerShell.PSReadLine
                 _renderer.Current = _renderer.EmphasisLength;
                 CurrentHistoryIndex = newHistoryIndex;
                 var moveCursor = RL.InViCommandMode()
-                    ? History.HistoryMoveCursor.ToBeginning
+                    ? HistoryMoveCursor.ToBeginning
                     : _rl.Options.HistorySearchCursorMovesToEnd
-                        ? History.HistoryMoveCursor.ToEnd
-                        : History.HistoryMoveCursor.DontMove;
+                        ? HistoryMoveCursor.ToEnd
+                        : HistoryMoveCursor.DontMove;
                 UpdateFromHistory(moveCursor);
             }
         }
@@ -170,7 +170,7 @@ namespace Microsoft.PowerShell.PSReadLine
         {
             _s.SaveCurrentLine();
             _s.CurrentHistoryIndex = 0;
-            _s.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
+            _s.UpdateFromHistory(HistoryMoveCursor.ToEnd);
         }
 
 
@@ -190,7 +190,7 @@ namespace Microsoft.PowerShell.PSReadLine
         public static void EndOfHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
             _s.SaveCurrentLine();
-            History.GoToEndOfHistory();
+            GoToEndOfHistory();
         }
 
         /// <summary>
@@ -200,8 +200,8 @@ namespace Microsoft.PowerShell.PSReadLine
         public static void AddToHistory(string command)
         {
             command = command.Replace("\r\n", "\n");
-            var editItems = new List<EditItem> {RL.EditItemInsertString.Create(command, 0)};
-            _s.MaybeAddToHistory(command, editItems, 1, false, false);
+            var editItems = new List<EditItem> {PSConsoleReadLine.EditItemInsertString.Create(command, 0)};
+            _s.MaybeAddToHistory(command, editItems, 1);
         }
 
         public static ExpressionAst GetArgumentForParameter(CommandParameterAst param)
@@ -229,7 +229,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
             if (command is not null)
                 result = ReferenceEquals(command.CommandElements[0], strConst)
-                         && History.SecretMgmtCommands.Contains(strConst.Value);
+                         && SecretMgmtCommands.Contains(strConst.Value);
 
             return result;
         }
@@ -505,8 +505,8 @@ namespace Microsoft.PowerShell.PSReadLine
             {
                 CurrentHistoryIndex = newHistoryIndex;
                 var moveCursor = RL.InViCommandMode() && !(_rl.Options.HistorySearchCursorMovesToEnd)
-                    ? History.HistoryMoveCursor.ToBeginning
-                    : History.HistoryMoveCursor.ToEnd;
+                    ? HistoryMoveCursor.ToBeginning
+                    : HistoryMoveCursor.ToEnd;
                 UpdateFromHistory(moveCursor);
             }
         }
@@ -515,7 +515,7 @@ namespace Microsoft.PowerShell.PSReadLine
         {
             if (string.IsNullOrEmpty(line)) return AddToHistoryOption.SkipAdding;
 
-            var sSensitivePattern = History.SensitivePattern;
+            var sSensitivePattern = SensitivePattern;
             var match = sSensitivePattern.Match(line);
             if (ReferenceEquals(match, Match.Empty)) return AddToHistoryOption.MemoryAndFile;
 
@@ -858,10 +858,10 @@ namespace Microsoft.PowerShell.PSReadLine
 
             switch (moveCursor)
             {
-                case History.HistoryMoveCursor.ToEnd:
+                case HistoryMoveCursor.ToEnd:
                     _renderer.Current = Math.Max(0, _rl.buffer.Length + PSConsoleReadLine.ViEndOfLineFactor);
                     break;
-                case History.HistoryMoveCursor.ToBeginning:
+                case HistoryMoveCursor.ToBeginning:
                     _renderer.Current = 0;
                     break;
                 default:
@@ -880,7 +880,7 @@ namespace Microsoft.PowerShell.PSReadLine
             SaveCurrentLine();
 
             // Add a status line that will contain the search prompt and string
-            _rl._statusLinePrompt = direction > 0 ? History._forwardISearchPrompt : History._backwardISearchPrompt;
+            _rl._statusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
             _rl._statusBuffer.Append("_");
 
             _renderer.Render(); // Render prompt
@@ -909,14 +909,14 @@ namespace Microsoft.PowerShell.PSReadLine
                     }
 
                     _rl._statusLinePrompt =
-                        direction > 0 ? History._forwardISearchPrompt : History._backwardISearchPrompt;
+                        direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
                     _renderer.Current = startIndex;
                     _renderer.EmphasisStart = startIndex;
                     _renderer.EmphasisLength = toMatch.Length;
                     CurrentHistoryIndex = searchFromPoint;
                     var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                        ? History.HistoryMoveCursor.ToEnd
-                        : History.HistoryMoveCursor.DontMove;
+                        ? HistoryMoveCursor.ToEnd
+                        : HistoryMoveCursor.DontMove;
                     UpdateFromHistory(moveCursor);
                     return;
                 }
@@ -932,7 +932,7 @@ namespace Microsoft.PowerShell.PSReadLine
             _renderer.EmphasisStart = -1;
             _renderer.EmphasisLength = 0;
             _rl._statusLinePrompt =
-                direction > 0 ? History._failedForwardISearchPrompt : History._failedBackwardISearchPrompt;
+                direction > 0 ? _failedForwardISearchPrompt : _failedBackwardISearchPrompt;
             _renderer.Render();
         }
 
@@ -950,7 +950,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 var key = PSConsoleReadLine.ReadKey();
                 _rl._dispatchTable.TryGetValue(key, out var handler);
                 var function = handler?.Action;
-                if (function == (History.ReverseSearchHistory))
+                if (function == (ReverseSearchHistory))
                 {
                     UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), -1, ref searchFromPoint);
                 }
@@ -987,8 +987,8 @@ namespace Microsoft.PowerShell.PSReadLine
                         if (startIndex >= 0)
                         {
                             _rl._statusLinePrompt = direction > 0
-                                ? History._forwardISearchPrompt
-                                : History._backwardISearchPrompt;
+                                ? _forwardISearchPrompt
+                                : _backwardISearchPrompt;
                             _renderer.Current = startIndex;
                             _renderer.EmphasisStart = startIndex;
                             _renderer.EmphasisLength = toMatch.Length;
@@ -1008,7 +1008,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 else if (function == PSConsoleReadLine.Abort)
                 {
                     // Abort search
-                    History.GoToEndOfHistory();
+                    GoToEndOfHistory();
                     break;
                 }
                 else
