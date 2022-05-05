@@ -640,7 +640,7 @@ namespace Test
         public void HistorySavedCurrentLine()
         {
             TestSetup(KeyMode.Cmd,
-                      new KeyHandler("F3", PSConsoleReadLine.BeginningOfHistory),
+                      new KeyHandler("F3", (key, arg) => Microsoft.PowerShell.PSReadLine.History.BeginningOfHistory(key, arg)),
                       new KeyHandler("Shift+F3", PSConsoleReadLine.EndOfHistory));
 
             // Mix different history commands to verify that the saved current line and

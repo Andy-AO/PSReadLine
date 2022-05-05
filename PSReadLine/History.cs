@@ -16,6 +16,16 @@ namespace Microsoft.PowerShell.PSReadLine
     {
         //class start
         /// <summary>
+        ///     Move to the first item in the history.
+        /// </summary>
+        public static void BeginningOfHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            _s.SaveCurrentLine();
+            _s.CurrentHistoryIndex = 0;
+            _s.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
+        }
+
+        /// <summary>
         ///     Add a command to the history - typically used to restore
         ///     history from a previous session.
         /// </summary>

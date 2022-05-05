@@ -160,9 +160,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void BeginningOfHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _hs.SaveCurrentLine();
-            _hs.CurrentHistoryIndex = 0;
-            _hs.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
+            History.BeginningOfHistory(key, arg);
         }
 
         /// <summary>
