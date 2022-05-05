@@ -218,6 +218,57 @@ namespace Microsoft.PowerShell.PSReadLine
             Console.Write("\x1b0m");
         }
 
+        internal void HistoryRecall(int direction)
+        {
+            if (RecallHistoryCommandCount == 0 && _renderer.LineIsMultiLine())
+            {
+                _rl.MoveToLine(direction);
+                return;
+            }
+
+            if (_rl.Options.HistoryNoDuplicates && RecallHistoryCommandCount == 0)
+                HashedHistory = new Dictionary<string, int>();
+
+            var count = Math.Abs(direction);
+            direction = direction < 0 ? -1 : +1;
+            var newHistoryIndex = CurrentHistoryIndex;
+            while (count > 0)
+            {
+                newHistoryIndex += direction;
+                if (newHistoryIndex < 0 || newHistoryIndex >= Historys.Count) break;
+
+                if (Historys[newHistoryIndex].FromOtherSession) continue;
+
+                if (_rl.Options.HistoryNoDuplicates)
+                {
+                    var line = Historys[newHistoryIndex].CommandLine;
+                    if (!HashedHistory.TryGetValue(line, out var index))
+                    {
+                        HashedHistory.Add(line, newHistoryIndex);
+                        --count;
+                    }
+                    else if (newHistoryIndex == index)
+                    {
+                        --count;
+                    }
+                }
+                else
+                {
+                    --count;
+                }
+            }
+
+            RecallHistoryCommandCount = RecallHistoryCommandCount + 1;
+            if (newHistoryIndex >= 0 && newHistoryIndex <= Historys.Count)
+            {
+                CurrentHistoryIndex = newHistoryIndex;
+                var moveCursor = RL.InViCommandMode() && !(_rl.Options.HistorySearchCursorMovesToEnd)
+                    ? History.HistoryMoveCursor.ToBeginning
+                    : History.HistoryMoveCursor.ToEnd;
+                UpdateFromHistory(moveCursor);
+            }
+        }
+
         public static AddToHistoryOption GetDefaultAddToHistoryOption(string line)
         {
             if (string.IsNullOrEmpty(line)) return AddToHistoryOption.SkipAdding;

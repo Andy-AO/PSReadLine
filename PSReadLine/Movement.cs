@@ -110,7 +110,7 @@ namespace Microsoft.PowerShell
             }
         }
 
-        private void MoveToLine(int lineOffset)
+        public void MoveToLine(int lineOffset)
         {
             if (InViCommandMode())
                 ViMoveToLine(lineOffset);

@@ -350,7 +350,7 @@ namespace Microsoft.PowerShell
         /// <summary>
         ///     Returns true if in Vi Command mode, otherwise false.
         /// </summary>
-        private static bool InViCommandMode()
+        public static bool InViCommandMode()
         {
             return Singleton._dispatchTable == _viCmdKeyMap;
         }

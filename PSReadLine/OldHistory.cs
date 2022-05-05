@@ -46,9 +46,7 @@ namespace Microsoft.PowerShell
     {
         private static History _hs = History.Singleton;
 
-
-
-        public static bool IsOnLeftSideOfAnAssignment(Ast ast, out Ast rhs)
+       public static bool IsOnLeftSideOfAnAssignment(Ast ast, out Ast rhs)
         {
             var result = false;
             rhs = null;
@@ -167,57 +165,6 @@ namespace Microsoft.PowerShell
             _renderer.Render();
         }
 
-        private void HistoryRecall(int direction)
-        {
-            if (_hs.RecallHistoryCommandCount == 0 && _renderer.LineIsMultiLine())
-            {
-                MoveToLine(direction);
-                return;
-            }
-
-            if (Options.HistoryNoDuplicates && _hs.RecallHistoryCommandCount == 0)
-                _hs.HashedHistory = new Dictionary<string, int>();
-
-            var count = Math.Abs(direction);
-            direction = direction < 0 ? -1 : +1;
-            var newHistoryIndex = _hs.CurrentHistoryIndex;
-            while (count > 0)
-            {
-                newHistoryIndex += direction;
-                if (newHistoryIndex < 0 || newHistoryIndex >= _hs.Historys.Count) break;
-
-                if (_hs.Historys[newHistoryIndex].FromOtherSession) continue;
-
-                if (Options.HistoryNoDuplicates)
-                {
-                    var line = _hs.Historys[newHistoryIndex].CommandLine;
-                    if (!_hs.HashedHistory.TryGetValue(line, out var index))
-                    {
-                        _hs.HashedHistory.Add(line, newHistoryIndex);
-                        --count;
-                    }
-                    else if (newHistoryIndex == index)
-                    {
-                        --count;
-                    }
-                }
-                else
-                {
-                    --count;
-                }
-            }
-
-            _hs.RecallHistoryCommandCount = _hs.RecallHistoryCommandCount + 1;
-            if (newHistoryIndex >= 0 && newHistoryIndex <= _hs.Historys.Count)
-            {
-                _hs.CurrentHistoryIndex = newHistoryIndex;
-                var moveCursor = InViCommandMode() && !Options.HistorySearchCursorMovesToEnd
-                    ? History.HistoryMoveCursor.ToBeginning
-                    : History.HistoryMoveCursor.ToEnd;
-                UpdateFromHistory(moveCursor);
-            }
-        }
-
         /// <summary>
         ///     Replace the current input with the 'previous' item from PSReadLine history.
         /// </summary>
@@ -229,7 +176,7 @@ namespace Microsoft.PowerShell
             if (UpdateListSelection(numericArg)) return;
 
             _hs.SaveCurrentLine();
-            Singleton.HistoryRecall(numericArg);
+            _hs.HistoryRecall(numericArg);
         }
 
         /// <summary>
@@ -241,7 +188,7 @@ namespace Microsoft.PowerShell
             if (UpdateListSelection(numericArg)) return;
 
             _hs.SaveCurrentLine();
-            Singleton.HistoryRecall(numericArg);
+            _hs.HistoryRecall(numericArg);
         }
 
         public void HistorySearch(int direction)
