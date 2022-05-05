@@ -814,7 +814,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViSearchHistoryBackward(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton.SaveCurrentLine();
+            _hs.SaveCurrentLine();
             Singleton.StartSearch(true);
         }
 
@@ -823,7 +823,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SearchForward(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton.SaveCurrentLine();
+            _hs.SaveCurrentLine();
             Singleton.StartSearch(false);
         }
 

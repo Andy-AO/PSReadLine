@@ -11,7 +11,7 @@ namespace Microsoft.PowerShell.PSReadLine
     public class HistoryItem
     {
         internal int _editGroupStart;
-        internal List<PSConsoleReadLine.EditItem> _edits;
+        internal List<EditItem> _edits;
 
         internal bool _saved;
         internal bool _sensitive;

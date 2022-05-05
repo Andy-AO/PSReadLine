@@ -61,8 +61,8 @@ namespace Microsoft.PowerShell
         internal ManualResetEvent _closingWaitHandle;
 
         private bool _delayedOneTimeInitCompleted;
-        private int _editGroupStart;
-        private List<EditItem> _edits;
+        public int _editGroupStart;
+        public List<EditItem> _edits;
         private EngineIntrinsics _engineIntrinsics;
         private Encoding _initialOutputEncoding;
         private bool _inputAccepted;
@@ -77,7 +77,7 @@ namespace Microsoft.PowerShell
         internal bool _statusIsErrorMessage;
         internal string _statusLinePrompt;
         private WaitHandle[] _threadProcWaitHandles;
-        private int _undoEditIndex;
+        public int _undoEditIndex;
 
         static PSConsoleReadLine()
         {
@@ -137,7 +137,7 @@ namespace Microsoft.PowerShell
             }
         }
 
-        private Ast RLAst => Parser.ParseInput(buffer.ToString(), out _, out _);
+        public Ast RLAst => Parser.ParseInput(buffer.ToString(), out _, out _);
 
         public ParseError[] ParseErrors
         {
@@ -440,7 +440,7 @@ namespace Microsoft.PowerShell
             {
                 // ReadLine was cancelled. Save the current line to be restored next time ReadLine
                 // is called, clear the buffer and throw an exception so we can return an empty string.
-                _s.SaveCurrentLine();
+                _hs.SaveCurrentLine();
                 _hs.GetNextHistoryIndex = _hs.Historys.Count;
                 _renderer.Current = 0;
                 _s.buffer.Clear();
@@ -637,7 +637,7 @@ namespace Microsoft.PowerShell
                 if (_inputAccepted)
                 {
                     _acceptedCommandLine = buffer.ToString();
-                    MaybeAddToHistory(_acceptedCommandLine, _edits, _undoEditIndex);
+                    _hs.MaybeAddToHistory(_acceptedCommandLine, _edits, _undoEditIndex, false, false);
 
                     _Prediction.OnCommandLineAccepted(_acceptedCommandLine);
                     return _acceptedCommandLine;
@@ -684,7 +684,7 @@ namespace Microsoft.PowerShell
                 {
                     if (_hs.AnyHistoryCommandCount > 0)
                     {
-                        ClearSavedCurrentLine();
+                        _hs.ClearSavedCurrentLine();
                         _hs.HashedHistory = null;
                         _hs.CurrentHistoryIndex = _hs.Historys.Count;
                     }

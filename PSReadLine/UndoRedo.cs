@@ -140,16 +140,6 @@ namespace Microsoft.PowerShell
             }
         }
 
-        internal abstract class EditItem
-        {
-            public Action<ConsoleKeyInfo?, object> _instigator;
-            public object _instigatorArg;
-            public virtual bool Replaceable { get; set; }
-
-            public abstract void Undo();
-            public abstract void Redo();
-        }
-
         [DebuggerDisplay("Insert '{_insertedCharacter}' ({_insertStartPosition})")]
         private class EditItemInsertChar : EditItem
         {
@@ -182,7 +172,7 @@ namespace Microsoft.PowerShell
         }
 
         [DebuggerDisplay("Insert '{_insertedString}' ({_insertStartPosition})")]
-        private class EditItemInsertString : EditItem
+        public class EditItemInsertString : EditItem
         {
             // The string inserted tells us the length to delete on undo.
             // The contents of the string are only needed for redo.

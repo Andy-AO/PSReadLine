@@ -170,7 +170,7 @@ namespace Microsoft.PowerShell
             : EditMode.Emacs;
 
         public static readonly Func<string, object> DefaultAddToHistoryHandler =
-            s => PSConsoleReadLine.GetDefaultAddToHistoryOption(s);
+            s => History.GetDefaultAddToHistoryOption(s);
 
         private static Dictionary<string, Action<PSConsoleReadLineOptions, object>> ColorSetters;
         internal string _commandColor;
