@@ -905,7 +905,7 @@ namespace Microsoft.PowerShell
                     using (var ps = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace))
                     {
                         ps.AddCommand("Microsoft.PowerShell.Core\\Get-History");
-                        foreach (var historyInfo in ps.Invoke<HistoryInfo>()) AddToHistory(historyInfo.CommandLine);
+                        foreach (var historyInfo in ps.Invoke<HistoryInfo>()) History.AddToHistory(historyInfo.CommandLine);
 
                         readHistoryFile = false;
                     }

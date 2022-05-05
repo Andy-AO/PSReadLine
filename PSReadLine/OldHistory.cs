@@ -47,17 +47,6 @@ namespace Microsoft.PowerShell
         private static History _hs = History.Singleton;
 
         /// <summary>
-        ///     Add a command to the history - typically used to restore
-        ///     history from a previous session.
-        /// </summary>
-        public static void AddToHistory(string command)
-        {
-            command = command.Replace("\r\n", "\n");
-            var editItems = new List<EditItem> {EditItemInsertString.Create(command, 0)};
-            _hs.MaybeAddToHistory(command, editItems, 1, false, false);
-        }
-
-        /// <summary>
         ///     Clears history in PSReadLine.  This does not affect PowerShell history.
         /// </summary>
         public static void ClearHistory(ConsoleKeyInfo? key = null, object arg = null)

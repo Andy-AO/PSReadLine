@@ -15,7 +15,7 @@ namespace Test
             PSConsoleReadLine.ClearHistory();
             foreach (var item in historyItems)
             {
-                PSConsoleReadLine.AddToHistory(item);
+                Microsoft.PowerShell.PSReadLine.History.AddToHistory(item);
             }
         }
 
@@ -69,7 +69,7 @@ namespace Test
                 file.WriteLine("cd Downloads");
             }
 
-            PSConsoleReadLine.AddToHistory("cd Documents");
+            Microsoft.PowerShell.PSReadLine.History.AddToHistory("cd Documents");
 
             string[] expectedSavedLines = new[] { "gcm help", "dir ~", "cd Downloads", "cd Documents" };
             text = File.ReadAllLines(historySavingFile);

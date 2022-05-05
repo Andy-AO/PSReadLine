@@ -14,8 +14,18 @@ namespace Microsoft.PowerShell.PSReadLine
 {
     public class History
     {
-
         //class start
+        /// <summary>
+        ///     Add a command to the history - typically used to restore
+        ///     history from a previous session.
+        /// </summary>
+        public static void AddToHistory(string command)
+        {
+            command = command.Replace("\r\n", "\n");
+            var editItems = new List<EditItem> {RL.EditItemInsertString.Create(command, 0)};
+            _s.MaybeAddToHistory(command, editItems, 1, false, false);
+        }
+
         public static ExpressionAst GetArgumentForParameter(CommandParameterAst param)
         {
             if (param.Argument is not null) return param.Argument;
