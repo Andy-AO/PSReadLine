@@ -171,7 +171,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ForwardSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _hs.InteractiveHistorySearch(+1);
+            History._hser.InteractiveHistorySearch(+1);
         }
 
 

@@ -151,7 +151,7 @@ namespace Microsoft.PowerShell.PSReadLine
         /// </summary>
         public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton.InteractiveHistorySearch(-1);
+            _hser.InteractiveHistorySearch(-1);
         }
 
         /// <summary>
@@ -833,24 +833,6 @@ namespace Microsoft.PowerShell.PSReadLine
 
             using var _ = _rl._Prediction.DisableScoped();
             _renderer.Render();
-        }
-
-        public void InteractiveHistorySearch(int direction)
-        {
-            using var _ = _rl._Prediction.DisableScoped();
-            SaveCurrentLine();
-
-            // Add a status line that will contain the search prompt and string
-            _rl._statusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
-            _rl._statusBuffer.Append("_");
-
-            _renderer.Render(); // Render prompt
-            _hser.InteractiveHistorySearchLoop(direction);
-            _renderer.EmphasisStart = -1;
-            _renderer.EmphasisLength = 0;
-
-            // Remove our status line, this will render
-            _rl.ClearStatusMessage(true);
         }
 
         /// <summary>

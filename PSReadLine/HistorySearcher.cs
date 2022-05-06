@@ -21,6 +21,23 @@ namespace Microsoft.PowerShell.PSReadLine
         private const string _failedBackwardISearchPrompt = "failed-bck-i-search: ";
 
         //start
+        public void InteractiveHistorySearch(int direction)
+        {
+            using var _ = _rl._Prediction.DisableScoped();
+            _hs.SaveCurrentLine();
+
+            // Add a status line that will contain the search prompt and string
+            _rl._statusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
+            _rl._statusBuffer.Append("_");
+
+            _renderer.Render(); // Render prompt
+            InteractiveHistorySearchLoop(direction);
+            _renderer.EmphasisStart = -1;
+            _renderer.EmphasisLength = 0;
+
+            // Remove our status line, this will render
+            _rl.ClearStatusMessage(true);
+        }
         internal void InteractiveHistorySearchLoop(int direction)
         {
             searchFromPoint = _hs.CurrentHistoryIndex;
@@ -73,7 +90,6 @@ namespace Microsoft.PowerShell.PSReadLine
                 }
             }
         }
-
         private int HandleBackward(int direction)
         {
             if (toMatch.Length > 0)
@@ -116,7 +132,6 @@ namespace Microsoft.PowerShell.PSReadLine
 
             return searchFromPoint;
         }
-
         private void UpdateHistory(int direction)
         {
             var toMatch = this.toMatch.ToString();
@@ -161,8 +176,6 @@ namespace Microsoft.PowerShell.PSReadLine
                 direction > 0 ? _failedForwardISearchPrompt : _failedBackwardISearchPrompt;
             _renderer.Render();
         }
-
-
         private bool HandleCharOfSearchKeyword(int direction)
         {
             var toAppend = key.KeyChar;
@@ -192,11 +205,12 @@ namespace Microsoft.PowerShell.PSReadLine
             searchPositions.Push(_hs.CurrentHistoryIndex);
             return false;
         }
-
         private static void GoToEndOfHistory()
         {
             _hs.CurrentHistoryIndex = _hs.Historys.Count;
             _hs.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
         }
+
+
     }
 }
