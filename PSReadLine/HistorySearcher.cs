@@ -42,18 +42,18 @@ namespace Microsoft.PowerShell.PSReadLine
 
                 if (function == History.ReverseSearchHistory)
                 {
-                    UpdateHistory_IHS(-1);
+                    UpdateHistory(-1);
                 }
                 else if (function == PSConsoleReadLine.ForwardSearchHistory)
                 {
-                    UpdateHistory_IHS(+1);
+                    UpdateHistory(+1);
                 }
                 else if (function == PSConsoleReadLine.BackwardDeleteChar
                          || key == Keys.Backspace
                          || key == Keys.CtrlH)
                 {
                     // TODO 这些函数列表之间有很大的相似之处，这个怎么办呢？可不可以改成类？这样就可以直接在 private 域中使用这些变量，省得传递来传递去，不是吗？✔
-                    HandleBackward_IHS(direction);
+                    HandleBackward(direction);
                 }
                 else if (key == Keys.Escape)
                 {
@@ -63,18 +63,18 @@ namespace Microsoft.PowerShell.PSReadLine
                 else if (function == PSConsoleReadLine.Abort)
                 {
                     // Abort search
-                    GoToEndOfHistory_IHS();
+                    GoToEndOfHistory();
                     break;
                 }
                 else
                 {
-                    if (HandleCharOfSearchKeyword_IHS(direction))
+                    if (HandleCharOfSearchKeyword(direction))
                         break;
                 }
             }
         }
 
-        private int HandleBackward_IHS(int direction)
+        private int HandleBackward(int direction)
         {
             if (toMatch.Length > 0)
             {
@@ -117,7 +117,7 @@ namespace Microsoft.PowerShell.PSReadLine
             return searchFromPoint;
         }
 
-        private void UpdateHistory_IHS(int direction)
+        private void UpdateHistory(int direction)
         {
             var toMatch = this.toMatch.ToString();
             searchFromPoint += direction;
@@ -163,7 +163,7 @@ namespace Microsoft.PowerShell.PSReadLine
         }
 
 
-        private bool HandleCharOfSearchKeyword_IHS(int direction)
+        private bool HandleCharOfSearchKeyword(int direction)
         {
             var toAppend = key.KeyChar;
             if (char.IsControl(toAppend))
@@ -179,7 +179,7 @@ namespace Microsoft.PowerShell.PSReadLine
             var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
             if (startIndex < 0)
             {
-                UpdateHistory_IHS(direction);
+                UpdateHistory(direction);
             }
             else
             {
@@ -193,7 +193,7 @@ namespace Microsoft.PowerShell.PSReadLine
             return false;
         }
 
-        private static void GoToEndOfHistory_IHS()
+        private static void GoToEndOfHistory()
         {
             _hs.CurrentHistoryIndex = _hs.Historys.Count;
             _hs.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
