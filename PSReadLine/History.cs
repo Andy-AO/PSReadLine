@@ -228,7 +228,7 @@ namespace Microsoft.PowerShell.PSReadLine
         public static void EndOfHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
             Singleton.SaveCurrentLine();
-            GoToEndOfHistory();
+            GoToEndOfHistory_IHS();
         }
 
         /// <summary>
@@ -853,7 +853,7 @@ namespace Microsoft.PowerShell.PSReadLine
             _rl.ClearStatusMessage(true);
         }
 
-        private void UpdateHistoryDuringInteractiveSearch(string toMatch, int direction, ref int searchFromPoint)
+        private void UpdateHistory_IHS(string toMatch, int direction, ref int searchFromPoint)
         {
             searchFromPoint += direction;
             for (; searchFromPoint >= 0 && searchFromPoint < Historys.Count; searchFromPoint += direction)
@@ -909,60 +909,27 @@ namespace Microsoft.PowerShell.PSReadLine
             while (true)
             {
                 // TODO 在这里开始发挥 UI 的职责，感觉可以将这个类直接拆成两部分，历史记录和历史记录搜索
-                
+                // TODO searchFromPoint 耦合程度太高，是否应该消除？
+                // TODO ref 和 out 的区别是什么？
+                // TODO searchPositions 的作用是什么，为什么 UpdateHistoryDuringInteractiveSearch 和  UpdateHistoryDuringInteractiveSearch 不需要？
                 var key = PSConsoleReadLine.ReadKey();
                 _rl._dispatchTable.TryGetValue(key, out var handler);
                 var function = handler?.Action;
 
                 if (function == ReverseSearchHistory)
                 {
-                    UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), -1, ref searchFromPoint);
+                    UpdateHistory_IHS(toMatch.ToString(), -1, ref searchFromPoint);
                 }
                 else if (function == PSConsoleReadLine.ForwardSearchHistory)
                 {
-                    UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), +1, ref searchFromPoint);
+                    UpdateHistory_IHS(toMatch.ToString(), +1, ref searchFromPoint);
                 }
                 else if (function == BackwardDeleteChar
                          || key == Keys.Backspace
                          || key == Keys.CtrlH)
                 {
-                    if (toMatch.Length > 0)
-                    {
-                        toMatch.Remove(toMatch.Length - 1, 1);
-                        _rl._statusBuffer.Remove(_rl._statusBuffer.Length - 2, 1);
-                        searchPositions.Pop();
-                        searchFromPoint = CurrentHistoryIndex = searchPositions.Peek();
-                        var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                            ? HistoryMoveCursor.ToEnd
-                            : HistoryMoveCursor.DontMove;
-                        UpdateFromHistory(moveCursor);
-
-                        if (HashedHistory != null)
-                            // Remove any entries with index < searchFromPoint because
-                            // we are starting the search from this new index - we always
-                            // want to find the latest entry that matches the search string
-                            foreach (var pair in HashedHistory.ToArray())
-                                if (pair.Value < searchFromPoint)
-                                    HashedHistory.Remove(pair.Key);
-
-                        // Prompt may need to have 'failed-' removed.
-                        var toMatchStr = toMatch.ToString();
-                        var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
-                        if (startIndex >= 0)
-                        {
-                            _rl._statusLinePrompt = direction > 0
-                                ? _forwardISearchPrompt
-                                : _backwardISearchPrompt;
-                            _renderer.Current = startIndex;
-                            _renderer.EmphasisStart = startIndex;
-                            _renderer.EmphasisLength = toMatch.Length;
-                            _renderer.Render();
-                        }
-                    }
-                    else
-                    {
-                        PSConsoleReadLine.Ding();
-                    }
+                    // TODO 这些函数列表之间有很大的相似之处，这个怎么办呢？可不可以改成类？这样就可以直接在 private 域中使用这些变量，省得传递来传递去，不是吗？✔
+                    searchFromPoint = HandleBackward_IHS(toMatch, direction, searchFromPoint, searchPositions);
                 }
                 else if (key == Keys.Escape)
                 {
@@ -972,22 +939,65 @@ namespace Microsoft.PowerShell.PSReadLine
                 else if (function == PSConsoleReadLine.Abort)
                 {
                     // Abort search
-                    GoToEndOfHistory();
+                    GoToEndOfHistory_IHS();
                     break;
                 }
                 else
                 {
-                    HandleCharOfSearchKeyword(direction, key, toMatch, searchPositions, ref searchFromPoint);
+                    if(HandleCharOfSearchKeyword_IHS(key, toMatch, direction, ref searchFromPoint, searchPositions)) break;
                 }
             }
         }
 
-        private bool HandleCharOfSearchKeyword(int direction, PSKeyInfo key, StringBuilder toMatch,
-            Stack<int> searchPositions,
-            ref int searchFromPoint)
+        private int HandleBackward_IHS(StringBuilder toMatch, int direction, int searchFromPoint,
+            Stack<int> searchPositions)
         {
-            // HandleCharOfSearchKeyword
+            if (toMatch.Length > 0)
+            {
+                toMatch.Remove(toMatch.Length - 1, 1);
+                _rl._statusBuffer.Remove(_rl._statusBuffer.Length - 2, 1);
+                searchPositions.Pop();
+                searchFromPoint = CurrentHistoryIndex = searchPositions.Peek();
+                var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
+                    ? HistoryMoveCursor.ToEnd
+                    : HistoryMoveCursor.DontMove;
+                UpdateFromHistory(moveCursor);
 
+                if (HashedHistory != null)
+                    // Remove any entries with index < searchFromPoint because
+                    // we are starting the search from this new index - we always
+                    // want to find the latest entry that matches the search string
+                    foreach (var pair in HashedHistory.ToArray())
+                        if (pair.Value < searchFromPoint)
+                            HashedHistory.Remove(pair.Key);
+
+                // Prompt may need to have 'failed-' removed.
+                var toMatchStr = toMatch.ToString();
+                var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
+                if (startIndex >= 0)
+                {
+                    _rl._statusLinePrompt = direction > 0
+                        ? _forwardISearchPrompt
+                        : _backwardISearchPrompt;
+                    _renderer.Current = startIndex;
+                    _renderer.EmphasisStart = startIndex;
+                    _renderer.EmphasisLength = toMatch.Length;
+                    _renderer.Render();
+                }
+            }
+            else
+            {
+                PSConsoleReadLine.Ding();
+            }
+
+            return searchFromPoint;
+        }
+
+        private bool HandleCharOfSearchKeyword_IHS(PSKeyInfo key, StringBuilder toMatch,
+            int direction,
+            ref int searchFromPoint,
+            Stack<int> searchPositions)
+        {
             var toAppend = key.KeyChar;
             if (char.IsControl(toAppend))
             {
@@ -1002,7 +1012,7 @@ namespace Microsoft.PowerShell.PSReadLine
             var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
             if (startIndex < 0)
             {
-                UpdateHistoryDuringInteractiveSearch(toMatchStr, direction, ref searchFromPoint);
+                UpdateHistory_IHS(toMatchStr, direction, ref searchFromPoint);
             }
             else
             {
@@ -1028,7 +1038,7 @@ namespace Microsoft.PowerShell.PSReadLine
             Singleton.HistorySearch(numericArg);
         }
 
-        private static void GoToEndOfHistory()
+        private static void GoToEndOfHistory_IHS()
         {
             Singleton.CurrentHistoryIndex = Singleton.Historys.Count;
             Singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);
