@@ -28,8 +28,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
         private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
         private static readonly Renderer _renderer = Renderer.Singleton;
-
-        public static HistorySearcher _hser { get; } = HistorySearcher.Singleton;
+        public static HistorySearcher _hser { get; } = new();
 
         // When cycling through history, the current line (not yet added to history)
         // is saved here so it can be restored.

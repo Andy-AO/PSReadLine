@@ -7,7 +7,6 @@ namespace Microsoft.PowerShell.PSReadLine
 {
     public class HistorySearcher
     {
-        public static HistorySearcher Singleton { get; } = new();
         private Stack<int> searchPositions { get; set; }
         private int searchFromPoint { get; set; }
         private StringBuilder toMatch { get; set; }
