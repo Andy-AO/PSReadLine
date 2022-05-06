@@ -26,9 +26,10 @@ namespace Microsoft.PowerShell.PSReadLine
         private const string _failedForwardISearchPrompt = "failed-fwd-i-search: ";
         private const string _failedBackwardISearchPrompt = "failed-bck-i-search: ";
 
-
         private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
         private static readonly Renderer _renderer = Renderer.Singleton;
+
+        public static HistorySearcher _hser { get; } = HistorySearcher.Singleton;
 
         // When cycling through history, the current line (not yet added to history)
         // is saved here so it can be restored.
@@ -845,7 +846,7 @@ namespace Microsoft.PowerShell.PSReadLine
             _rl._statusBuffer.Append("_");
 
             _renderer.Render(); // Render prompt
-            InteractiveHistorySearchLoop(direction);
+            _hser.InteractiveHistorySearchLoop(direction);
             _renderer.EmphasisStart = -1;
             _renderer.EmphasisLength = 0;
 
@@ -944,7 +945,8 @@ namespace Microsoft.PowerShell.PSReadLine
                 }
                 else
                 {
-                    if(HandleCharOfSearchKeyword_IHS(key, toMatch, direction, ref searchFromPoint, searchPositions)) break;
+                    if (HandleCharOfSearchKeyword_IHS(key, toMatch, direction, ref searchFromPoint, searchPositions))
+                        break;
                 }
             }
         }
