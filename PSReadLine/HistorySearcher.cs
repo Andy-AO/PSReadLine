@@ -44,7 +44,7 @@ namespace Microsoft.PowerShell.PSReadLine
             _hs.SaveCurrentLine();
 
             // Add a status line that will contain the search prompt and string
-            _renderer.StatusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
+            _renderer.StatusLinePrompt_______Old = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
             _renderer.StatusBuffer.Append("_");
 
             _renderer.Render(); // Render prompt
@@ -133,7 +133,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
                 if (startIndex >= 0)
                 {
-                    _renderer.StatusLinePrompt = direction > 0
+                    _renderer.StatusLinePrompt_______Old = direction > 0
                         ? _forwardISearchPrompt
                         : _backwardISearchPrompt;
                     _renderer.Current = startIndex;
@@ -167,7 +167,7 @@ namespace Microsoft.PowerShell.PSReadLine
                         else if (index != searchFromPoint) continue;
                     }
 
-                    _renderer.StatusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
+                    _renderer.StatusLinePrompt_______Old = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
                     _renderer.Current = startIndex;
                     _renderer.EmphasisStart = startIndex;
                     _renderer.EmphasisLength = toMatch.Length;
@@ -189,7 +189,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
             _renderer.EmphasisStart = -1;
             _renderer.EmphasisLength = 0;
-            _renderer.StatusLinePrompt = direction > 0 ? _failedForwardISearchPrompt : _failedBackwardISearchPrompt;
+            _renderer.StatusLinePrompt_______Old = direction > 0 ? _failedForwardISearchPrompt : _failedBackwardISearchPrompt;
             _renderer.Render();
         }
 

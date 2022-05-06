@@ -859,7 +859,7 @@ namespace Microsoft.PowerShell
         /// <param name="backward">True for searching backward in the history.</param>
         private void StartSearch(bool backward)
         {
-            _renderer.StatusLinePrompt = "find: ";
+            _renderer.StatusLinePrompt_______Old = "find: ";
             var argBuffer = _renderer.StatusBuffer;
             _renderer.Render(); // Render prompt
 
@@ -893,7 +893,7 @@ namespace Microsoft.PowerShell
 
             // Remove our status line
             argBuffer.Clear();
-            _renderer.StatusLinePrompt = null;
+            _renderer.StatusLinePrompt_______Old = null;
             _renderer.Render(); // Render prompt
         }
 
@@ -980,7 +980,7 @@ namespace Microsoft.PowerShell
             {
                 var argBuffer = _renderer.StatusBuffer;
                 argBuffer.Clear();
-                _renderer.StatusLinePrompt = "digit-argument: ";
+                _renderer.StatusLinePrompt_______Old = "digit-argument: ";
                 while (IsNumeric(secondKey))
                 {
                     argBuffer.Append(secondKey.KeyChar);
@@ -1028,7 +1028,7 @@ namespace Microsoft.PowerShell
             }
 
             var sawDigit = false;
-            _renderer.StatusLinePrompt = "digit-argument: ";
+            _renderer.StatusLinePrompt_______Old = "digit-argument: ";
             var argBuffer = _renderer.StatusBuffer;
             argBuffer.Append(key.Value.KeyChar);
             if (key.Value.KeyChar == '-')

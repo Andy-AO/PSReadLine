@@ -245,7 +245,7 @@ namespace Microsoft.PowerShell
         public void ClearStatusMessage(bool render)
         {
             _renderer.StatusBuffer.Clear();
-            _renderer.StatusLinePrompt = null;
+            _renderer.StatusLinePrompt_______Old = null;
             _statusIsErrorMessage = false;
             if (render) _renderer.RenderWithPredictionQueryPaused();
         }
@@ -979,7 +979,7 @@ namespace Microsoft.PowerShell
             }
 
             var sawDigit = false;
-            _renderer.StatusLinePrompt = "digit-argument: ";
+            _renderer.StatusLinePrompt_______Old = "digit-argument: ";
             var argBuffer = _renderer.StatusBuffer;
             argBuffer.Append(key.Value.KeyChar);
             if (key.Value.KeyChar == '-')
