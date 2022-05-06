@@ -225,7 +225,7 @@ namespace Microsoft.PowerShell
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 _dispatchTable.Add(Keys.CtrlSpace, MakeKeyHandler(MenuComplete, "MenuComplete"));
-                _dispatchTable.Add(Keys.AltF7, MakeKeyHandler((key, arg) => History.ClearHistory(key,arg), "ClearHistory"));
+                _dispatchTable.Add(Keys.AltF7, MakeKeyHandler(History.ClearHistory, "ClearHistory"));
                 _dispatchTable.Add(Keys.CtrlDelete, MakeKeyHandler(KillWord, "KillWord"));
                 _dispatchTable.Add(Keys.CtrlEnd, MakeKeyHandler(ForwardDeleteInput, "ForwardDeleteInput"));
                 _dispatchTable.Add(Keys.CtrlH, MakeKeyHandler(BackwardDeleteChar, "BackwardDeleteChar"));
@@ -233,7 +233,7 @@ namespace Microsoft.PowerShell
                 // PageUp/PageDown and CtrlPageUp/CtrlPageDown bindings are supported on Windows only because they depend on the
                 // API 'Console.SetWindowPosition', which throws 'PlatformNotSupportedException' on unix platforms.
                 _dispatchTable.Add(Keys.PageUp,
-                    MakeKeyHandler((key, arg) => Renderer.ScrollDisplayUp(key, arg), "ScrollDisplayUp"));
+                    MakeKeyHandler(Renderer.ScrollDisplayUp, "ScrollDisplayUp"));
                 _dispatchTable.Add(Keys.PageDown, MakeKeyHandler(Renderer.ScrollDisplayDown, "ScrollDisplayDown"));
                 _dispatchTable.Add(Keys.CtrlPageUp,
                     MakeKeyHandler(Renderer.ScrollDisplayUpLine, "ScrollDisplayUpLine"));

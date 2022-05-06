@@ -908,9 +908,12 @@ namespace Microsoft.PowerShell.PSReadLine
             var toMatch = new StringBuilder(64);
             while (true)
             {
+                // TODO 在这里开始发挥 UI 的职责，感觉可以将这个类直接拆成两部分，历史记录和历史记录搜索
+                
                 var key = PSConsoleReadLine.ReadKey();
                 _rl._dispatchTable.TryGetValue(key, out var handler);
                 var function = handler?.Action;
+
                 if (function == ReverseSearchHistory)
                 {
                     UpdateHistoryDuringInteractiveSearch(toMatch.ToString(), -1, ref searchFromPoint);
@@ -974,33 +977,43 @@ namespace Microsoft.PowerShell.PSReadLine
                 }
                 else
                 {
-                    var toAppend = key.KeyChar;
-                    if (char.IsControl(toAppend))
-                    {
-                        _rl.PrependQueuedKeys(key);
-                        break;
-                    }
-
-                    toMatch.Append(toAppend);
-                    _rl._statusBuffer.Insert(_rl._statusBuffer.Length - 1, toAppend);
-
-                    var toMatchStr = toMatch.ToString();
-                    var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
-                    if (startIndex < 0)
-                    {
-                        UpdateHistoryDuringInteractiveSearch(toMatchStr, direction, ref searchFromPoint);
-                    }
-                    else
-                    {
-                        _renderer.Current = startIndex;
-                        _renderer.EmphasisStart = startIndex;
-                        _renderer.EmphasisLength = toMatch.Length;
-                        _renderer.Render();
-                    }
-
-                    searchPositions.Push(CurrentHistoryIndex);
+                    HandleCharOfSearchKeyword(direction, key, toMatch, searchPositions, ref searchFromPoint);
                 }
             }
+        }
+
+        private bool HandleCharOfSearchKeyword(int direction, PSKeyInfo key, StringBuilder toMatch,
+            Stack<int> searchPositions,
+            ref int searchFromPoint)
+        {
+            // HandleCharOfSearchKeyword
+
+            var toAppend = key.KeyChar;
+            if (char.IsControl(toAppend))
+            {
+                _rl.PrependQueuedKeys(key);
+                return true;
+            }
+
+            toMatch.Append(toAppend);
+            _rl._statusBuffer.Insert(_rl._statusBuffer.Length - 1, toAppend);
+
+            var toMatchStr = toMatch.ToString();
+            var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
+            if (startIndex < 0)
+            {
+                UpdateHistoryDuringInteractiveSearch(toMatchStr, direction, ref searchFromPoint);
+            }
+            else
+            {
+                _renderer.Current = startIndex;
+                _renderer.EmphasisStart = startIndex;
+                _renderer.EmphasisLength = toMatch.Length;
+                _renderer.Render();
+            }
+
+            searchPositions.Push(CurrentHistoryIndex);
+            return false;
         }
 
         /// <summary>
