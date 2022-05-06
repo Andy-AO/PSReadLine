@@ -23,6 +23,12 @@ namespace Microsoft.PowerShell
         internal List<StringBuilder> ConsoleBufferLines { get; } = new(1)
             {new(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
 
+        internal string StatusLinePrompt
+        {
+            get => _statusLinePrompt;
+            set => _statusLinePrompt = value;
+        }
+
         internal int EmphasisLength { get; set; }
 
         internal RenderData PreviousRender { get; set; }
@@ -43,9 +49,12 @@ namespace Microsoft.PowerShell
         };
 
         internal static string[] SpacesArr { get; } = new string[80];
+
         internal readonly IConsole _console = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? PlatformWindows.OneTimeInit(_rl)
             : new VirtualTerminal();
+
+        private string _statusLinePrompt;
         internal static Renderer Singleton => _s;
 
         internal void RenderWithPredictionQueryPaused()
@@ -94,14 +103,16 @@ namespace Microsoft.PowerShell
             return false;
         }
 
+        internal StringBuilder StatusBuffer { get; } = new(256);
+
         internal bool PromptYesOrNo(string s)
         {
-            _rl._statusLinePrompt = s;
+            StatusLinePrompt = s;
             Render();
 
             var key = RL.ReadKey();
 
-            _rl._statusLinePrompt = null;
+            StatusLinePrompt = null;
             Render();
             return key.KeyStr.Equals("y", StringComparison.OrdinalIgnoreCase);
         }
@@ -399,7 +410,7 @@ namespace Microsoft.PowerShell
             _rl._Prediction.ActiveView.RenderSuggestion(ConsoleBufferLines, ref currentLogicalLine);
             activeColor = string.Empty;
 
-            if (_rl._statusLinePrompt != null)
+            if (StatusLinePrompt != null)
             {
                 currentLogicalLine += 1;
                 if (currentLogicalLine > ConsoleBufferLines.Count - 1)
@@ -408,9 +419,9 @@ namespace Microsoft.PowerShell
                 color = _rl._statusIsErrorMessage ? _rl.Options._errorColor : defaultColor;
                 UpdateColorsIfNecessary(color);
 
-                foreach (var c in _rl._statusLinePrompt) ConsoleBufferLines[currentLogicalLine].Append(c);
+                foreach (var c in StatusLinePrompt) ConsoleBufferLines[currentLogicalLine].Append(c);
 
-                ConsoleBufferLines[currentLogicalLine].Append(_rl._statusBuffer);
+                ConsoleBufferLines[currentLogicalLine].Append(StatusBuffer);
             }
 
             return currentLogicalLine + 1;

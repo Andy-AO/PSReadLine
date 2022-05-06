@@ -5,6 +5,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
@@ -858,8 +859,8 @@ namespace Microsoft.PowerShell
         /// <param name="backward">True for searching backward in the history.</param>
         private void StartSearch(bool backward)
         {
-            _statusLinePrompt = "find: ";
-            var argBuffer = _statusBuffer;
+            _renderer.StatusLinePrompt = "find: ";
+            var argBuffer = _renderer.StatusBuffer;
             _renderer.Render(); // Render prompt
 
             while (true)
@@ -892,7 +893,7 @@ namespace Microsoft.PowerShell
 
             // Remove our status line
             argBuffer.Clear();
-            _statusLinePrompt = null;
+            _renderer.StatusLinePrompt = null;
             _renderer.Render(); // Render prompt
         }
 
@@ -977,9 +978,9 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                var argBuffer = Singleton._statusBuffer;
+                var argBuffer = _renderer.StatusBuffer;
                 argBuffer.Clear();
-                Singleton._statusLinePrompt = "digit-argument: ";
+                _renderer.StatusLinePrompt = "digit-argument: ";
                 while (IsNumeric(secondKey))
                 {
                     argBuffer.Append(secondKey.KeyChar);
@@ -1027,8 +1028,8 @@ namespace Microsoft.PowerShell
             }
 
             var sawDigit = false;
-            Singleton._statusLinePrompt = "digit-argument: ";
-            var argBuffer = Singleton._statusBuffer;
+            _renderer.StatusLinePrompt = "digit-argument: ";
+            var argBuffer = _renderer.StatusBuffer;
             argBuffer.Append(key.Value.KeyChar);
             if (key.Value.KeyChar == '-')
                 argBuffer.Append('1');

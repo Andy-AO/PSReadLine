@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
+using System.Text;
 using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
@@ -285,8 +286,8 @@ namespace Microsoft.PowerShell
                         Insert('\n');
                     }
 
-                    _statusLinePrompt = "";
-                    _statusBuffer.Append(errorMessage);
+                    _renderer.StatusLinePrompt = "";
+                    _renderer.StatusBuffer.Append(errorMessage);
                     _statusIsErrorMessage = true;
                     _renderer.Render();
                     return false;

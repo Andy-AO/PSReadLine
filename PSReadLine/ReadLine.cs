@@ -52,7 +52,6 @@ namespace Microsoft.PowerShell
         private static PSConsoleReadLine _s;
         private static readonly Renderer _renderer = Renderer.Singleton;
         internal readonly Queue<PSKeyInfo> _queuedKeys;
-        internal readonly StringBuilder _statusBuffer;
 
         public readonly StringBuilder buffer;
         private string _acceptedCommandLine;
@@ -76,7 +75,6 @@ namespace Microsoft.PowerShell
         private WaitHandle[] _requestKeyWaitHandles;
         private bool _skipOutputEncodingChange;
         internal bool _statusIsErrorMessage;
-        internal string _statusLinePrompt;
         private WaitHandle[] _threadProcWaitHandles;
         public int _undoEditIndex;
 
@@ -90,7 +88,6 @@ namespace Microsoft.PowerShell
             _mockableMethods = this;
             _charMap = new DotNetCharMap();
             buffer = new StringBuilder(8 * 1024);
-            _statusBuffer = new StringBuilder(256);
             _queuedKeys = new Queue<PSKeyInfo>();
             string hostName = null;
             // This works mostly by luck - we're not doing anything to guarantee the constructor for our
@@ -247,8 +244,8 @@ namespace Microsoft.PowerShell
 
         public void ClearStatusMessage(bool render)
         {
-            _statusBuffer.Clear();
-            _statusLinePrompt = null;
+            _renderer.StatusBuffer.Clear();
+            _renderer.StatusLinePrompt = null;
             _statusIsErrorMessage = false;
             if (render) _renderer.RenderWithPredictionQueryPaused();
         }
@@ -982,8 +979,8 @@ namespace Microsoft.PowerShell
             }
 
             var sawDigit = false;
-            _s._statusLinePrompt = "digit-argument: ";
-            var argBuffer = _s._statusBuffer;
+            _renderer.StatusLinePrompt = "digit-argument: ";
+            var argBuffer = _renderer.StatusBuffer;
             argBuffer.Append(key.Value.KeyChar);
             if (key.Value.KeyChar == '-')
                 argBuffer.Append('1');
