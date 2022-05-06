@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace Microsoft.PowerShell
 {
-    internal class PSKeyInfo : IEquatable<PSKeyInfo>
+    public class PSKeyInfo : IEquatable<PSKeyInfo>
     {
         private static readonly ThreadLocal<char[]> toUnicodeBuffer = new(() => new char[2]);
         private static readonly ThreadLocal<byte[]> toUnicodeStateBuffer = new(() => new byte[256]);
