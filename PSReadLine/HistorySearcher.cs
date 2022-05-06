@@ -11,6 +11,7 @@ namespace Microsoft.PowerShell.PSReadLine
         private int searchFromPoint { get; set; }
         private StringBuilder toMatch { get; set; }
         private PSKeyInfo key { get; set; }
+        private static HistorySearcher Singleton { get; } = new();
         private Action<ConsoleKeyInfo?, object> function { get; set; }
         private static readonly History _hs = History.Singleton;
         private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
@@ -19,6 +20,21 @@ namespace Microsoft.PowerShell.PSReadLine
         private const string _backwardISearchPrompt = "bck-i-search: ";
         private const string _failedForwardISearchPrompt = "failed-fwd-i-search: ";
         private const string _failedBackwardISearchPrompt = "failed-bck-i-search: ";
+
+        /// <summary>
+        ///     Perform an incremental backward search through history.
+        /// </summary>
+        public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            Singleton.InteractiveHistorySearch(-1);
+        }
+        /// <summary>
+        ///     Perform an incremental forward search through history.
+        /// </summary>
+        public static void ForwardSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
+        {
+            Singleton.InteractiveHistorySearch(+1);
+        }
 
         //start
         public void InteractiveHistorySearch(int direction)
@@ -38,6 +54,7 @@ namespace Microsoft.PowerShell.PSReadLine
             // Remove our status line, this will render
             _rl.ClearStatusMessage(true);
         }
+
         internal void InteractiveHistorySearchLoop(int direction)
         {
             searchFromPoint = _hs.CurrentHistoryIndex;
@@ -57,11 +74,11 @@ namespace Microsoft.PowerShell.PSReadLine
                 _rl._dispatchTable.TryGetValue(key, out var handler);
                 function = handler?.Action;
 
-                if (function == History.ReverseSearchHistory)
+                if (function == HistorySearcher.ReverseSearchHistory)
                 {
                     UpdateHistory(-1);
                 }
-                else if (function == PSConsoleReadLine.ForwardSearchHistory)
+                else if (function == ForwardSearchHistory)
                 {
                     UpdateHistory(+1);
                 }
@@ -90,6 +107,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 }
             }
         }
+
         private int HandleBackward(int direction)
         {
             if (toMatch.Length > 0)
@@ -132,6 +150,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
             return searchFromPoint;
         }
+
         private void UpdateHistory(int direction)
         {
             var toMatch = this.toMatch.ToString();
@@ -176,6 +195,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 direction > 0 ? _failedForwardISearchPrompt : _failedBackwardISearchPrompt;
             _renderer.Render();
         }
+
         private bool HandleCharOfSearchKeyword(int direction)
         {
             var toAppend = key.KeyChar;
@@ -205,12 +225,11 @@ namespace Microsoft.PowerShell.PSReadLine
             searchPositions.Push(_hs.CurrentHistoryIndex);
             return false;
         }
+
         private static void GoToEndOfHistory()
         {
             _hs.CurrentHistoryIndex = _hs.Historys.Count;
             _hs.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
         }
-
-
     }
 }

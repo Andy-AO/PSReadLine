@@ -146,13 +146,6 @@ namespace Microsoft.PowerShell.PSReadLine
             }
         }
 
-        /// <summary>
-        ///     Perform an incremental backward search through history.
-        /// </summary>
-        public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            _hser.InteractiveHistorySearch(-1);
-        }
 
         /// <summary>
         ///     Replace the current input with the 'previous' item from PSReadLine history
@@ -228,7 +221,7 @@ namespace Microsoft.PowerShell.PSReadLine
         public static void EndOfHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
             Singleton.SaveCurrentLine();
-            GoToEndOfHistory_IHS();
+            GoToEndOfHistory();
         }
 
         /// <summary>
@@ -847,7 +840,7 @@ namespace Microsoft.PowerShell.PSReadLine
             Singleton.HistorySearch(numericArg);
         }
 
-        private static void GoToEndOfHistory_IHS()
+        private static void GoToEndOfHistory()
         {
             Singleton.CurrentHistoryIndex = Singleton.Historys.Count;
             Singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);

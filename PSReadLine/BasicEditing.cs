@@ -167,15 +167,6 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        ///     Perform an incremental forward search through history.
-        /// </summary>
-        public static void ForwardSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
-        {
-            History._hser.InteractiveHistorySearch(+1);
-        }
-
-
-        /// <summary>
         ///     Delete the character before the cursor.
         /// </summary>
         public static void BackwardDeleteChar(ConsoleKeyInfo? key = null, object arg = null)
