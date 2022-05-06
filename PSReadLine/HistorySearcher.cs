@@ -28,6 +28,7 @@ namespace Microsoft.PowerShell.PSReadLine
         {
             Singleton.InteractiveHistorySearch(-1);
         }
+
         /// <summary>
         ///     Perform an incremental forward search through history.
         /// </summary>
@@ -47,7 +48,7 @@ namespace Microsoft.PowerShell.PSReadLine
             _rl._statusBuffer.Append("_");
 
             _renderer.Render(); // Render prompt
-            InteractiveHistorySearchLoop(direction);
+            HandleUserInput(direction);
             _renderer.EmphasisStart = -1;
             _renderer.EmphasisLength = 0;
 
@@ -55,15 +56,13 @@ namespace Microsoft.PowerShell.PSReadLine
             _rl.ClearStatusMessage(true);
         }
 
-        private void InteractiveHistorySearchLoop(int direction)
+        private void HandleUserInput(int direction)
         {
             searchFromPoint = _hs.CurrentHistoryIndex;
             searchPositions = new Stack<int>();
             searchPositions.Push(_hs.CurrentHistoryIndex);
             if (_rl.Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
-
             toMatch = new StringBuilder(64);
-
             while (true)
             {
                 // TODO 在这里开始发挥 UI 的职责，感觉可以将这个类直接拆成两部分，历史记录和历史记录搜索
