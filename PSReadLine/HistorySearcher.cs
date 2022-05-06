@@ -37,7 +37,7 @@ namespace Microsoft.PowerShell.PSReadLine
         }
 
         //start
-        public void InteractiveHistorySearch(int direction)
+        private void InteractiveHistorySearch(int direction)
         {
             using var _ = _rl._Prediction.DisableScoped();
             _hs.SaveCurrentLine();
@@ -55,7 +55,7 @@ namespace Microsoft.PowerShell.PSReadLine
             _rl.ClearStatusMessage(true);
         }
 
-        internal void InteractiveHistorySearchLoop(int direction)
+        private void InteractiveHistorySearchLoop(int direction)
         {
             searchFromPoint = _hs.CurrentHistoryIndex;
             searchPositions = new Stack<int>();
