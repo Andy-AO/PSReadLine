@@ -23,10 +23,10 @@ namespace Microsoft.PowerShell
         internal List<StringBuilder> ConsoleBufferLines { get; } = new(1)
             {new(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
 
-        internal string StatusLinePrompt_______Old
+        internal string StatusLinePrompt
         {
-            get => _StatusLinePrompt_______Old;
-            set => _StatusLinePrompt_______Old = value;
+            get => _statusLinePrompt;
+            set => _statusLinePrompt = value;
         }
 
         internal int EmphasisLength { get; set; }
@@ -54,7 +54,7 @@ namespace Microsoft.PowerShell
             ? PlatformWindows.OneTimeInit(_rl)
             : new VirtualTerminal();
 
-        private string _StatusLinePrompt_______Old;
+        private string _statusLinePrompt;
         internal static Renderer Singleton => _s;
 
         internal void RenderWithPredictionQueryPaused()
@@ -107,12 +107,12 @@ namespace Microsoft.PowerShell
 
         internal bool PromptYesOrNo(string s)
         {
-            StatusLinePrompt_______Old = s;
+            StatusLinePrompt = s;
             Render();
 
             var key = RL.ReadKey();
 
-            StatusLinePrompt_______Old = null;
+            StatusLinePrompt = null;
             Render();
             return key.KeyStr.Equals("y", StringComparison.OrdinalIgnoreCase);
         }
@@ -410,7 +410,7 @@ namespace Microsoft.PowerShell
             _rl._Prediction.ActiveView.RenderSuggestion(ConsoleBufferLines, ref currentLogicalLine);
             activeColor = string.Empty;
 
-            if (StatusLinePrompt_______Old != null)
+            if (!string.IsNullOrEmpty(StatusLinePrompt))
             {
                 currentLogicalLine += 1;
                 if (currentLogicalLine > ConsoleBufferLines.Count - 1)
@@ -419,7 +419,7 @@ namespace Microsoft.PowerShell
                 color = _rl._statusIsErrorMessage ? _rl.Options._errorColor : defaultColor;
                 UpdateColorsIfNecessary(color);
 
-                foreach (var c in StatusLinePrompt_______Old) ConsoleBufferLines[currentLogicalLine].Append(c);
+                foreach (var c in StatusLinePrompt) ConsoleBufferLines[currentLogicalLine].Append(c);
 
                 ConsoleBufferLines[currentLogicalLine].Append(StatusBuffer);
             }

@@ -33,7 +33,7 @@ namespace Microsoft.PowerShell
 
     public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
     {
-        private static History _hs = History.Singleton;
+        private static History _hs => History.Singleton;
         private const int ConsoleExiting = 1;
 
         private const int CancellationRequested = 2;
@@ -245,7 +245,7 @@ namespace Microsoft.PowerShell
         public void ClearStatusMessage(bool render)
         {
             _renderer.StatusBuffer.Clear();
-            _renderer.StatusLinePrompt_______Old = null;
+            _renderer.StatusLinePrompt = null;
             _statusIsErrorMessage = false;
             if (render) _renderer.RenderWithPredictionQueryPaused();
         }
@@ -979,7 +979,7 @@ namespace Microsoft.PowerShell
             }
 
             var sawDigit = false;
-            _renderer.StatusLinePrompt_______Old = "digit-argument: ";
+            _renderer.StatusLinePrompt = "digit-argument: ";
             var argBuffer = _renderer.StatusBuffer;
             argBuffer.Append(key.Value.KeyChar);
             if (key.Value.KeyChar == '-')

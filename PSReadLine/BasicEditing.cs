@@ -286,7 +286,7 @@ namespace Microsoft.PowerShell
                         Insert('\n');
                     }
 
-                    _renderer.StatusLinePrompt_______Old = "";
+                    _renderer.StatusLinePrompt = "";
                     _renderer.StatusBuffer.Append(errorMessage);
                     _statusIsErrorMessage = true;
                     _renderer.Render();

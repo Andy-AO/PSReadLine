@@ -652,7 +652,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void WhatIsKey(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _renderer.StatusLinePrompt_______Old = "what-is-key: ";
+            _renderer.StatusLinePrompt = "what-is-key: ";
             _renderer.Render();
             var toLookup = ReadKey();
             var buffer = new StringBuilder();

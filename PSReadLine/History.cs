@@ -33,7 +33,12 @@ namespace Microsoft.PowerShell.PSReadLine
         // When cycling through history, the current line (not yet added to history)
         // is saved here so it can be restored.
         private readonly HistoryItem _savedCurrentLine = new();
-        public static History Singleton { get; } = new();
+        public static History Singleton;
+
+        static History()
+        {
+            Singleton = new();
+        }
 
         // Pattern used to check for sensitive inputs.
         private static Regex SensitivePattern { get; } = new(
