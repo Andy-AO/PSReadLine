@@ -21,19 +21,14 @@ namespace Microsoft.PowerShell.PSReadLine
             DontMove
         }
 
-        private const string _forwardISearchPrompt = "fwd-i-search: ";
-        private const string _backwardISearchPrompt = "bck-i-search: ";
-        private const string _failedForwardISearchPrompt = "failed-fwd-i-search: ";
-        private const string _failedBackwardISearchPrompt = "failed-bck-i-search: ";
-
         private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
         private static readonly Renderer _renderer = Renderer.Singleton;
-        public static HistorySearcher _hser { get; } = new();
+        public static HistorySearcher _hser => HistorySearcher.Singleton;
 
         // When cycling through history, the current line (not yet added to history)
         // is saved here so it can be restored.
         private readonly HistoryItem _savedCurrentLine = new();
-        public static History Singleton;
+        public static History Singleton { get; }
 
         static History()
         {

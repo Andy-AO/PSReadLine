@@ -11,7 +11,7 @@ namespace Microsoft.PowerShell.PSReadLine
         private int searchFromPoint { get; set; }
         private StringBuilder toMatch { get; set; }
         private PSKeyInfo key { get; set; }
-        private static HistorySearcher Singleton { get; } = new();
+        public static HistorySearcher Singleton { get; }
         private Action<ConsoleKeyInfo?, object> function { get; set; }
         private static History _hs => History.Singleton;
         private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
@@ -20,6 +20,11 @@ namespace Microsoft.PowerShell.PSReadLine
         private const string _backwardISearchPrompt = "bck-i-search: ";
         private const string _failedForwardISearchPrompt = "failed-fwd-i-search: ";
         private const string _failedBackwardISearchPrompt = "failed-bck-i-search: ";
+
+        static HistorySearcher()
+        {
+            Singleton = new();
+        }
 
         /// <summary>
         ///     Perform an incremental backward search through history.
@@ -65,10 +70,6 @@ namespace Microsoft.PowerShell.PSReadLine
             toMatch = new StringBuilder(64);
             while (true)
             {
-                // TODO 在这里开始发挥 UI 的职责，感觉可以将这个类直接拆成两部分，历史记录和历史记录搜索
-                // TODO searchFromPoint 耦合程度太高，是否应该消除？
-                // TODO ref 和 out 的区别是什么？
-                // TODO searchPositions 的作用是什么，为什么 UpdateHistoryDuringInteractiveSearch 和  UpdateHistoryDuringInteractiveSearch 不需要？
                 key = PSConsoleReadLine.ReadKey();
                 _rl._dispatchTable.TryGetValue(key, out var handler);
                 function = handler?.Action;
@@ -85,7 +86,6 @@ namespace Microsoft.PowerShell.PSReadLine
                          || key == Keys.Backspace
                          || key == Keys.CtrlH)
                 {
-                    // TODO 这些函数列表之间有很大的相似之处，这个怎么办呢？可不可以改成类？这样就可以直接在 private 域中使用这些变量，省得传递来传递去，不是吗？✔
                     HandleBackward(direction);
                 }
                 else if (key == Keys.Escape)
