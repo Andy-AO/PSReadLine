@@ -33,13 +33,11 @@ namespace Microsoft.PowerShell
 
     public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
     {
-        private static History _hs => History.Singleton;
         private const int ConsoleExiting = 1;
 
         private const int CancellationRequested = 2;
 
         private static readonly CancellationToken _defaultCancellationToken = new CancellationTokenSource().Token;
-
         // This is used by PowerShellEditorServices (the backend of the PowerShell VSCode extension)
         // so that it can call PSReadLine from a delegate and not hit nested pipeline issues.
 #pragma warning disable CS0649
@@ -49,8 +47,6 @@ namespace Microsoft.PowerShell
 
         // Save a fixed # of keys so we can reconstruct a repro after a crash
         private static readonly HistoryQueue<PSKeyInfo> _lastNKeys = new(200);
-        private static PSConsoleReadLine _s;
-        private static readonly Renderer _renderer = Renderer.Singleton;
         internal readonly Queue<PSKeyInfo> _queuedKeys;
 
         public readonly StringBuilder buffer;
@@ -80,7 +76,8 @@ namespace Microsoft.PowerShell
 
         static PSConsoleReadLine()
         {
-            _viRegister = new ViRegister(_s);
+            Singleton = new();
+            _viRegister = new ViRegister(Singleton);
         }
 
         private PSConsoleReadLine()
@@ -115,16 +112,7 @@ namespace Microsoft.PowerShell
         // *must* be initialized in the static ctor
         // because the static member _clipboard depends upon it
         // for its own initialization
-        internal static PSConsoleReadLine Singleton
-        {
-            get
-            {
-                if (_s == null) Singleton = new PSConsoleReadLine();
-
-                return _s;
-            }
-            private set => _s = value;
-        }
+        internal static PSConsoleReadLine Singleton;
 
         internal Token[] Tokens
         {
@@ -156,14 +144,14 @@ namespace Microsoft.PowerShell
 
                 try
                 {
-                    if (_s._runspace?.Debugger != null && _s._runspace.Debugger.InBreakpoint)
+                    if (Singleton._runspace?.Debugger != null && Singleton._runspace.Debugger.InBreakpoint)
                     {
                         // Run prompt command in debugger API to ensure it is run correctly on the runspace.
                         // This handles remote runspace debugging and nested debugger scenarios.
                         var results = new PSDataCollection<PSObject>();
                         var command = new PSCommand();
                         command.AddCommand("prompt");
-                        _s._runspace.Debugger.ProcessCommand(
+                        Singleton._runspace.Debugger.ProcessCommand(
                             command,
                             results);
 
@@ -172,7 +160,7 @@ namespace Microsoft.PowerShell
                     }
                     else
                     {
-                        var runspaceIsRemote = _s._mockableMethods.RunspaceIsRemote(_s._runspace);
+                        var runspaceIsRemote = Singleton._mockableMethods.RunspaceIsRemote(Singleton._runspace);
 
                         System.Management.Automation.PowerShell ps;
                         if (!runspaceIsRemote)
@@ -182,7 +170,7 @@ namespace Microsoft.PowerShell
                         else
                         {
                             ps = System.Management.Automation.PowerShell.Create();
-                            ps.Runspace = _s._runspace;
+                            ps.Runspace = Singleton._runspace;
                         }
 
                         using (ps)
@@ -194,8 +182,8 @@ namespace Microsoft.PowerShell
                                 newPrompt = result[0];
 
                                 if (runspaceIsRemote)
-                                    if (!string.IsNullOrEmpty(_s._runspace?.ConnectionInfo?.ComputerName))
-                                        newPrompt = "[" + (_s._runspace?.ConnectionInfo).ComputerName + "]: " +
+                                    if (!string.IsNullOrEmpty(Singleton._runspace?.ConnectionInfo?.ComputerName))
+                                        newPrompt = "[" + (Singleton._runspace?.ConnectionInfo).ComputerName + "]: " +
                                                     newPrompt;
                             }
                         }
@@ -255,7 +243,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void Ding()
         {
-            _s._mockableMethods.Ding();
+            Singleton._mockableMethods.Ding();
         }
 
         private void ReadOneOrMoreKeys()
@@ -316,11 +304,11 @@ namespace Microsoft.PowerShell
             while (true)
             {
                 // Wait until ReadKey tells us to read a key (or it's time to exit).
-                var handleId = WaitHandle.WaitAny(_s._threadProcWaitHandles);
+                var handleId = WaitHandle.WaitAny(Singleton._threadProcWaitHandles);
                 if (handleId == 1) // It was the _closingWaitHandle that was signaled.
                     break;
 
-                var localCancellationToken = _s._cancelReadCancellationToken;
+                var localCancellationToken = Singleton._cancelReadCancellationToken;
                 ReadOneOrMoreKeys();
                 if (localCancellationToken.IsCancellationRequested) continue;
 
@@ -344,7 +332,7 @@ namespace Microsoft.PowerShell
             // be unblocked and instead blocks on events we control.
 
             // First, set an event so the thread to read a key actually attempts to read a key.
-            _s._readKeyWaitHandle.Set();
+            Singleton._readKeyWaitHandle.Set();
 
             int handleId;
             System.Management.Automation.PowerShell ps = null;
@@ -358,18 +346,18 @@ namespace Microsoft.PowerShell
                     //   - the console is exiting
                     //   - 300ms timeout - to process events if we're idle
                     //   - ReadLine cancellation is requested externally
-                    handleId = WaitHandle.WaitAny(_s._requestKeyWaitHandles, 300);
+                    handleId = WaitHandle.WaitAny(Singleton._requestKeyWaitHandles, 300);
                     if (handleId != WaitHandle.WaitTimeout) break;
 
                     if (_handleIdleOverride is not null)
                     {
-                        _handleIdleOverride(_s._cancelReadCancellationToken);
+                        _handleIdleOverride(Singleton._cancelReadCancellationToken);
                         continue;
                     }
 
                     // If we timed out, check for event subscribers (which is just
                     // a hint that there might be an event waiting to be processed.)
-                    var eventSubscribers = _s._engineIntrinsics?.Events.Subscribers;
+                    var eventSubscribers = Singleton._engineIntrinsics?.Events.Subscribers;
                     if (eventSubscribers?.Count > 0)
                     {
                         var runPipelineForEventProcessing = false;
@@ -378,13 +366,13 @@ namespace Microsoft.PowerShell
                             if (sub.SourceIdentifier.Equals(PSEngineEvent.OnIdle, StringComparison.OrdinalIgnoreCase))
                             {
                                 // If the buffer is not empty, let's not consider we are idle because the user is in the middle of typing something.
-                                if (_s.buffer.Length > 0) continue;
+                                if (Singleton.buffer.Length > 0) continue;
 
                                 // There is an OnIdle event subscriber and we are idle because we timed out and the buffer is empty.
                                 // Normally PowerShell generates this event, but PowerShell assumes the engine is not idle because
                                 // it called PSConsoleHostReadLine which isn't returning. So we generate the event instead.
                                 runPipelineForEventProcessing = true;
-                                _s._engineIntrinsics.Events.GenerateEvent(PSEngineEvent.OnIdle, null, null,
+                                Singleton._engineIntrinsics.Events.GenerateEvent(PSEngineEvent.OnIdle, null, null,
                                     null);
 
                                 // Break out so we don't genreate more than one 'OnIdle' event for a timeout.
@@ -406,7 +394,7 @@ namespace Microsoft.PowerShell
 
                             // To detect output during possible event processing, see if the cursor moved
                             // and rerender if so.
-                            var console = _s.RLConsole;
+                            var console = Singleton.RLConsole;
                             var y = console.CursorTop;
                             ps.Invoke();
                             if (y != console.CursorTop)
@@ -427,7 +415,7 @@ namespace Microsoft.PowerShell
             {
                 // The console is exiting - throw an exception to unwind the stack to the point
                 // where we can return from ReadLine.
-                if (_s.Options.HistorySaveStyle == HistorySaveStyle.SaveAtExit) _hs.SaveHistoryAtExit();
+                if (Singleton.Options.HistorySaveStyle == HistorySaveStyle.SaveAtExit) _hs.SaveHistoryAtExit();
 
                 _hs.HistoryFileMutex.Dispose();
 
@@ -441,12 +429,12 @@ namespace Microsoft.PowerShell
                 _hs.SaveCurrentLine();
                 _hs.GetNextHistoryIndex = _hs.Historys.Count;
                 _renderer.Current = 0;
-                _s.buffer.Clear();
+                Singleton.buffer.Clear();
                 _renderer.Render();
                 throw new OperationCanceledException();
             }
 
-            var key = _s._queuedKeys.Dequeue();
+            var key = Singleton._queuedKeys.Dequeue();
             return key;
         }
 
@@ -489,7 +477,7 @@ namespace Microsoft.PowerShell
             CancellationToken cancellationToken,
             bool? lastRunStatus)
         {
-            var console = _s.RLConsole;
+            var console = Singleton.RLConsole;
 
             if (Console.IsInputRedirected || Console.IsOutputRedirected)
                 // System.Console doesn't handle redirected input. It matches the behavior on Windows
@@ -504,7 +492,7 @@ namespace Microsoft.PowerShell
 
             var oldControlCAsInput = false;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                PlatformWindows.Init(ref _s._charMap);
+                PlatformWindows.Init(ref Singleton._charMap);
             else
                 try
                 {
@@ -515,7 +503,7 @@ namespace Microsoft.PowerShell
                 {
                 }
 
-            if (lastRunStatus.HasValue) _s.ReportExecutionStatus(lastRunStatus.Value);
+            if (lastRunStatus.HasValue) Singleton.ReportExecutionStatus(lastRunStatus.Value);
 
             var firstTime = true;
             while (true)
@@ -524,12 +512,12 @@ namespace Microsoft.PowerShell
                     if (firstTime)
                     {
                         firstTime = false;
-                        _s.Initialize(runspace, engineIntrinsics);
+                        Singleton.Initialize(runspace, engineIntrinsics);
                     }
 
-                    _s._cancelReadCancellationToken = cancellationToken;
-                    _s._requestKeyWaitHandles[2] = _s._cancelReadCancellationToken.WaitHandle;
-                    return _s.InputLoop();
+                    Singleton._cancelReadCancellationToken = cancellationToken;
+                    Singleton._requestKeyWaitHandles[2] = Singleton._cancelReadCancellationToken.WaitHandle;
+                    return Singleton.InputLoop();
                 }
                 catch (OperationCanceledException)
                 {
@@ -550,15 +538,15 @@ namespace Microsoft.PowerShell
                             e.InnerException.Message));
                     console.ForegroundColor = oldColor;
 
-                    var lineBeforeCrash = _s.buffer.ToString();
-                    _s.Initialize(runspace, _s._engineIntrinsics);
+                    var lineBeforeCrash = Singleton.buffer.ToString();
+                    Singleton.Initialize(runspace, Singleton._engineIntrinsics);
                     InvokePrompt();
                     Insert(lineBeforeCrash);
                 }
                 catch (Exception e)
                 {
                     // If we're running tests, just throw.
-                    if (_s._mockableMethods != _s) throw;
+                    if (Singleton._mockableMethods != Singleton) throw;
 
                     while (e.InnerException != null) e = e.InnerException;
 
@@ -572,7 +560,7 @@ namespace Microsoft.PowerShell
                         sb.Append(' ');
                         sb.Append(_lastNKeys[i].KeyStr);
 
-                        if (_s._dispatchTable.TryGetValue(_lastNKeys[i], out var handler) &&
+                        if (Singleton._dispatchTable.TryGetValue(_lastNKeys[i], out var handler) &&
                             "AcceptLine".Equals(handler.BriefDescription, StringComparison.OrdinalIgnoreCase))
                             // Make it a little easier to see the keys
                             sb.Append('\n');
@@ -589,8 +577,8 @@ namespace Microsoft.PowerShell
                         PSReadLineResources.OopsAnErrorMessage2,
                         ourVersion, psVersion, osInfo, bufferWidth, bufferHeight,
                         _lastNKeys.Count, sb, e));
-                    var lineBeforeCrash = _s.buffer.ToString();
-                    _s.Initialize(runspace, _s._engineIntrinsics);
+                    var lineBeforeCrash = Singleton.buffer.ToString();
+                    Singleton.Initialize(runspace, Singleton._engineIntrinsics);
                     InvokePrompt();
                     Insert(lineBeforeCrash);
                 }
@@ -600,9 +588,9 @@ namespace Microsoft.PowerShell
                     {
                         // If we are closing, restoring the old console settings isn't needed,
                         // and some operating systems, it can cause a hang.
-                        if (!_s._closingWaitHandle.WaitOne(0))
+                        if (!Singleton._closingWaitHandle.WaitOne(0))
                         {
-                            console.OutputEncoding = _s._initialOutputEncoding;
+                            console.OutputEncoding = Singleton._initialOutputEncoding;
                             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                                 Console.TreatControlCAsInput = oldControlCAsInput;
                         }
@@ -918,13 +906,13 @@ namespace Microsoft.PowerShell
             _killIndex = -1; // So first add indexes 0.
             _killRing = new List<string>(Options.MaximumKillRingCount);
 
-            _s._readKeyWaitHandle = new AutoResetEvent(false);
-            _s._keyReadWaitHandle = new AutoResetEvent(false);
-            _s._closingWaitHandle = new ManualResetEvent(false);
-            _s._requestKeyWaitHandles = new[]
-                {_s._keyReadWaitHandle, _s._closingWaitHandle, _defaultCancellationToken.WaitHandle};
-            _s._threadProcWaitHandles = new WaitHandle[]
-                {_s._readKeyWaitHandle, _s._closingWaitHandle};
+            Singleton._readKeyWaitHandle = new AutoResetEvent(false);
+            Singleton._keyReadWaitHandle = new AutoResetEvent(false);
+            Singleton._closingWaitHandle = new ManualResetEvent(false);
+            Singleton._requestKeyWaitHandles = new[]
+                {Singleton._keyReadWaitHandle, Singleton._closingWaitHandle, _defaultCancellationToken.WaitHandle};
+            Singleton._threadProcWaitHandles = new WaitHandle[]
+                {Singleton._readKeyWaitHandle, Singleton._closingWaitHandle};
 
             // This is for a "being hosted in an alternate appdomain scenario" (the
             // DomainUnload event is not raised for the default appdomain). It allows us
@@ -933,24 +921,24 @@ namespace Microsoft.PowerShell
             if (!AppDomain.CurrentDomain.IsDefaultAppDomain())
                 AppDomain.CurrentDomain.DomainUnload += (x, y) =>
                 {
-                    _s._closingWaitHandle.Set();
-                    _s._readKeyThread.Join(); // may need to wait for history to be written
+                    Singleton._closingWaitHandle.Set();
+                    Singleton._readKeyThread.Join(); // may need to wait for history to be written
                 };
 
-            _s._readKeyThread = new Thread(_s.ReadKeyThreadProc)
+            Singleton._readKeyThread = new Thread(Singleton.ReadKeyThreadProc)
                 {IsBackground = true, Name = "PSReadLine ReadKey Thread"};
-            _s._readKeyThread.Start();
+            Singleton._readKeyThread.Start();
         }
 
         private static void Chord(ConsoleKeyInfo? key = null, object arg = null)
         {
             if (!key.HasValue) throw new ArgumentNullException(nameof(key));
 
-            if (_s._chordDispatchTable.TryGetValue(PSKeyInfo.FromConsoleKeyInfo(key.Value),
+            if (Singleton._chordDispatchTable.TryGetValue(PSKeyInfo.FromConsoleKeyInfo(key.Value),
                     out var secondKeyDispatchTable))
             {
                 var secondKey = ReadKey();
-                _s.ProcessOneKey(secondKey, secondKeyDispatchTable, true, arg);
+                Singleton.ProcessOneKey(secondKey, secondKeyDispatchTable, true, arg);
             }
         }
 
@@ -972,7 +960,7 @@ namespace Microsoft.PowerShell
                 return;
             }
 
-            if (_s.Options.EditMode == EditMode.Vi && key.Value.KeyChar == '0')
+            if (Singleton.Options.EditMode == EditMode.Vi && key.Value.KeyChar == '0')
             {
                 BeginningOfLine();
                 return;
@@ -991,7 +979,7 @@ namespace Microsoft.PowerShell
             while (true)
             {
                 var nextKey = ReadKey();
-                if (_s._dispatchTable.TryGetValue(nextKey, out var handler))
+                if (Singleton._dispatchTable.TryGetValue(nextKey, out var handler))
                 {
                     if (handler.Action == DigitArgument)
                     {
@@ -1028,7 +1016,7 @@ namespace Microsoft.PowerShell
                 }
 
                 if (int.TryParse(argBuffer.ToString(), out var intArg))
-                    _s.ProcessOneKey(nextKey, _s._dispatchTable, false, intArg);
+                    Singleton.ProcessOneKey(nextKey, Singleton._dispatchTable, false, intArg);
                 else
                     Ding();
 
@@ -1037,7 +1025,7 @@ namespace Microsoft.PowerShell
 
             // Remove our status line
             argBuffer.Clear();
-            _s.ClearStatusMessage(true);
+            Singleton.ClearStatusMessage(true);
         }
 
 
@@ -1048,7 +1036,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void InvokePrompt(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var console = _s.RLConsole;
+            var console = Singleton.RLConsole;
             console.CursorVisible = false;
 
             if (arg is int newY)
@@ -1057,14 +1045,14 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                newY = _renderer.InitialY - _s.Options.ExtraPromptLineCount;
+                newY = _renderer.InitialY - Singleton.Options.ExtraPromptLineCount;
 
                 console.SetCursorPosition(0, newY);
 
                 // We need to rewrite the prompt, so blank out everything from a previous prompt invocation
                 // in case the next one is shorter.
                 var spaces = Spaces(console.BufferWidth);
-                for (var i = 0; i < _s.Options.ExtraPromptLineCount + 1; i++) console.Write(spaces);
+                for (var i = 0; i < Singleton.Options.ExtraPromptLineCount + 1; i++) console.Write(spaces);
 
                 console.SetCursorPosition(0, newY);
             }

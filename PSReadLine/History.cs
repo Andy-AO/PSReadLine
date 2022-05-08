@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using RL = Microsoft.PowerShell.PSConsoleReadLine;
 
 namespace Microsoft.PowerShell.PSReadLine
 {
@@ -21,9 +20,7 @@ namespace Microsoft.PowerShell.PSReadLine
             DontMove
         }
 
-        private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
-        private static readonly Renderer _renderer = Renderer.Singleton;
-        public static HistorySearcher _hser => HistorySearcher.Singleton;
+
 
         // When cycling through history, the current line (not yet added to history)
         // is saved here so it can be restored.

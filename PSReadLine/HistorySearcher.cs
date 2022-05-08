@@ -11,11 +11,9 @@ namespace Microsoft.PowerShell.PSReadLine
         private int searchFromPoint { get; set; }
         private StringBuilder toMatch { get; set; }
         private PSKeyInfo key { get; set; }
-        public static HistorySearcher Singleton { get; }
+        private static HistorySearcher Singleton { get; }
         private Action<ConsoleKeyInfo?, object> function { get; set; }
-        private static History _hs => History.Singleton;
-        private static readonly PSConsoleReadLine _rl = PSConsoleReadLine.Singleton;
-        private static readonly Renderer _renderer = Renderer.Singleton;
+
         private const string _forwardISearchPrompt = "fwd-i-search: ";
         private const string _backwardISearchPrompt = "bck-i-search: ";
         private const string _failedForwardISearchPrompt = "failed-fwd-i-search: ";

@@ -6,13 +6,11 @@ using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.PowerShell.Internal;
-using RL = Microsoft.PowerShell.PSConsoleReadLine;
 
 namespace Microsoft.PowerShell
 {
-    internal class Renderer
+    public class Renderer
     {
-        private static readonly RL _rl = RL.Singleton;
         private readonly Stopwatch _lastRenderTime = Stopwatch.StartNew();
 
         static Renderer()
