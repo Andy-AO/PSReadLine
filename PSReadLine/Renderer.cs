@@ -53,12 +53,23 @@ namespace Microsoft.PowerShell
             : new VirtualTerminal();
 
         private string _statusLinePrompt;
-        internal static Renderer Singleton { get; }
+
+        private static Renderer _s;
+
+        internal static Renderer Singleton
+        {
+            get { return _s; }
+
+            private set { _s = value; }
+        }
+
+
         internal void EmphasisInit()
         {
             EmphasisStart = -1;
             EmphasisLength = 0;
         }
+
         internal void RenderWithPredictionQueryPaused()
         {
             // Sometimes we need to re-render the buffer to show status line, or to clear
@@ -1109,7 +1120,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayUp(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = _s._console;
             var newTop = console.WindowTop - numericArg * console.WindowHeight;
             if (newTop < 0) newTop = 0;
 
@@ -1125,7 +1136,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayUpLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = _s._console;
             var newTop = console.WindowTop - numericArg;
             if (newTop < 0) newTop = 0;
 
@@ -1138,7 +1149,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayDown(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = _s._console;
             var newTop = console.WindowTop + numericArg * console.WindowHeight;
             if (newTop > console.BufferHeight - console.WindowHeight)
                 newTop = console.BufferHeight - console.WindowHeight;
@@ -1152,7 +1163,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayDownLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = Singleton._console;
+            var console = _s._console;
             var newTop = console.WindowTop + numericArg;
             if (newTop > console.BufferHeight - console.WindowHeight)
                 newTop = console.BufferHeight - console.WindowHeight;
@@ -1165,7 +1176,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ScrollDisplayTop(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton._console.SetWindowPosition(0, 0);
+            _s._console.SetWindowPosition(0, 0);
         }
 
         /// <summary>
@@ -1175,7 +1186,7 @@ namespace Microsoft.PowerShell
         {
             // Ideally, we'll put the last input line at the bottom of the window
             var offset = _rl.buffer.Length;
-            var s = Singleton;
+            var s = _s;
             var point = s.ConvertOffsetToPoint(offset);
 
             var console = s._console;
