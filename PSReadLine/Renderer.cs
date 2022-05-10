@@ -17,11 +17,7 @@ namespace Microsoft.PowerShell
         internal List<StringBuilder> ConsoleBufferLines { get; } = new(1)
             {new(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
 
-        internal string StatusLinePrompt
-        {
-            get => _statusLinePrompt;
-            set => _statusLinePrompt = value;
-        }
+        internal string StatusLinePrompt { get; set; }
 
         internal int EmphasisLength { get; set; }
 
@@ -61,8 +57,6 @@ namespace Microsoft.PowerShell
         internal static string[] SpacesArr { get; } = new string[80];
 
         internal static IConsole Console;
-
-        private string _statusLinePrompt;
 
         private static Renderer _s => _renderer;
 
