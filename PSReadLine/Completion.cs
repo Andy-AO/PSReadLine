@@ -317,7 +317,7 @@ namespace Microsoft.PowerShell
                     // GetCompletions could scroll the screen, e.g. via Write-Progress. For example,
                     // cd <TAB> under the CloudShell Azure drive will show the progress bar while fetching data.
                     // We need to update the _initialY in case the current cursor postion has changed.
-                    if (_renderer.InitialY > RLConsole.CursorTop) _renderer.InitialY = RLConsole.CursorTop;
+                    if (_renderer.InitialY > Renderer._console.CursorTop) _renderer.InitialY = Renderer._console.CursorTop;
                 }
 
             return _tabCompletions;
@@ -405,7 +405,7 @@ namespace Microsoft.PowerShell
 
         private Menu CreateCompletionMenu(Collection<CompletionResult> matches)
         {
-            var bufferWidth = RLConsole.BufferWidth;
+            var bufferWidth = Renderer._console.BufferWidth;
             var colWidth = Math.Min(matches.Max(c => _renderer.LengthInBufferCells(c.ListItemText)) + 2, bufferWidth);
             var columns = Math.Max(1, bufferWidth / colWidth);
 
@@ -479,7 +479,7 @@ namespace Microsoft.PowerShell
 
                 var endBufferPoint = _renderer.ConvertOffsetToPoint(buffer.Length);
                 menu.BufferLines = endBufferPoint.Y - _renderer.InitialY + 1 + Options.ExtraPromptLineCount;
-                if (menu.BufferLines + menu.Rows > RLConsole.WindowHeight) menuSelect = false;
+                if (menu.BufferLines + menu.Rows > Renderer._console.WindowHeight) menuSelect = false;
             }
 
             if (menuSelect)
@@ -489,7 +489,7 @@ namespace Microsoft.PowerShell
             else
             {
                 menu.DrawMenu(null, false);
-                InvokePrompt(null, RLConsole.CursorTop);
+                InvokePrompt(null, Renderer._console.CursorTop);
             }
         }
 
@@ -572,8 +572,8 @@ namespace Microsoft.PowerShell
                                 // this point as it was calculated before drawing the menu.
                                 endOfCommandLine.Y -= oldInitialY - _renderer.InitialY;
 
-                            RLConsole.SetCursorPosition(endOfCommandLine.X, endOfCommandLine.Y);
-                            RLConsole.Write(Spaces(RLConsole.BufferWidth - endOfCommandLine.X));
+                            Renderer._console.SetCursorPosition(endOfCommandLine.X, endOfCommandLine.Y);
+                            Renderer._console.Write(Spaces(Renderer._console.BufferWidth - endOfCommandLine.X));
                             menu.RestoreCursor();
                         }
 
@@ -835,7 +835,7 @@ namespace Microsoft.PowerShell
 
             public void DrawMenu(Menu previousMenu, bool menuSelect)
             {
-                var console = Singleton.RLConsole;
+                var console = Renderer._console;
 
                 if (menuSelect)
                 {
@@ -926,7 +926,7 @@ namespace Microsoft.PowerShell
 
             public void UpdateMenuSelection(int selectedItem, bool select, bool showTooltips, string toolTipColor)
             {
-                var console = Singleton.RLConsole;
+                var console = Renderer._console;
                 var menuItem = MenuItems[selectedItem];
                 var listItem = menuItem.ListItemText;
 

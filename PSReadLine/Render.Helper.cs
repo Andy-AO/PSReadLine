@@ -2,38 +2,40 @@
 Copyright (c) Microsoft Corporation.  All rights reserved.
 --********************************************************************/
 
+using Microsoft.PowerShell.Internal;
+
 namespace Microsoft.PowerShell
 {
     public partial class PSConsoleReadLine
     {
         private void WriteBlankLines(int count)
         {
-            RLConsole.BlankRestOfLine();
+            Renderer._console.BlankRestOfLine();
             for (var i = 1; i < count; i++)
             {
-                RLConsole.Write("\n");
-                RLConsole.BlankRestOfLine();
+                Renderer._console.Write("\n");
+                Renderer._console.BlankRestOfLine();
             }
         }
 
         private void WriteBlankLines(int top, int count)
         {
-            var savedCursorLeft = RLConsole.CursorLeft;
-            var savedCursorTop = RLConsole.CursorTop;
+            var savedCursorLeft = Renderer._console.CursorLeft;
+            var savedCursorTop = Renderer._console.CursorTop;
 
-            RLConsole.SetCursorPosition(0, top);
+            Renderer._console.SetCursorPosition(0, top);
             WriteBlankLines(count);
-            RLConsole.SetCursorPosition(savedCursorLeft, savedCursorTop);
+            Renderer._console.SetCursorPosition(savedCursorLeft, savedCursorTop);
         }
 
         private void WriteBlankRestOfLine(int left, int top)
         {
-            var savedCursorLeft = RLConsole.CursorLeft;
-            var savedCursorTop = RLConsole.CursorTop;
+            var savedCursorLeft = Renderer._console.CursorLeft;
+            var savedCursorTop = Renderer._console.CursorTop;
 
-            RLConsole.SetCursorPosition(left, top);
-            RLConsole.BlankRestOfLine();
-            RLConsole.SetCursorPosition(savedCursorLeft, savedCursorTop);
+            Renderer._console.SetCursorPosition(left, top);
+            Renderer._console.BlankRestOfLine();
+            Renderer._console.SetCursorPosition(savedCursorLeft, savedCursorTop);
         }
 
         internal static string Spaces(int cnt)

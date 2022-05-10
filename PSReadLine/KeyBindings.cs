@@ -9,6 +9,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.PowerShell.Internal;
 using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
@@ -606,7 +607,7 @@ namespace Microsoft.PowerShell
         {
             var buffer = new StringBuilder();
             var boundKeys = GetKeyHandlers(true, false);
-            var console = Singleton.RLConsole;
+            var console = Renderer._console;
             foreach (var group in boundKeys.GroupBy(k => k.Group).OrderBy(k => k.Key))
             {
                 var groupDescription = PowerShell.KeyHandler.GetGroupingDescription(group.Key);
@@ -644,7 +645,7 @@ namespace Microsoft.PowerShell
             console.Write("\n");
 
             console.WriteLine(buffer.ToString());
-            InvokePrompt(null, Singleton.RLConsole.CursorTop);
+            InvokePrompt(null, Renderer._console.CursorTop);
         }
 
         /// <summary>
@@ -691,7 +692,7 @@ namespace Microsoft.PowerShell
 
             Singleton.ClearStatusMessage(false);
 
-            var console = Singleton.RLConsole;
+            var console = Renderer._console;
             // Don't overwrite any of the line - so move to first line after the end of our buffer.
             var offset = Singleton.buffer.Length;
             var point = _renderer.ConvertOffsetToPoint(offset);

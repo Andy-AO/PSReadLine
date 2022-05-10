@@ -373,10 +373,10 @@ namespace Microsoft.PowerShell
 
         private static void CaptureScreenImpl()
         {
-            var selectionTop = Singleton.RLConsole.CursorTop;
+            var selectionTop = Renderer._console.CursorTop;
             var selectionHeight = 1;
             var currentY = selectionTop;
-            var console = Singleton.RLConsole;
+            var console = Renderer._console;
 
             // We'll keep the current selection line (currentY) at least 4 lines
             // away from the top or bottom of the window.

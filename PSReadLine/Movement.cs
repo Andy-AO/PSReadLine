@@ -5,6 +5,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 using System;
 using System.Diagnostics;
 using System.Management.Automation.Language;
+using Microsoft.PowerShell.Internal;
 
 namespace Microsoft.PowerShell
 {
@@ -446,7 +447,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ClearScreen(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var console = Singleton.RLConsole;
+            var console = Renderer._console;
             console.Write("\x1b[2J");
             InvokePrompt(null, console.WindowTop);
         }

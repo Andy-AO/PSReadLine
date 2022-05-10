@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using System.Reflection;
 using System.Threading;
+using Microsoft.PowerShell.Internal;
 using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
@@ -81,7 +82,7 @@ namespace Microsoft.PowerShell
             if (options.PromptText != null) Options.PromptText = options.PromptText;
             if (options._predictionSource.HasValue)
             {
-                if (RLConsole is PlatformWindows.LegacyWin32Console &&
+                if (Renderer._console is PlatformWindows.LegacyWin32Console &&
                     options.PredictionSource != PredictionSource.None)
                     throw new ArgumentException(PSReadLineResources.PredictiveSuggestionNotSupported);
 

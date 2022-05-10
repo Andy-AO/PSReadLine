@@ -5,6 +5,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Microsoft.PowerShell.Internal;
 using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
@@ -304,7 +305,7 @@ namespace Microsoft.PowerShell
             _viCmdChordTable[Keys.C] = _viChordCTable;
             _viCmdChordTable[Keys.Y] = _viChordYTable;
 
-            _normalCursorSize = RLConsole.CursorSize;
+            _normalCursorSize = Renderer._console.CursorSize;
             if (_normalCursorSize < 1 || _normalCursorSize > 100)
                 // This is unlikely, but possible if the cursor size is set directly in
                 // the registry.

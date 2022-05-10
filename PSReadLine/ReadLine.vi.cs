@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Microsoft.PowerShell.Internal;
 using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
@@ -407,14 +408,14 @@ namespace Microsoft.PowerShell
 
             if (Options.ViModeIndicator == ViModeStyle.Cursor)
             {
-                RLConsole.CursorSize = _normalCursorSize < 50 ? 100 : 25;
+                Renderer._console.CursorSize = _normalCursorSize < 50 ? 100 : 25;
             }
             else if (Options.ViModeIndicator == ViModeStyle.Prompt)
             {
-                var savedBackground = RLConsole.BackgroundColor;
-                RLConsole.BackgroundColor = AlternateBackground(RLConsole.BackgroundColor);
+                var savedBackground = Renderer._console.BackgroundColor;
+                Renderer._console.BackgroundColor = AlternateBackground(Renderer._console.BackgroundColor);
                 InvokePrompt();
-                RLConsole.BackgroundColor = savedBackground;
+                Renderer._console.BackgroundColor = savedBackground;
             }
             else if (Options.ViModeIndicator == ViModeStyle.Script && Options.ViModeChangeHandler != null)
             {
@@ -428,7 +429,7 @@ namespace Microsoft.PowerShell
             _Prediction.EnableGlobal();
 
             if (Options.ViModeIndicator == ViModeStyle.Cursor)
-                RLConsole.CursorSize = _normalCursorSize;
+                Renderer._console.CursorSize = _normalCursorSize;
             else if (Options.ViModeIndicator == ViModeStyle.Prompt)
                 InvokePrompt();
             else if (Options.ViModeIndicator == ViModeStyle.Script && Options.ViModeChangeHandler != null)
