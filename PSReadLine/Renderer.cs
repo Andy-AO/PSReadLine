@@ -46,6 +46,11 @@ namespace Microsoft.PowerShell
             lines = new[] {new RenderedLineData {columns = 0, line = ""}}
         };
 
+        public Renderer()
+        {
+            Current = 0;
+        }
+
         internal static string[] SpacesArr { get; } = new string[80];
 
         internal readonly IConsole _console = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

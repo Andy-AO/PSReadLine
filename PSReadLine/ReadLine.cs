@@ -783,7 +783,6 @@ namespace Microsoft.PowerShell
             _edits = new List<EditItem>();
             _undoEditIndex = 0;
             _editGroupStart = -1;
-            _renderer.Current = 0;
             _mark = 0;
             _renderer.EmphasisInit();
             _inputAccepted = false;
