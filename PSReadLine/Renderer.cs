@@ -13,10 +13,6 @@ namespace Microsoft.PowerShell
     {
         private readonly Stopwatch _lastRenderTime = Stopwatch.StartNew();
 
-        static Renderer()
-        {
-            Singleton = new();
-        }
 
         internal List<StringBuilder> ConsoleBufferLines { get; } = new(1)
             {new(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
@@ -59,15 +55,7 @@ namespace Microsoft.PowerShell
 
         private string _statusLinePrompt;
 
-        private static Renderer _s;
-
-        internal static Renderer Singleton
-        {
-            get { return _s; }
-
-            private set { _s = value; }
-        }
-
+        private static Renderer _s => _renderer;
 
         internal void EmphasisInit()
         {

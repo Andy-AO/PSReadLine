@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.PowerShell;
 using Microsoft.PowerShell.Internal;
+using Microsoft.PowerShell.PSReadLine;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -560,7 +561,7 @@ namespace Test
                 .GetField("_mockableMethods", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(aRL, _mockedMethods);
 
-            var aRenderer = Renderer.Singleton;
+            var aRenderer = Singletons._renderer;
 
             typeof(Renderer)
                 .GetField("_console", BindingFlags.Instance | BindingFlags.NonPublic)
