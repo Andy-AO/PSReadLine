@@ -763,7 +763,7 @@ namespace Microsoft.PowerShell
 
         private void Initialize(Runspace runspace, EngineIntrinsics engineIntrinsics)
         {
-            _renderer.Init();
+            _renderer = new();
             _engineIntrinsics = engineIntrinsics;
             _runspace = runspace;
             if (!_delayedOneTimeInitCompleted)

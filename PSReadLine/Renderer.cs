@@ -55,7 +55,7 @@ namespace Microsoft.PowerShell
                 : new VirtualTerminal();
         }
 
-        public void Init()
+        private void Init()
         {
             Current = 0;
             PreviousRender = InitialPrevRender;
