@@ -52,8 +52,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
             _renderer.Render(); // Render prompt
             HandleUserInput(direction);
-            _renderer.EmphasisStart = -1;
-            _renderer.EmphasisLength = 0;
+            _renderer.EmphasisInit();
 
             // Remove our status line, this will render
             _rl.ClearStatusMessage(true);
@@ -185,8 +184,7 @@ namespace Microsoft.PowerShell.PSReadLine
             else if (searchFromPoint >= _hs.Historys.Count)
                 searchFromPoint = _hs.Historys.Count;
 
-            _renderer.EmphasisStart = -1;
-            _renderer.EmphasisLength = 0;
+            _renderer.EmphasisInit();
             _renderer.StatusLinePrompt = direction > 0 ? _failedForwardISearchPrompt : _failedBackwardISearchPrompt;
             _renderer.Render();
         }

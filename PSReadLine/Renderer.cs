@@ -54,7 +54,11 @@ namespace Microsoft.PowerShell
 
         private string _statusLinePrompt;
         internal static Renderer Singleton { get; }
-
+        internal void EmphasisInit()
+        {
+            EmphasisStart = -1;
+            EmphasisLength = 0;
+        }
         internal void RenderWithPredictionQueryPaused()
         {
             // Sometimes we need to re-render the buffer to show status line, or to clear

@@ -655,8 +655,7 @@ namespace Microsoft.PowerShell
                 {
                     if (_hs.SearchHistoryCommandCount > 0)
                     {
-                        _renderer.EmphasisStart = -1;
-                        _renderer.EmphasisLength = 0;
+                        _renderer.EmphasisInit();
                         _renderer.RenderWithPredictionQueryPaused();
                     }
 
@@ -786,8 +785,7 @@ namespace Microsoft.PowerShell
             _editGroupStart = -1;
             _renderer.Current = 0;
             _mark = 0;
-            _renderer.EmphasisStart = -1;
-            _renderer.EmphasisLength = 0;
+            _renderer.EmphasisInit();
             _inputAccepted = false;
             _renderer.InitialX = RLConsole.CursorLeft;
             _renderer.InitialY = RLConsole.CursorTop;

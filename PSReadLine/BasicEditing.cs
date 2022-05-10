@@ -257,8 +257,7 @@ namespace Microsoft.PowerShell
             // and that requires rendering.
             var renderNeeded = _renderer.EmphasisStart >= 0 || _queuedKeys.Count > 0;
 
-            _renderer.EmphasisStart = -1;
-            _renderer.EmphasisLength = 0;
+            _renderer.EmphasisInit();
 
             var insertionPoint = _renderer.Current;
             // Make sure cursor is at the end before writing the line
