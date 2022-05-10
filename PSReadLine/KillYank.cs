@@ -276,7 +276,7 @@ namespace Microsoft.PowerShell
             var yankLastArgState = new YankLastArgState
             {
                 argument = arg as int? ?? 1,
-                historyIndex = _hs.CurrentHistoryIndex - 1
+                historyIndex = _searcher.CurrentHistoryIndex - 1
             };
             Singleton.YankArgImpl(yankLastArgState);
         }
@@ -303,7 +303,7 @@ namespace Microsoft.PowerShell
                 {
                     argument = (int?) arg ?? -1,
                     historyIncrement = -1,
-                    historyIndex = _hs.CurrentHistoryIndex - 1
+                    historyIndex = _searcher.CurrentHistoryIndex - 1
                 };
 
                 Singleton.YankArgImpl(Singleton._yankLastArgState);

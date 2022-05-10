@@ -11,6 +11,7 @@ public static class Singletons
     private static Renderer __renderer;
     public static History _hs => History.Singleton;
     public static PSConsoleReadLine _rl => PSConsoleReadLine.Singleton;
+    public static HistorySearcher _searcher => HistorySearcher.Singleton;
     public static Logger logger { get; }
 
     static Singletons()

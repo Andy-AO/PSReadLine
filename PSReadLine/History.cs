@@ -13,18 +13,8 @@ namespace Microsoft.PowerShell.PSReadLine
 {
     public class History
     {
-        public enum HistoryMoveCursor
-        {
-            ToEnd,
-            ToBeginning,
-            DontMove
-        }
-
-
-
         // When cycling through history, the current line (not yet added to history)
         // is saved here so it can be restored.
-        private readonly HistoryItem _savedCurrentLine = new();
         public static History Singleton { get; }
 
         static History()
@@ -52,8 +42,6 @@ namespace Microsoft.PowerShell.PSReadLine
         };
 
         public int AnyHistoryCommandCount { get; set; }
-
-        public int CurrentHistoryIndex { get; set; }
 
         // History state
         public HistoryQueue<HistoryItem> Historys { get; set; }
@@ -98,7 +86,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
             var count = Math.Abs(direction);
             direction = direction < 0 ? -1 : +1;
-            var newHistoryIndex = CurrentHistoryIndex;
+            var newHistoryIndex = _searcher.CurrentHistoryIndex;
             while (count > 0)
             {
                 newHistoryIndex += direction;
@@ -133,13 +121,13 @@ namespace Microsoft.PowerShell.PSReadLine
                 // Set '_current' back to where it was when starting the first search, because
                 // it might be changed during the rendering of the last matching history command.
                 _renderer.Current = _renderer.EmphasisLength;
-                CurrentHistoryIndex = newHistoryIndex;
+                _searcher.CurrentHistoryIndex = newHistoryIndex;
                 var moveCursor = RL.InViCommandMode()
-                    ? HistoryMoveCursor.ToBeginning
+                    ? HistorySearcher.HistoryMoveCursor.ToBeginning
                     : _rl.Options.HistorySearchCursorMovesToEnd
-                        ? HistoryMoveCursor.ToEnd
-                        : HistoryMoveCursor.DontMove;
-                UpdateFromHistory(moveCursor);
+                        ? HistorySearcher.HistoryMoveCursor.ToEnd
+                        : HistorySearcher.HistoryMoveCursor.DontMove;
+                _searcher.UpdateFromHistory(moveCursor);
             }
         }
 
@@ -153,7 +141,7 @@ namespace Microsoft.PowerShell.PSReadLine
             RL.TryGetArgAsInt(arg, out var numericArg, -1);
             if (numericArg > 0) numericArg = -numericArg;
 
-            Singleton.SaveCurrentLine();
+            _searcher.SaveCurrentLine();
             Singleton.HistorySearch(numericArg);
         }
 
@@ -167,7 +155,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
             if (RL.UpdateListSelection(numericArg)) return;
 
-            Singleton.SaveCurrentLine();
+            _searcher.SaveCurrentLine();
             Singleton.HistoryRecall(numericArg);
         }
 
@@ -179,7 +167,7 @@ namespace Microsoft.PowerShell.PSReadLine
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
             if (RL.UpdateListSelection(numericArg)) return;
 
-            Singleton.SaveCurrentLine();
+            _searcher.SaveCurrentLine();
             Singleton.HistoryRecall(numericArg);
         }
 
@@ -196,9 +184,9 @@ namespace Microsoft.PowerShell.PSReadLine
         /// </summary>
         public static void BeginningOfHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton.SaveCurrentLine();
-            Singleton.CurrentHistoryIndex = 0;
-            Singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);
+            _searcher.SaveCurrentLine();
+            _searcher.CurrentHistoryIndex = 0;
+            _searcher.UpdateFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
         }
 
 
@@ -209,7 +197,7 @@ namespace Microsoft.PowerShell.PSReadLine
         {
             Singleton.Historys?.Clear();
             Singleton.RecentHistory?.Clear();
-            Singleton.CurrentHistoryIndex = 0;
+            _searcher.CurrentHistoryIndex = 0;
         }
 
         /// <summary>
@@ -217,7 +205,7 @@ namespace Microsoft.PowerShell.PSReadLine
         /// </summary>
         public static void EndOfHistory(ConsoleKeyInfo? key = null, object arg = null)
         {
-            Singleton.SaveCurrentLine();
+            _searcher.SaveCurrentLine();
             GoToEndOfHistory();
         }
 
@@ -493,7 +481,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
             var count = Math.Abs(direction);
             direction = direction < 0 ? -1 : +1;
-            var newHistoryIndex = CurrentHistoryIndex;
+            var newHistoryIndex = _searcher.CurrentHistoryIndex;
             while (count > 0)
             {
                 newHistoryIndex += direction;
@@ -523,11 +511,11 @@ namespace Microsoft.PowerShell.PSReadLine
             RecallHistoryCommandCount = RecallHistoryCommandCount + 1;
             if (newHistoryIndex >= 0 && newHistoryIndex <= Historys.Count)
             {
-                CurrentHistoryIndex = newHistoryIndex;
+                _searcher.CurrentHistoryIndex = newHistoryIndex;
                 var moveCursor = RL.InViCommandMode() && !_rl.Options.HistorySearchCursorMovesToEnd
-                    ? HistoryMoveCursor.ToBeginning
-                    : HistoryMoveCursor.ToEnd;
-                UpdateFromHistory(moveCursor);
+                    ? HistorySearcher.HistoryMoveCursor.ToBeginning
+                    : HistorySearcher.HistoryMoveCursor.ToEnd;
+                _searcher.UpdateFromHistory(moveCursor);
             }
         }
 
@@ -663,7 +651,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
         private void IncrementalHistoryWrite()
         {
-            var i = CurrentHistoryIndex - 1;
+            var i = _searcher.CurrentHistoryIndex - 1;
             while (i >= 0)
             {
                 if (Historys[i]._saved) break;
@@ -671,14 +659,6 @@ namespace Microsoft.PowerShell.PSReadLine
             }
 
             WriteHistoryRange(i + 1, Historys.Count - 1, false);
-        }
-
-        public void ClearSavedCurrentLine()
-        {
-            _savedCurrentLine.CommandLine = null;
-            _savedCurrentLine._edits = null;
-            _savedCurrentLine._undoEditIndex = 0;
-            _savedCurrentLine._editGroupStart = -1;
         }
 
         public string MaybeAddToHistory(
@@ -714,7 +694,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
                 Historys.Enqueue(PreviousHistoryItem);
 
-                CurrentHistoryIndex = Historys.Count;
+                _searcher.CurrentHistoryIndex = Historys.Count;
 
                 if (_rl.Options.HistorySaveStyle == HistorySaveStyle.SaveIncrementally && !fromHistoryFile)
                     IncrementalHistoryWrite();
@@ -727,11 +707,11 @@ namespace Microsoft.PowerShell.PSReadLine
             // Clear the saved line unless we used AcceptAndGetNext in which
             // case we're really still in middle of history and might want
             // to recall the saved line.
-            if (GetNextHistoryIndex == 0) ClearSavedCurrentLine();
+            if (GetNextHistoryIndex == 0) _searcher.ClearSavedCurrentLine();
             return result;
         }
 
-        private bool MaybeReadHistoryFile()
+        public bool MaybeReadHistoryFile()
         {
             if (_rl.Options.HistorySaveStyle == HistorySaveStyle.SaveIncrementally)
                 return WithHistoryFileMutexDo(1000, () =>
@@ -770,61 +750,6 @@ namespace Microsoft.PowerShell.PSReadLine
             return null;
         }
 
-        public void SaveCurrentLine()
-        {
-            // We're called before any history operation - so it's convenient
-            // to check if we need to load history from another sessions now.
-            MaybeReadHistoryFile();
-
-            AnyHistoryCommandCount = AnyHistoryCommandCount + 1;
-            if (_savedCurrentLine.CommandLine == null)
-            {
-                _savedCurrentLine.CommandLine = _rl.buffer.ToString();
-                _savedCurrentLine._edits = _rl._edits;
-                _savedCurrentLine._undoEditIndex = _rl._undoEditIndex;
-                _savedCurrentLine._editGroupStart = _rl._editGroupStart;
-            }
-        }
-
-        public void UpdateFromHistory(HistoryMoveCursor moveCursor)
-        {
-            string line;
-            if (CurrentHistoryIndex == Historys.Count)
-            {
-                line = _savedCurrentLine.CommandLine;
-                _rl._edits = new List<EditItem>(_savedCurrentLine._edits);
-                _rl._undoEditIndex = _savedCurrentLine._undoEditIndex;
-                _rl._editGroupStart = _savedCurrentLine._editGroupStart;
-            }
-            else
-            {
-                line = Historys[CurrentHistoryIndex].CommandLine;
-                _rl._edits = new List<EditItem>(Historys[CurrentHistoryIndex]._edits);
-                _rl._undoEditIndex = Historys[CurrentHistoryIndex]._undoEditIndex;
-                _rl._editGroupStart = Historys[CurrentHistoryIndex]._editGroupStart;
-            }
-
-            _rl.buffer.Clear();
-            _rl.buffer.Append(line);
-
-            switch (moveCursor)
-            {
-                case HistoryMoveCursor.ToEnd:
-                    _renderer.Current = Math.Max(0, _rl.buffer.Length + PSConsoleReadLine.ViEndOfLineFactor);
-                    break;
-                case HistoryMoveCursor.ToBeginning:
-                    _renderer.Current = 0;
-                    break;
-                default:
-                    if (_renderer.Current > _rl.buffer.Length)
-                        _renderer.Current = Math.Max(0, _rl.buffer.Length + RL.ViEndOfLineFactor);
-                    break;
-            }
-
-            using var _ = _rl._Prediction.DisableScoped();
-            _renderer.Render();
-        }
-
         /// <summary>
         ///     Replace the current input with the 'next' item from PSReadLine history
         ///     that matches the characters between the start and the input and the cursor.
@@ -833,14 +758,14 @@ namespace Microsoft.PowerShell.PSReadLine
         {
             PSConsoleReadLine.TryGetArgAsInt(arg, out var numericArg, +1);
 
-            Singleton.SaveCurrentLine();
+            _searcher.SaveCurrentLine();
             Singleton.HistorySearch(numericArg);
         }
 
         private static void GoToEndOfHistory()
         {
-            Singleton.CurrentHistoryIndex = Singleton.Historys.Count;
-            Singleton.UpdateFromHistory(HistoryMoveCursor.ToEnd);
+            _searcher.CurrentHistoryIndex = Singleton.Historys.Count;
+            _searcher.UpdateFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
         }
 
         //class start

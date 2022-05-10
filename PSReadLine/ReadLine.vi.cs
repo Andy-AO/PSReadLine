@@ -816,7 +816,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ViSearchHistoryBackward(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _hs.SaveCurrentLine();
+            _searcher.SaveCurrentLine();
             Singleton.StartSearch(true);
         }
 
@@ -825,7 +825,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void SearchForward(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _hs.SaveCurrentLine();
+            _searcher.SaveCurrentLine();
             Singleton.StartSearch(false);
         }
 
@@ -907,15 +907,15 @@ namespace Microsoft.PowerShell
 
             var incr = _searchHistoryBackward ? -1 : +1;
             var moveCursor = Options.HistorySearchCursorMovesToEnd
-                ? History.HistoryMoveCursor.ToEnd
-                : History.HistoryMoveCursor.DontMove;
-            for (var i = _hs.CurrentHistoryIndex + incr; i >= 0 && i < _hs.Historys.Count; i += incr)
+                ? HistorySearcher.HistoryMoveCursor.ToEnd
+                : HistorySearcher.HistoryMoveCursor.DontMove;
+            for (var i = _searcher.CurrentHistoryIndex + incr; i >= 0 && i < _hs.Historys.Count; i += incr)
                 if (Options.HistoryStringComparison.HasFlag(StringComparison.OrdinalIgnoreCase))
                 {
                     if (_hs.Historys[i].CommandLine.ToLower().Contains(_hs.SearchHistoryPrefix.ToLower()))
                     {
-                        _hs.CurrentHistoryIndex = i;
-                        _hs.UpdateFromHistory(moveCursor);
+                        _searcher.CurrentHistoryIndex = i;
+                        _searcher.UpdateFromHistory(moveCursor);
                         return;
                     }
                 }
@@ -923,8 +923,8 @@ namespace Microsoft.PowerShell
                 {
                     if (_hs.Historys[i].CommandLine.Contains(_hs.SearchHistoryPrefix))
                     {
-                        _hs.CurrentHistoryIndex = i;
-                        _hs.UpdateFromHistory(moveCursor);
+                        _searcher.CurrentHistoryIndex = i;
+                        _searcher.UpdateFromHistory(moveCursor);
                         return;
                     }
                 }

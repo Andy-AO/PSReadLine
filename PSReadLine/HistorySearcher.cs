@@ -11,7 +11,7 @@ namespace Microsoft.PowerShell.PSReadLine
         private int searchFromPoint { get; set; }
         private StringBuilder toMatch { get; set; }
         private PSKeyInfo key { get; set; }
-        private static HistorySearcher Singleton { get; }
+        public static HistorySearcher Singleton { get; }
         private Action<ConsoleKeyInfo?, object> function { get; set; }
 
         private const string _forwardISearchPrompt = "fwd-i-search: ";
@@ -44,7 +44,7 @@ namespace Microsoft.PowerShell.PSReadLine
         private void InteractiveHistorySearch(int direction)
         {
             using var _ = _rl._Prediction.DisableScoped();
-            _hs.SaveCurrentLine();
+            _searcher.SaveCurrentLine();
 
             // Add a status line that will contain the search prompt and string
             _renderer.StatusLinePrompt = direction > 0 ? _forwardISearchPrompt : _backwardISearchPrompt;
@@ -60,9 +60,9 @@ namespace Microsoft.PowerShell.PSReadLine
 
         private void HandleUserInput(int direction)
         {
-            searchFromPoint = _hs.CurrentHistoryIndex;
+            searchFromPoint = _searcher.CurrentHistoryIndex;
             searchPositions = new Stack<int>();
-            searchPositions.Push(_hs.CurrentHistoryIndex);
+            searchPositions.Push(_searcher.CurrentHistoryIndex);
             if (_rl.Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
             toMatch = new StringBuilder(64);
             while (true)
@@ -104,6 +104,74 @@ namespace Microsoft.PowerShell.PSReadLine
             }
         }
 
+        public void SaveCurrentLine()
+        {
+            // We're called before any history operation - so it's convenient
+            // to check if we need to load history from another sessions now.
+            _hs.MaybeReadHistoryFile();
+
+            _hs.AnyHistoryCommandCount += 1;
+            if (_savedCurrentLine.CommandLine == null)
+            {
+                _savedCurrentLine.CommandLine = _rl.buffer.ToString();
+                _savedCurrentLine._edits = _rl._edits;
+                _savedCurrentLine._undoEditIndex = _rl._undoEditIndex;
+                _savedCurrentLine._editGroupStart = _rl._editGroupStart;
+            }
+        }
+
+        // When cycling through history, the current line (not yet added to history)
+        // is saved here so it can be restored.
+        private readonly HistoryItem _savedCurrentLine = new();
+        public int CurrentHistoryIndex { get; set; }
+
+        public void ClearSavedCurrentLine()
+        {
+            _savedCurrentLine.CommandLine = null;
+            _savedCurrentLine._edits = null;
+            _savedCurrentLine._undoEditIndex = 0;
+            _savedCurrentLine._editGroupStart = -1;
+        }
+
+        public void UpdateFromHistory(HistoryMoveCursor moveCursor)
+        {
+            string line;
+            if (CurrentHistoryIndex == _hs.Historys.Count)
+            {
+                line = _savedCurrentLine.CommandLine;
+                _rl._edits = new List<EditItem>(_savedCurrentLine._edits);
+                _rl._undoEditIndex = _savedCurrentLine._undoEditIndex;
+                _rl._editGroupStart = _savedCurrentLine._editGroupStart;
+            }
+            else
+            {
+                line = _hs.Historys[CurrentHistoryIndex].CommandLine;
+                _rl._edits = new List<EditItem>(_hs.Historys[CurrentHistoryIndex]._edits);
+                _rl._undoEditIndex = _hs.Historys[CurrentHistoryIndex]._undoEditIndex;
+                _rl._editGroupStart = _hs.Historys[CurrentHistoryIndex]._editGroupStart;
+            }
+
+            _rl.buffer.Clear();
+            _rl.buffer.Append(line);
+
+            switch (moveCursor)
+            {
+                case HistoryMoveCursor.ToEnd:
+                    _renderer.Current = Math.Max(0, _rl.buffer.Length + PSConsoleReadLine.ViEndOfLineFactor);
+                    break;
+                case HistoryMoveCursor.ToBeginning:
+                    _renderer.Current = 0;
+                    break;
+                default:
+                    if (_renderer.Current > _rl.buffer.Length)
+                        _renderer.Current = Math.Max(0, _rl.buffer.Length + RL.ViEndOfLineFactor);
+                    break;
+            }
+
+            using var _ = _rl._Prediction.DisableScoped();
+            _renderer.Render();
+        }
+
         private int HandleBackward(int direction)
         {
             if (toMatch.Length > 0)
@@ -111,11 +179,11 @@ namespace Microsoft.PowerShell.PSReadLine
                 toMatch.Remove(toMatch.Length - 1, 1);
                 _renderer.StatusBuffer.Remove(_renderer.StatusBuffer.Length - 2, 1);
                 searchPositions.Pop();
-                searchFromPoint = _hs.CurrentHistoryIndex = searchPositions.Peek();
+                searchFromPoint = _searcher.CurrentHistoryIndex = searchPositions.Peek();
                 var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                    ? History.HistoryMoveCursor.ToEnd
-                    : History.HistoryMoveCursor.DontMove;
-                _hs.UpdateFromHistory(moveCursor);
+                    ? HistorySearcher.HistoryMoveCursor.ToEnd
+                    : HistorySearcher.HistoryMoveCursor.DontMove;
+                UpdateFromHistory(moveCursor);
 
                 if (_hs.HashedHistory != null)
                     // Remove any entries with index < searchFromPoint because
@@ -168,11 +236,11 @@ namespace Microsoft.PowerShell.PSReadLine
                     _renderer.Current = startIndex;
                     _renderer.EmphasisStart = startIndex;
                     _renderer.EmphasisLength = toMatch.Length;
-                    _hs.CurrentHistoryIndex = searchFromPoint;
+                    _searcher.CurrentHistoryIndex = searchFromPoint;
                     var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                        ? History.HistoryMoveCursor.ToEnd
-                        : History.HistoryMoveCursor.DontMove;
-                    _hs.UpdateFromHistory(moveCursor);
+                        ? HistorySearcher.HistoryMoveCursor.ToEnd
+                        : HistorySearcher.HistoryMoveCursor.DontMove;
+                    _searcher.UpdateFromHistory(moveCursor);
                     return;
                 }
             }
@@ -215,14 +283,22 @@ namespace Microsoft.PowerShell.PSReadLine
                 _renderer.Render();
             }
 
-            searchPositions.Push(_hs.CurrentHistoryIndex);
+            searchPositions.Push(_searcher.CurrentHistoryIndex);
             return false;
         }
 
         private static void GoToEndOfHistory()
         {
-            _hs.CurrentHistoryIndex = _hs.Historys.Count;
-            _hs.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
+            int val = _hs.Historys.Count;
+            _searcher.CurrentHistoryIndex = val;
+            _searcher.UpdateFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
+        }
+
+        public enum HistoryMoveCursor
+        {
+            ToEnd,
+            ToBeginning,
+            DontMove
         }
     }
 }

@@ -424,7 +424,7 @@ namespace Microsoft.PowerShell
             {
                 // ReadLine was cancelled. Save the current line to be restored next time ReadLine
                 // is called, clear the buffer and throw an exception so we can return an empty string.
-                _hs.SaveCurrentLine();
+                _searcher.SaveCurrentLine();
                 _hs.GetNextHistoryIndex = _hs.Historys.Count;
                 _renderer.Current = 0;
                 Singleton.buffer.Clear();
@@ -667,9 +667,10 @@ namespace Microsoft.PowerShell
                 {
                     if (_hs.AnyHistoryCommandCount > 0)
                     {
-                        _hs.ClearSavedCurrentLine();
+                        _searcher.ClearSavedCurrentLine();
                         _hs.HashedHistory = null;
-                        _hs.CurrentHistoryIndex = _hs.Historys.Count;
+                        int val = _hs.Historys.Count;
+                        _searcher.CurrentHistoryIndex = val;
                     }
 
                     _hs.AnyHistoryCommandCount = 0;
@@ -797,15 +798,16 @@ namespace Microsoft.PowerShell
             _yankCommandCount = 0;
             _yankLastArgCommandCount = 0;
             _tabCommandCount = 0;
+            _visualSelectionCommandCount = 0;
+
             _hs.RecallHistoryCommandCount = 0;
             _hs.AnyHistoryCommandCount = 0;
-            _visualSelectionCommandCount = 0;
             _hs.HashedHistory = null;
-
             if (_hs.GetNextHistoryIndex > 0)
             {
-                _hs.CurrentHistoryIndex = _hs.GetNextHistoryIndex;
-                _hs.UpdateFromHistory(History.HistoryMoveCursor.ToEnd);
+                int val = _hs.GetNextHistoryIndex;
+                _searcher.CurrentHistoryIndex = val;
+                _searcher.UpdateFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
                 _hs.GetNextHistoryIndex = 0;
                 if (_hs.SearchHistoryCommandCount > 0)
                 {
@@ -815,7 +817,8 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                _hs.CurrentHistoryIndex = _hs.Historys.Count;
+                int val = _hs.Historys.Count;
+                _searcher.CurrentHistoryIndex = val;
                 _hs.SearchHistoryCommandCount = 0;
             }
 
@@ -871,7 +874,7 @@ namespace Microsoft.PowerShell
 
             _hs.Historys = new HistoryQueue<HistoryItem>(Options.MaximumHistoryCount);
             _hs.RecentHistory = new HistoryQueue<string>(5);
-            _hs.CurrentHistoryIndex = 0;
+            _searcher.CurrentHistoryIndex = 0;
 
             var readHistoryFile = true;
             try
