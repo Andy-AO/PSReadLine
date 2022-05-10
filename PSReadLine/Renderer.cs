@@ -69,7 +69,7 @@ namespace Microsoft.PowerShell
 
         internal static string[] SpacesArr { get; } = new string[80];
 
-        internal static readonly IConsole Console;
+        internal static IConsole Console;
 
         private string _statusLinePrompt;
 

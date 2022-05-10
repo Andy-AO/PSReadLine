@@ -1049,9 +1049,7 @@ namespace Microsoft.PowerShell
             console.Write(Prompt);
             _renderer.InitialX = console.CursorLeft;
             _renderer.InitialY = console.CursorTop;
-            var val = Renderer.InitialPrevRender;
-            _renderer.PreviousRender = val;
-
+            _renderer.PreviousRender = Renderer.InitialPrevRender;
             _renderer.Render();
             console.CursorVisible = true;
         }
