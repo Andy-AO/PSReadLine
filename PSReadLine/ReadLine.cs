@@ -475,6 +475,7 @@ namespace Microsoft.PowerShell
             CancellationToken cancellationToken,
             bool? lastRunStatus)
         {
+            logger.Information("run ReadLine().");
             var console = Renderer.Console;
 
             if (Console.IsInputRedirected || Console.IsOutputRedirected)
