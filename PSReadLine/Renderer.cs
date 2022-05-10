@@ -25,13 +25,13 @@ namespace Microsoft.PowerShell
 
         internal int EmphasisLength { get; set; }
 
-        internal RenderData PreviousRender { get; set; }
+        internal RenderData PreviousRender { get; set; } = InitialPrevRender;
 
         internal int InitialX { get; set; }
 
         internal int InitialY { get; set; }
 
-        internal bool WaitingToRender { get; set; }
+        private bool WaitingToRender { get; set; }
 
         internal int Current { get; set; }
 
@@ -44,8 +44,11 @@ namespace Microsoft.PowerShell
 
         public Renderer()
         {
-            logger.Error("Renderer() run!");
-            Init();
+            EmphasisInit();
+            PreviousRender.bufferWidth = Console.BufferWidth;
+            PreviousRender.bufferHeight = Console.BufferHeight;
+            InitialX = Console.CursorLeft;
+            InitialY = Console.CursorTop;
         }
 
         static Renderer()
@@ -53,18 +56,6 @@ namespace Microsoft.PowerShell
             Console = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? PlatformWindows.OneTimeInit(_rl)
                 : new VirtualTerminal();
-        }
-
-        private void Init()
-        {
-            Current = 0;
-            PreviousRender = InitialPrevRender;
-            PreviousRender.bufferWidth = Console.BufferWidth;
-            PreviousRender.bufferHeight = Console.BufferHeight;
-            PreviousRender.errorPrompt = false;
-            EmphasisInit();
-            InitialX = Console.CursorLeft;
-            InitialY = Console.CursorTop;
         }
 
         internal static string[] SpacesArr { get; } = new string[80];
@@ -1245,7 +1236,7 @@ namespace Microsoft.PowerShell
         {
             internal int bufferHeight;
             internal int bufferWidth;
-            internal bool errorPrompt;
+            internal bool errorPrompt = false;
             internal RenderedLineData[] lines;
         }
 
