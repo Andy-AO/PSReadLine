@@ -305,7 +305,7 @@ namespace Microsoft.PowerShell
             _viCmdChordTable[Keys.C] = _viChordCTable;
             _viCmdChordTable[Keys.Y] = _viChordYTable;
 
-            _normalCursorSize = Renderer._console.CursorSize;
+            _normalCursorSize = Renderer.Console.CursorSize;
             if (_normalCursorSize < 1 || _normalCursorSize > 100)
                 // This is unlikely, but possible if the cursor size is set directly in
                 // the registry.

@@ -247,13 +247,13 @@ namespace Microsoft.PowerShell
         private void ReadOneOrMoreKeys()
         {
             _readkeyStopwatch.Restart();
-            while (Renderer._console.KeyAvailable)
+            while (Renderer.Console.KeyAvailable)
             {
                 // _charMap is only guaranteed to accumulate input while KeyAvailable
                 // returns false. Make sure to check KeyAvailable after every ProcessKey call,
                 // and clear it in a loop in case the input was something like ^[[1 which can
                 // be 3, 2, or part of 1 key depending on timing.
-                _charMap.ProcessKey(Renderer._console.ReadKey());
+                _charMap.ProcessKey(Renderer.Console.ReadKey());
                 while (_charMap.KeyAvailable)
                 {
                     var key = PSKeyInfo.FromConsoleKeyInfo(_charMap.ReadKey());
@@ -272,8 +272,8 @@ namespace Microsoft.PowerShell
                     // Don't want to block when there is an escape sequence being read.
                     if (_charMap.InEscapeSequence)
                     {
-                        if (Renderer._console.KeyAvailable)
-                            _charMap.ProcessKey(Renderer._console.ReadKey());
+                        if (Renderer.Console.KeyAvailable)
+                            _charMap.ProcessKey(Renderer.Console.ReadKey());
                         else
                             // We don't want to sleep for the whole escape timeout
                             // or the user will have a laggy console, but there's
@@ -285,7 +285,7 @@ namespace Microsoft.PowerShell
                     }
                     else
                     {
-                        _charMap.ProcessKey(Renderer._console.ReadKey());
+                        _charMap.ProcessKey(Renderer.Console.ReadKey());
                     }
 
                 while (_charMap.KeyAvailable)
@@ -392,7 +392,7 @@ namespace Microsoft.PowerShell
 
                             // To detect output during possible event processing, see if the cursor moved
                             // and rerender if so.
-                            var console = Renderer._console;
+                            var console = Renderer.Console;
                             var y = console.CursorTop;
                             ps.Invoke();
                             if (y != console.CursorTop)
@@ -475,7 +475,7 @@ namespace Microsoft.PowerShell
             CancellationToken cancellationToken,
             bool? lastRunStatus)
         {
-            var console = Renderer._console;
+            var console = Renderer.Console;
 
             if (Console.IsInputRedirected || Console.IsOutputRedirected)
                 // System.Console doesn't handle redirected input. It matches the behavior on Windows
@@ -702,14 +702,14 @@ namespace Microsoft.PowerShell
         {
             try
             {
-                Renderer._console.OutputEncoding = _initialOutputEncoding;
+                Renderer.Console.OutputEncoding = _initialOutputEncoding;
                 return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     ? PlatformWindows.CallPossibleExternalApplication(func)
                     : func();
             }
             finally
             {
-                if (!_skipOutputEncodingChange) Renderer._console.OutputEncoding = Encoding.UTF8;
+                if (!_skipOutputEncodingChange) Renderer.Console.OutputEncoding = Encoding.UTF8;
             }
         }
 
@@ -782,7 +782,7 @@ namespace Microsoft.PowerShell
 
             _statusIsErrorMessage = false;
 
-            _initialOutputEncoding = Renderer._console.OutputEncoding;
+            _initialOutputEncoding = Renderer.Console.OutputEncoding;
             _Prediction.Reset();
 
             // Don't change the OutputEncoding if already UTF8, no console, or using raster font on Windows
@@ -791,7 +791,7 @@ namespace Microsoft.PowerShell
                                         && PlatformWindows.IsConsoleInput()
                                         && PlatformWindows.IsUsingRasterFont();
 
-            if (!_skipOutputEncodingChange) Renderer._console.OutputEncoding = Encoding.UTF8;
+            if (!_skipOutputEncodingChange) Renderer.Console.OutputEncoding = Encoding.UTF8;
 
             _killCommandCount = 0;
             _yankCommandCount = 0;
@@ -1025,7 +1025,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void InvokePrompt(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var console = Renderer._console;
+            var console = Renderer.Console;
             console.CursorVisible = false;
 
             if (arg is int newY)

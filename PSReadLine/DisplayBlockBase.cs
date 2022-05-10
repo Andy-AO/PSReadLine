@@ -17,7 +17,7 @@ namespace Microsoft.PowerShell
 
             protected void MoveCursorDown(int cnt)
             {
-                var console = Renderer._console;
+                var console = Renderer.Console;
                 while (cnt-- > 0) console.Write("\n");
             }
 
@@ -33,7 +33,7 @@ namespace Microsoft.PowerShell
 
             protected void AdjustForPossibleScroll(int cnt)
             {
-                var console = Renderer._console;
+                var console = Renderer.Console;
                 var scrollCnt = console.CursorTop + cnt + 1 - console.BufferHeight;
                 if (scrollCnt > 0)
                 {
@@ -73,14 +73,14 @@ namespace Microsoft.PowerShell
 
             public void SaveCursor()
             {
-                var console = Renderer._console;
+                var console = Renderer.Console;
                 _savedCursorLeft = console.CursorLeft;
                 _savedCursorTop = console.CursorTop;
             }
 
             public void RestoreCursor()
             {
-                Renderer._console.SetCursorPosition(_savedCursorLeft, _savedCursorTop);
+                Renderer.Console.SetCursorPosition(_savedCursorLeft, _savedCursorTop);
             }
         }
     }

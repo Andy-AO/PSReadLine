@@ -447,7 +447,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ClearScreen(ConsoleKeyInfo? key = null, object arg = null)
         {
-            var console = Renderer._console;
+            var console = Renderer.Console;
             console.Write("\x1b[2J");
             InvokePrompt(null, console.WindowTop);
         }

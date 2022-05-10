@@ -82,7 +82,7 @@ namespace Microsoft.PowerShell
             if (options.PromptText != null) Options.PromptText = options.PromptText;
             if (options._predictionSource.HasValue)
             {
-                if (Renderer._console is PlatformWindows.LegacyWin32Console &&
+                if (Renderer.Console is PlatformWindows.LegacyWin32Console &&
                     options.PredictionSource != PredictionSource.None)
                     throw new ArgumentException(PSReadLineResources.PredictiveSuggestionNotSupported);
 

@@ -223,7 +223,7 @@ namespace Microsoft.PowerShell
             {
                 get
                 {
-                    var console = Renderer._console;
+                    var console = Renderer.Console;
                     return console.WindowWidth >= MinWindowWidth && console.WindowHeight >= MinWindowHeight;
                 }
             }
@@ -276,7 +276,7 @@ namespace Microsoft.PowerShell
 
                 _inputText = userInput;
                 SelectedItemIndex = -1;
-                _listItemWidth = Math.Min(Renderer._console.BufferWidth, ListMaxWidth);
+                _listItemWidth = Math.Min(Renderer.Console.BufferWidth, ListMaxWidth);
 
                 if (inputUnchanged)
                     // This could happen when the user types 'ctrl+z' (undo) while looping through the suggestion list.
@@ -457,7 +457,7 @@ namespace Microsoft.PowerShell
                 if (_listItems == null) return;
 
                 var top = cursorAtEol
-                    ? Renderer._console.CursorTop
+                    ? Renderer.Console.CursorTop
                     : _renderer.ConvertOffsetToPoint(_inputText.Length).Y;
 
                 _singleton.WriteBlankLines(top + 1, _listItemHeight);
@@ -589,7 +589,7 @@ namespace Microsoft.PowerShell
                 var totalLength = SuggestionText.Length;
 
                 // Get the maximum buffer cells that could be available to the current command line.
-                var maxBufferCells = Renderer._console.BufferHeight * Renderer._console.BufferWidth -
+                var maxBufferCells = Renderer.Console.BufferHeight * Renderer.Console.BufferWidth -
                                      _renderer.InitialX;
                 var skipRendering = false;
 
@@ -661,7 +661,7 @@ namespace Microsoft.PowerShell
                     // Clear the suggestion only if we actually rendered it.
                     int left, top;
                     var inputLen = _inputText.Length;
-                    var console = Renderer._console;
+                    var console = Renderer.Console;
 
                     if (cursorAtEol)
                     {

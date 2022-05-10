@@ -73,7 +73,7 @@ namespace Microsoft.PowerShell
                 // GetDynamicHelpContent could scroll the screen, e.g. via Write-Progress. For example,
                 // Get-Help for unknown command under the CloudShell Azure drive will show the progress bar while searching for command.
                 // We need to update the _initialY in case the current cursor postion has changed.
-                if (_renderer.InitialY > Renderer._console.CursorTop) _renderer.InitialY = Renderer._console.CursorTop;
+                if (_renderer.InitialY > Renderer.Console.CursorTop) _renderer.InitialY = Renderer.Console.CursorTop;
             }
         }
 
@@ -83,7 +83,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ShowCommandHelp(ConsoleKeyInfo? key = null, object arg = null)
         {
-            if (Renderer._console is PlatformWindows.LegacyWin32Console)
+            if (Renderer.Console is PlatformWindows.LegacyWin32Console)
             {
                 var helpBlock = new Collection<string>
                 {
@@ -212,7 +212,7 @@ namespace Microsoft.PowerShell
 
             public void DrawMultilineBlock()
             {
-                var console = Renderer._console;
+                var console = Renderer.Console;
 
                 extraPhysicalLines = 0;
 

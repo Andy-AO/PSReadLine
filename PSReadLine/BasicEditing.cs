@@ -84,7 +84,7 @@ namespace Microsoft.PowerShell
             using var _ = Singleton._Prediction.DisableScoped();
             _renderer.ForceRender();
 
-            Renderer._console.Write("\x1b[91m^C\x1b[0m");
+            Renderer.Console.Write("\x1b[91m^C\x1b[0m");
 
             Singleton.buffer.Clear(); // Clear so we don't actually run the input
             _renderer.Current = 0; // If Render is called, _current must be correct.
@@ -306,7 +306,7 @@ namespace Microsoft.PowerShell
             // Clear the prediction view if there is one.
             _Prediction.ActiveView.Clear(true);
 
-            Renderer._console.Write("\n");
+            Renderer.Console.Write("\n");
             _inputAccepted = true;
             return true;
         }

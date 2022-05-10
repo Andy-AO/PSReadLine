@@ -215,7 +215,7 @@ namespace Microsoft.PowerShell
         {
             if (viewStyle != PredictionViewStyle.ListView) return;
 
-            var console = Renderer._console;
+            var console = Renderer.Console;
             var minWidth = PredictionListView.MinWindowWidth;
             var minHeight = PredictionListView.MinWindowHeight;
 

@@ -562,7 +562,7 @@ namespace Test
                 .SetValue(aRL, _mockedMethods);
 
             typeof(Renderer)
-                .GetField("_console", BindingFlags.Static | BindingFlags.NonPublic)
+                .GetField("Console", BindingFlags.Static | BindingFlags.NonPublic)
                 .SetValue(null, _console);
 
             _emptyLine ??= new string(' ', _console.BufferWidth);

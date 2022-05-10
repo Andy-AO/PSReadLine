@@ -10,32 +10,32 @@ namespace Microsoft.PowerShell
     {
         private void WriteBlankLines(int count)
         {
-            Renderer._console.BlankRestOfLine();
+            Renderer.Console.BlankRestOfLine();
             for (var i = 1; i < count; i++)
             {
-                Renderer._console.Write("\n");
-                Renderer._console.BlankRestOfLine();
+                Renderer.Console.Write("\n");
+                Renderer.Console.BlankRestOfLine();
             }
         }
 
         private void WriteBlankLines(int top, int count)
         {
-            var savedCursorLeft = Renderer._console.CursorLeft;
-            var savedCursorTop = Renderer._console.CursorTop;
+            var savedCursorLeft = Renderer.Console.CursorLeft;
+            var savedCursorTop = Renderer.Console.CursorTop;
 
-            Renderer._console.SetCursorPosition(0, top);
+            Renderer.Console.SetCursorPosition(0, top);
             WriteBlankLines(count);
-            Renderer._console.SetCursorPosition(savedCursorLeft, savedCursorTop);
+            Renderer.Console.SetCursorPosition(savedCursorLeft, savedCursorTop);
         }
 
         private void WriteBlankRestOfLine(int left, int top)
         {
-            var savedCursorLeft = Renderer._console.CursorLeft;
-            var savedCursorTop = Renderer._console.CursorTop;
+            var savedCursorLeft = Renderer.Console.CursorLeft;
+            var savedCursorTop = Renderer.Console.CursorTop;
 
-            Renderer._console.SetCursorPosition(left, top);
-            Renderer._console.BlankRestOfLine();
-            Renderer._console.SetCursorPosition(savedCursorLeft, savedCursorTop);
+            Renderer.Console.SetCursorPosition(left, top);
+            Renderer.Console.BlankRestOfLine();
+            Renderer.Console.SetCursorPosition(savedCursorLeft, savedCursorTop);
         }
 
         internal static string Spaces(int cnt)

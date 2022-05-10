@@ -408,14 +408,14 @@ namespace Microsoft.PowerShell
 
             if (Options.ViModeIndicator == ViModeStyle.Cursor)
             {
-                Renderer._console.CursorSize = _normalCursorSize < 50 ? 100 : 25;
+                Renderer.Console.CursorSize = _normalCursorSize < 50 ? 100 : 25;
             }
             else if (Options.ViModeIndicator == ViModeStyle.Prompt)
             {
-                var savedBackground = Renderer._console.BackgroundColor;
-                Renderer._console.BackgroundColor = AlternateBackground(Renderer._console.BackgroundColor);
+                var savedBackground = Renderer.Console.BackgroundColor;
+                Renderer.Console.BackgroundColor = AlternateBackground(Renderer.Console.BackgroundColor);
                 InvokePrompt();
-                Renderer._console.BackgroundColor = savedBackground;
+                Renderer.Console.BackgroundColor = savedBackground;
             }
             else if (Options.ViModeIndicator == ViModeStyle.Script && Options.ViModeChangeHandler != null)
             {
@@ -429,7 +429,7 @@ namespace Microsoft.PowerShell
             _Prediction.EnableGlobal();
 
             if (Options.ViModeIndicator == ViModeStyle.Cursor)
-                Renderer._console.CursorSize = _normalCursorSize;
+                Renderer.Console.CursorSize = _normalCursorSize;
             else if (Options.ViModeIndicator == ViModeStyle.Prompt)
                 InvokePrompt();
             else if (Options.ViModeIndicator == ViModeStyle.Script && Options.ViModeChangeHandler != null)
