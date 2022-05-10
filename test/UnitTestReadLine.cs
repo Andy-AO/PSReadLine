@@ -561,15 +561,13 @@ namespace Test
                 .GetField("_mockableMethods", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(aRL, _mockedMethods);
 
-            var aRenderer = Singletons._renderer;
-
             typeof(Renderer)
-                .GetField("_console", BindingFlags.Instance | BindingFlags.NonPublic)
-                .SetValue(aRenderer, _console);
+                .GetField("_console", BindingFlags.Static | BindingFlags.NonPublic)
+                .SetValue(null, _console);
 
             _emptyLine ??= new string(' ', _console.BufferWidth);
 
-            Microsoft.PowerShell.PSReadLine.History.ClearHistory(null,null);
+            Microsoft.PowerShell.PSReadLine.History.ClearHistory(null, null);
             PSConsoleReadLine.ClearKillRing();
 
             var options = new SetPSReadLineOption

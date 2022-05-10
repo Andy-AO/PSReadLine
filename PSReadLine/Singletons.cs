@@ -2,6 +2,7 @@ using Serilog;
 using Serilog.Context;
 using Serilog.Core;
 using Serilog.Events;
+using System;
 
 namespace Microsoft.PowerShell.PSReadLine;
 
@@ -17,7 +18,9 @@ public static class Singletons
         logger = new LoggerConfiguration().MinimumLevel.Verbose()
             .WriteTo.Console(outputTemplate:
                 @"{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}")
+            .WriteTo.File(Environment.ExpandEnvironmentVariables(@"%AppData%\PSReadline\PSReadlineLog.log"))
             .CreateLogger();
+        logger.Information("\n\nLogging has started.");
     }
 
     public static Renderer _renderer

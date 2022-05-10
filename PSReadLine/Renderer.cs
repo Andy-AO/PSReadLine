@@ -44,14 +44,32 @@ namespace Microsoft.PowerShell
 
         public Renderer()
         {
+            logger.Error("Renderer() run!");
+            Init();
+        }
+
+        static Renderer()
+        {
+            _console = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? PlatformWindows.OneTimeInit(_rl)
+                : new VirtualTerminal();
+        }
+
+        public void Init()
+        {
             Current = 0;
+            PreviousRender = InitialPrevRender;
+            PreviousRender.bufferWidth = _console.BufferWidth;
+            PreviousRender.bufferHeight = _console.BufferHeight;
+            PreviousRender.errorPrompt = false;
+            EmphasisInit();
+            InitialX = _console.CursorLeft;
+            InitialY = _console.CursorTop;
         }
 
         internal static string[] SpacesArr { get; } = new string[80];
 
-        internal readonly IConsole _console = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? PlatformWindows.OneTimeInit(_rl)
-            : new VirtualTerminal();
+        internal static readonly IConsole _console;
 
         private string _statusLinePrompt;
 
@@ -1113,7 +1131,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayUp(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = _s._console;
+            var console = _console;
             var newTop = console.WindowTop - numericArg * console.WindowHeight;
             if (newTop < 0) newTop = 0;
 
@@ -1129,7 +1147,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayUpLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = _s._console;
+            var console = _console;
             var newTop = console.WindowTop - numericArg;
             if (newTop < 0) newTop = 0;
 
@@ -1142,7 +1160,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayDown(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = _s._console;
+            var console = _console;
             var newTop = console.WindowTop + numericArg * console.WindowHeight;
             if (newTop > console.BufferHeight - console.WindowHeight)
                 newTop = console.BufferHeight - console.WindowHeight;
@@ -1156,7 +1174,7 @@ namespace Microsoft.PowerShell
         public static void ScrollDisplayDownLine(ConsoleKeyInfo? key = null, object arg = null)
         {
             RL.TryGetArgAsInt(arg, out var numericArg, +1);
-            var console = _s._console;
+            var console = _console;
             var newTop = console.WindowTop + numericArg;
             if (newTop > console.BufferHeight - console.WindowHeight)
                 newTop = console.BufferHeight - console.WindowHeight;
@@ -1169,7 +1187,7 @@ namespace Microsoft.PowerShell
         /// </summary>
         public static void ScrollDisplayTop(ConsoleKeyInfo? key = null, object arg = null)
         {
-            _s._console.SetWindowPosition(0, 0);
+            _console.SetWindowPosition(0, 0);
         }
 
         /// <summary>
@@ -1182,7 +1200,7 @@ namespace Microsoft.PowerShell
             var s = _s;
             var point = s.ConvertOffsetToPoint(offset);
 
-            var console = s._console;
+            var console = _console;
             var newTop = point.Y - console.WindowHeight + 1;
 
             // If the cursor is already visible, and we're on the first

@@ -134,7 +134,7 @@ namespace Microsoft.PowerShell
             }
         }
 
-        public IConsole RLConsole => _renderer._console;
+        public IConsole RLConsole => Renderer._console;
 
         public static string Prompt
         {
@@ -765,30 +765,23 @@ namespace Microsoft.PowerShell
 
         private void Initialize(Runspace runspace, EngineIntrinsics engineIntrinsics)
         {
-            _renderer.Current = 0;
+            _renderer.Init();
             _engineIntrinsics = engineIntrinsics;
             _runspace = runspace;
-
             if (!_delayedOneTimeInitCompleted)
             {
                 DelayedOneTimeInitialize();
                 _delayedOneTimeInitCompleted = true;
             }
 
-            var val = Renderer.InitialPrevRender;
-            _renderer.PreviousRender = val;
-            _renderer.PreviousRender.bufferWidth = RLConsole.BufferWidth;
-            _renderer.PreviousRender.bufferHeight = RLConsole.BufferHeight;
-            _renderer.PreviousRender.errorPrompt = false;
             buffer.Clear();
             _edits = new List<EditItem>();
             _undoEditIndex = 0;
             _editGroupStart = -1;
             _mark = 0;
-            _renderer.EmphasisInit();
+
             _inputAccepted = false;
-            _renderer.InitialX = RLConsole.CursorLeft;
-            _renderer.InitialY = RLConsole.CursorTop;
+
             _statusIsErrorMessage = false;
 
             _initialOutputEncoding = RLConsole.OutputEncoding;
