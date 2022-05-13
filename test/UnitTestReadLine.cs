@@ -9,12 +9,11 @@ using System.Management.Automation.Runspaces;
 using System.Management.Automation.Subsystem.Prediction;
 using System.Threading.Tasks;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Microsoft.PowerShell;
 using Microsoft.PowerShell.Internal;
-using Microsoft.PowerShell.PSReadLine;
 using Xunit;
 using Xunit.Abstractions;
+using UnitTestPSReadLine;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -437,9 +436,10 @@ namespace Test
         private void AssertScreenIs(int top, int lines, params object[] items)
         {
             var consoleBuffer = _console.ReadBufferLines(top, lines);
-
+            logger.Information("_console.ReadBufferLines(top, lines) : " + consoleBuffer.ShowContext());
             var expectedBuffer = CreateCharInfoBuffer(lines, items);
             Assert.Equal(expectedBuffer.Length, consoleBuffer.Length);
+            Assert.Equal(expectedBuffer.ShowContext(), consoleBuffer.ShowContext());
             for (var i = 0; i < expectedBuffer.Length; i++)
             {
                 // Comparing CHAR_INFO should work, but randomly some attributes are set

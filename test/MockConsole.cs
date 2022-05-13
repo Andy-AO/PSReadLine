@@ -6,7 +6,7 @@ using Microsoft.PowerShell.Internal;
 
 namespace Test
 {
-    internal struct CHAR_INFO
+    public struct CHAR_INFO
     {
         public ushort UnicodeChar;
         public ushort Attributes;

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Xunit;
 
 namespace Test
 {

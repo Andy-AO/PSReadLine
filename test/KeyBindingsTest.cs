@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Microsoft.PowerShell;
 using Xunit;
 
 namespace Test
