@@ -1188,7 +1188,7 @@ public abstract class HistoryTest : MyReadLine
     public void InteractiveHistorySearchNoDuplicates()
     {
         TestSetup(KeyMode.Emacs);
-
+        Test("", Keys("",_.UpArrow, _.DownArrow));
         PSConsoleReadLine.SetOptions(new SetPSReadLineOption {HistoryNoDuplicates = true});
         SetHistory("0000", "echo aaaa", "1111", "echo bbbb", "2222", "echo bbbb", "3333", "echo cccc", "4444");
         Test("echo aaaa", Keys(

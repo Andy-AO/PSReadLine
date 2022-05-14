@@ -2,11 +2,40 @@
 using System.Management.Automation;
 using System.Text;
 using Microsoft.PowerShell;
+using UnitTestPSReadLine;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Test
 {
-    public partial class ReadLine
+    public class en_US_Windows_RenderTest : RenderTest, IClassFixture<ConsoleFixture>
+    {
+        public en_US_Windows_RenderTest(ConsoleFixture fixture, ITestOutputHelper output)
+            : base(fixture, output, "en-US", "windows")
+        {
+        }
+    }
+
+    public class fr_FR_Windows_RenderTest : RenderTest, IClassFixture<ConsoleFixture>
+    {
+        public fr_FR_Windows_RenderTest(ConsoleFixture fixture, ITestOutputHelper output)
+            : base(fixture, output, "fr-FR", "windows")
+        {
+        }
+
+        // I don't think this is actually true for real French keyboard, but on my US keyboard,
+        // I have to use Alt 6 0 for `<` and Alt 6 2 for `>` and that means the Alt+< and Alt+>
+        // bindings can't work.
+        internal override bool KeyboardHasLessThan => false;
+        internal override bool KeyboardHasGreaterThan => false;
+
+        // These are most likely an issue with .Net on Windows - AltGr turns into Ctrl+Alt and `]` or `@`
+        // requires AltGr, so you can't tell the difference b/w `]` and `Ctrl+]`.
+        internal override bool KeyboardHasCtrlRBracket => false;
+        internal override bool KeyboardHasCtrlAt => false;
+    }
+
+    public abstract class RenderTest : MyReadLine
     {
         [SkippableFact]
         public void ClearScreen()
@@ -330,6 +359,10 @@ function prompt {
                 CheckThat(() => AssertScreenIs(1,
                     Tuple.Create(ConsoleColor.Blue, ConsoleColor.Magenta), "PSREADLINE>",
                     TokenClassification.Command, "dir"))));
+        }
+
+        public RenderTest(ConsoleFixture fixture, ITestOutputHelper output, string lang, string os) : base(fixture, output, lang, os)
+        {
         }
     }
 }
