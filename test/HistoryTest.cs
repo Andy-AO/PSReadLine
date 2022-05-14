@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Test;
 
-public class en_US_Windows_HistoryTest : MyReadLine, IClassFixture<ConsoleFixture>
+public class en_US_Windows_HistoryTest : HistoryTest, IClassFixture<ConsoleFixture>
 {
     public en_US_Windows_HistoryTest(ConsoleFixture fixture, ITestOutputHelper output)
         : base(fixture, output, "en-US", "windows")
@@ -18,6 +18,24 @@ public class en_US_Windows_HistoryTest : MyReadLine, IClassFixture<ConsoleFixtur
     }
 }
 
+public class fr_FR_Windows_HistoryTest : HistoryTest, IClassFixture<ConsoleFixture>
+{
+    public fr_FR_Windows_HistoryTest(ConsoleFixture fixture, ITestOutputHelper output)
+        : base(fixture, output, "fr-FR", "windows")
+    {
+    }
+
+    // I don't think this is actually true for real French keyboard, but on my US keyboard,
+    // I have to use Alt 6 0 for `<` and Alt 6 2 for `>` and that means the Alt+< and Alt+>
+    // bindings can't work.
+    internal override bool KeyboardHasLessThan => false;
+    internal override bool KeyboardHasGreaterThan => false;
+
+    // These are most likely an issue with .Net on Windows - AltGr turns into Ctrl+Alt and `]` or `@`
+    // requires AltGr, so you can't tell the difference b/w `]` and `Ctrl+]`.
+    internal override bool KeyboardHasCtrlRBracket => false;
+    internal override bool KeyboardHasCtrlAt => false;
+}
 
 public abstract class HistoryTest : MyReadLine
 {
@@ -42,7 +60,8 @@ public abstract class HistoryTest : MyReadLine
         TestSetup(KeyMode.Cmd);
 
         string historySavingFile = Path.GetTempFileName();
-        var options = new SetPSReadLineOption {
+        var options = new SetPSReadLineOption
+        {
             HistorySaveStyle = HistorySaveStyle.SaveIncrementally,
             MaximumHistoryCount = 3,
         };
@@ -54,7 +73,7 @@ public abstract class HistoryTest : MyReadLine
         PSConsoleReadLine.SetOptions(options);
 
         // Set the initial history items.
-        string[] initialHistoryItems = new[] { "gcm help", "dir ~" };
+        string[] initialHistoryItems = new[] {"gcm help", "dir ~"};
         SetHistory(initialHistoryItems);
 
         // The initial history items should be saved to file.
@@ -73,7 +92,7 @@ public abstract class HistoryTest : MyReadLine
 
         Microsoft.PowerShell.PSReadLine.History.AddToHistory("cd Documents");
 
-        string[] expectedSavedLines = new[] { "gcm help", "dir ~", "cd Downloads", "cd Documents" };
+        string[] expectedSavedLines = new[] {"gcm help", "dir ~", "cd Downloads", "cd Documents"};
         text = File.ReadAllLines(historySavingFile);
         Assert.Equal(expectedSavedLines.Length, text.Length);
         for (int i = 0; i < text.Length; i++)
@@ -81,7 +100,7 @@ public abstract class HistoryTest : MyReadLine
             Assert.Equal(expectedSavedLines[i], text[i]);
         }
 
-        string[] expectedHistoryItems = new[] { "dir ~", "cd Documents", "cd Downloads" };
+        string[] expectedHistoryItems = new[] {"dir ~", "cd Documents", "cd Downloads"};
         var historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
         Assert.Equal(expectedHistoryItems.Length, historyItems.Length);
         for (int i = 0; i < historyItems.Length; i++)
@@ -109,7 +128,8 @@ public abstract class HistoryTest : MyReadLine
         var newHistoryFilePath = Path.GetTempFileName();
         var newHistorySaveStyle = HistorySaveStyle.SaveIncrementally;
 
-        string[] expectedHistoryItems = new[] {
+        string[] expectedHistoryItems = new[]
+        {
             "gcm c*",
             "ConvertTo-SecureString -AsPlainText -String abc -Force",
             "dir p*",
@@ -125,7 +145,8 @@ public abstract class HistoryTest : MyReadLine
             "gcm p*"
         };
 
-        string[] expectedSavedItems = new[] {
+        string[] expectedSavedItems = new[]
+        {
             "gcm c*",
             "dir p*",
             "ps c*",
@@ -183,7 +204,8 @@ public abstract class HistoryTest : MyReadLine
         var newHistoryFilePath = Path.GetTempFileName();
         var newHistorySaveStyle = HistorySaveStyle.SaveIncrementally;
 
-        string[] expectedHistoryItems = new[] {
+        string[] expectedHistoryItems = new[]
+        {
             "$token = 'abcd'", // Assign expr-value to sensitive variable. Not saved to file.
             "Set-Secret abc $mySecret", // 'Set-Secret' will not be save to file.
             "ConvertTo-SecureString stringValue -AsPlainText", // '-AsPlainText' is an alert. Not saved to file.
@@ -207,7 +229,8 @@ public abstract class HistoryTest : MyReadLine
             "$environment -brand $brand -userBitWardenEmail $bwuser -userBitWardenPassword $bwpass" // '-userBitWardenPassword' matches sensitive pattern and it has parsing error. Not save to file.
         };
 
-        string[] expectedSavedItems = new[] {
+        string[] expectedSavedItems = new[]
+        {
             "Get-Secret PSGalleryApiKey -AsPlainText",
             "$token = Get-Secret -Name github-token -Vault MySecret",
             "[MyType]::CallRestAPI($token, $url, $args)",
@@ -279,20 +302,23 @@ public abstract class HistoryTest : MyReadLine
                     : AddToHistoryOption.MemoryAndFile;
         Func<string, object> newAddToHistoryHandler_ReturnOther = s => "string value";
 
-        string[] commandInputs = new[] {
+        string[] commandInputs = new[]
+        {
             "gmo p*",
             "gcm c*",
             "gal dir",
             "ConvertTo-SecureString -AsPlainText -String abc -Force"
         };
 
-        string[] expectedQueuedItems = new[] {
+        string[] expectedQueuedItems = new[]
+        {
             "gcm c*",
             "gal dir",
             "ConvertTo-SecureString -AsPlainText -String abc -Force"
         };
 
-        string[] expectedSavedItems = new[] {
+        string[] expectedSavedItems = new[]
+        {
             "gcm c*",
             "ConvertTo-SecureString -AsPlainText -String abc -Force"
         };
@@ -432,20 +458,23 @@ public abstract class HistoryTest : MyReadLine
                     param([string]$line)
                     'string value'"));
 
-        string[] commandInputs = new[] {
+        string[] commandInputs = new[]
+        {
             "gmo p*",
             "gcm c*",
             "gal dir",
             "ConvertTo-SecureString -AsPlainText -String abc -Force"
         };
 
-        string[] expectedQueuedItems = new[] {
+        string[] expectedQueuedItems = new[]
+        {
             "gcm c*",
             "gal dir",
             "ConvertTo-SecureString -AsPlainText -String abc -Force"
         };
 
-        string[] expectedSavedItems = new[] {
+        string[] expectedSavedItems = new[]
+        {
             "gcm c*",
             "ConvertTo-SecureString -AsPlainText -String abc -Force"
         };
@@ -734,13 +763,15 @@ public abstract class HistoryTest : MyReadLine
         SetHistory("dosomething", "ps p*", "dir", "echo zzz");
         Test("dosomething", Keys(
             "d",
-            _.UpArrow,   CheckThat(() => {
+            _.UpArrow, CheckThat(() =>
+            {
                 AssertScreenIs(1,
                     emphasisColors, 'd',
                     TokenClassification.Command, "ir");
                 AssertCursorLeftIs(1);
             }),
-            _.UpArrow,   CheckThat(() => {
+            _.UpArrow, CheckThat(() =>
+            {
                 AssertScreenIs(1,
                     emphasisColors, 'd',
                     TokenClassification.Command, "osomething");
@@ -751,25 +782,28 @@ public abstract class HistoryTest : MyReadLine
         SetHistory("dosomething", "ps p*", "dir", "echo zzz");
         Test("dosomething", Keys(
             "d",
-            _.UpArrow,   CheckThat(() => {
+            _.UpArrow, CheckThat(() =>
+            {
                 AssertScreenIs(1,
                     emphasisColors, 'd',
                     TokenClassification.Command, "ir");
                 AssertCursorLeftIs(3);
             }),
-            _.UpArrow,   CheckThat(() => {
+            _.UpArrow, CheckThat(() =>
+            {
                 AssertScreenIs(1,
                     emphasisColors, 'd',
                     TokenClassification.Command, "osomething");
                 AssertCursorLeftIs(11);
             }),
-            _.DownArrow, CheckThat(() => {
+            _.DownArrow, CheckThat(() =>
+            {
                 AssertScreenIs(1,
                     emphasisColors, 'd',
                     TokenClassification.Command, "ir");
                 AssertCursorLeftIs(3);
             }),
-            _.UpArrow,   CheckThat(() =>
+            _.UpArrow, CheckThat(() =>
             {
                 AssertScreenIs(1,
                     emphasisColors, 'd',
@@ -791,25 +825,28 @@ public abstract class HistoryTest : MyReadLine
         SetHistory("dosomething", "ps p*", "dir", "echo zzz");
         Test("dosomething", Keys(
             "d",
-            _.UpArrow,   CheckThat(() => {
+            _.UpArrow, CheckThat(() =>
+            {
                 AssertScreenIs(1,
                     emphasisColors, 'd',
                     TokenClassification.Command, "ir");
                 AssertCursorLeftIs(3);
             }),
-            _.UpArrow,   CheckThat(() => {
+            _.UpArrow, CheckThat(() =>
+            {
                 AssertScreenIs(1,
                     emphasisColors, 'd',
                     TokenClassification.Command, "osomething");
                 AssertCursorLeftIs(11);
             }),
-            _.DownArrow, CheckThat(() => {
+            _.DownArrow, CheckThat(() =>
+            {
                 AssertScreenIs(1,
                     emphasisColors, 'd',
                     TokenClassification.Command, "ir");
                 AssertCursorLeftIs(3);
             }),
-            _.UpArrow,   CheckThat(() =>
+            _.UpArrow, CheckThat(() =>
             {
                 AssertScreenIs(1,
                     emphasisColors, 'd',
@@ -984,7 +1021,7 @@ public abstract class HistoryTest : MyReadLine
         // the correct line
         SetHistory("zz1", "echo abc", "zz2", "echo abb", "zz3", "echo aaa", "zz4");
         Test("echo aaa", Keys(_.Ctrl_r,
-            _.Backspace,  // Try backspace on empty search string
+            _.Backspace, // Try backspace on empty search string
             "ab", CheckThat(() => AssertScreenIs(2,
                 TokenClassification.Command, "echo",
                 TokenClassification.None, " ",
@@ -1185,7 +1222,9 @@ public abstract class HistoryTest : MyReadLine
         Test("aaaa", Keys(Enumerable.Repeat(_.UpArrow, 4)));
     }
 
-    public HistoryTest(ConsoleFixture fixture, ITestOutputHelper output, string lang, string os) : base(fixture, output, lang, os)
+    public HistoryTest(ConsoleFixture fixture, ITestOutputHelper output, string lang, string os) : base(fixture, output,
+        lang, os)
     {
     }
 }
+

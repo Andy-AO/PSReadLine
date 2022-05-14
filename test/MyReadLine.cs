@@ -3,9 +3,9 @@ using Xunit.Abstractions;
 
 namespace UnitTestPSReadLine;
 
-public abstract class MyReadLine : ReadLine
+public abstract class MyReadLine : ReadLineBase
 {
-    public MyReadLine(ConsoleFixture fixture, ITestOutputHelper output, string lang, string os) : base(fixture, output,
+    protected MyReadLine(ConsoleFixture fixture, ITestOutputHelper output, string lang, string os) : base(fixture, output,
         lang, os)
     {
     }
