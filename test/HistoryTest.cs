@@ -10,15 +10,6 @@ namespace Test
 {
     public partial class ReadLine
     {
-        private void SetHistory(params string[] historyItems)
-        {
-            Microsoft.PowerShell.PSReadLine.History.ClearHistory(null,null);
-            foreach (var item in historyItems)
-            {
-                Microsoft.PowerShell.PSReadLine.History.AddToHistory(item);
-            }
-        }
-
         [SkippableFact]
         public void History()
         {
