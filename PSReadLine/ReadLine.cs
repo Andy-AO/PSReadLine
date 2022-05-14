@@ -765,6 +765,7 @@ namespace Microsoft.PowerShell
 
         private void Initialize(Runspace runspace, EngineIntrinsics engineIntrinsics)
         {
+            logger.Information("Initialize()");
             _renderer = new();
             _engineIntrinsics = engineIntrinsics;
             _runspace = runspace;
@@ -830,11 +831,13 @@ namespace Microsoft.PowerShell
         private void DelayedOneTimeInitialize()
         {
             // Delayed initialization is needed so that options can be set
-            // after the constuctor but have an affect before the user starts
+            // after the constructor but have an affect before the user starts
             // editing their first command line.  For example, if the user
             // specifies a custom history save file, we don't want to try reading
             // from the default one.
 
+            InitActionsAfterOptionLoad.ForEach(a => a.Invoke());
+            logger.Information("DelayedOneTimeInitialize()");
             if (Options.MaximumHistoryCount == 0)
             {
                 // Initialize 'MaximumHistoryCount' if it's not defined in user's profile.
@@ -871,30 +874,7 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            _hs.HistoryFileMutex = new Mutex(false, _hs.GetHistorySaveFileMutexName());
-
-            _hs.Historys = new HistoryQueue<HistoryItem>(Options.MaximumHistoryCount);
-            _hs.RecentHistory = new HistoryQueue<string>(5);
             _searcher.CurrentHistoryIndex = 0;
-
-            var readHistoryFile = true;
-            try
-            {
-                if (Options.HistorySaveStyle == HistorySaveStyle.SaveNothing && Runspace.DefaultRunspace != null)
-                    using (var ps = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace))
-                    {
-                        ps.AddCommand("Microsoft.PowerShell.Core\\Get-History");
-                        foreach (var historyInfo in ps.Invoke<HistoryInfo>())
-                            History.AddToHistory(historyInfo.CommandLine);
-
-                        readHistoryFile = false;
-                    }
-            }
-            catch
-            {
-            }
-
-            if (readHistoryFile) _hs.ReadHistoryFile();
 
             _killIndex = -1; // So first add indexes 0.
             _killRing = new List<string>(Options.MaximumKillRingCount);
@@ -922,6 +902,8 @@ namespace Microsoft.PowerShell
                 {IsBackground = true, Name = "PSReadLine ReadKey Thread"};
             Singleton._readKeyThread.Start();
         }
+
+        public List<Action> InitActionsAfterOptionLoad { get; } = new();
 
         private static void Chord(ConsoleKeyInfo? key = null, object arg = null)
         {
