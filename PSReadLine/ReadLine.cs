@@ -76,7 +76,7 @@ namespace Microsoft.PowerShell
 
         static PSConsoleReadLine()
         {
-            Singleton = new();
+            Singleton = new PSConsoleReadLine();
             _viRegister = new ViRegister(Singleton);
         }
 
@@ -766,7 +766,7 @@ namespace Microsoft.PowerShell
         private void Initialize(Runspace runspace, EngineIntrinsics engineIntrinsics)
         {
             logger.Information("Initialize()");
-            _renderer = new();
+            _renderer = new Renderer();
             _engineIntrinsics = engineIntrinsics;
             _runspace = runspace;
             if (!_delayedOneTimeInitCompleted)

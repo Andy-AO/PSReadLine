@@ -415,12 +415,12 @@ namespace Test
 
             var suggestions_1 = new List<PredictiveSuggestion>
             {
-                new PredictiveSuggestion($"SOME TEXT BEFORE {input}"),
-                new PredictiveSuggestion($"{input} SOME TEXT AFTER"),
+                new($"SOME TEXT BEFORE {input}"),
+                new($"{input} SOME TEXT AFTER"),
             };
             var suggestions_2 = new List<PredictiveSuggestion>
             {
-                new PredictiveSuggestion($"SOME NEW TEXT"),
+                new($"SOME NEW TEXT"),
             };
 
             return new List<PredictionResult>

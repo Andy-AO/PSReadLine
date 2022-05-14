@@ -56,47 +56,47 @@ namespace Microsoft.PowerShell
 
         internal static PSKeyInfo From(char c)
         {
-            return new(c.ToString());
+            return new PSKeyInfo(c.ToString());
         }
 
         internal static PSKeyInfo From(ConsoleKey key)
         {
-            return new(key.ToString());
+            return new PSKeyInfo(key.ToString());
         }
 
         internal static PSKeyInfo WithAlt(char c)
         {
-            return new("Alt+" + c) {Alt = true};
+            return new PSKeyInfo("Alt+" + c) {Alt = true};
         }
 
         internal static PSKeyInfo WithAlt(ConsoleKey key)
         {
-            return new("Alt+" + key) {Alt = true};
+            return new PSKeyInfo("Alt+" + key) {Alt = true};
         }
 
         internal static PSKeyInfo WithCtrl(char c)
         {
-            return new("Ctrl+" + c) {Control = true};
+            return new PSKeyInfo("Ctrl+" + c) {Control = true};
         }
 
         internal static PSKeyInfo WithCtrl(ConsoleKey key)
         {
-            return new("Ctrl+" + key) {Control = true};
+            return new PSKeyInfo("Ctrl+" + key) {Control = true};
         }
 
         internal static PSKeyInfo WithShift(ConsoleKey key)
         {
-            return new("Shift+" + key) {Shift = true};
+            return new PSKeyInfo("Shift+" + key) {Shift = true};
         }
 
         internal static PSKeyInfo WithShiftCtrl(ConsoleKey key)
         {
-            return new("Shift+Ctrl+" + key) {Control = true, Shift = true};
+            return new PSKeyInfo("Shift+Ctrl+" + key) {Control = true, Shift = true};
         }
 
         internal static PSKeyInfo WithCtrlAlt(char c)
         {
-            return new("Ctrl+Alt+" + c) {Control = true, Alt = true};
+            return new PSKeyInfo("Ctrl+Alt+" + c) {Control = true, Alt = true};
         }
 
         public override string ToString()

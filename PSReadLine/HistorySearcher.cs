@@ -21,7 +21,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
         static HistorySearcher()
         {
-            Singleton = new();
+            Singleton = new HistorySearcher();
         }
 
         /// <summary>

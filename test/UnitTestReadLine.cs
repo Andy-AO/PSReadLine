@@ -23,7 +23,7 @@ namespace Test
         internal Guid acceptedPredictorId;
         internal string acceptedSuggestion;
         internal string helpContentRendered;
-        internal Dictionary<Guid, Tuple<uint, int>> displayedSuggestions = new Dictionary<Guid, Tuple<uint, int>>();
+        internal Dictionary<Guid, Tuple<uint, int>> displayedSuggestions = new();
 
         internal void ClearPredictionFields()
         {
@@ -116,7 +116,7 @@ namespace Test
         Vi
     };
 
-    public class en_US_Windows : Test.ReadLine, IClassFixture<ConsoleFixture>
+    public class en_US_Windows : ReadLine, IClassFixture<ConsoleFixture>
     {
         public en_US_Windows(ConsoleFixture fixture, ITestOutputHelper output)
             : base(fixture, output, "en-US", "windows")
@@ -124,22 +124,29 @@ namespace Test
         }
     }
 
-    public class fr_FR_Windows : Test.ReadLine, IClassFixture<ConsoleFixture>
+    public class fr_FR_Windows : ReadLine, IClassFixture<ConsoleFixture>
     {
         public fr_FR_Windows(ConsoleFixture fixture, ITestOutputHelper output)
             : base(fixture, output, "fr-FR", "windows")
         {
         }
+        internal override bool KeyboardHasLessThan => fr_FR_Windows_Options.KeyboardHasLessThan;
+        internal override bool KeyboardHasGreaterThan => fr_FR_Windows_Options.KeyboardHasGreaterThan;
+        internal override bool KeyboardHasCtrlRBracket => fr_FR_Windows_Options.KeyboardHasCtrlRBracket;
+        internal override bool KeyboardHasCtrlAt => fr_FR_Windows_Options.KeyboardHasCtrlAt;
+    }
 
+    public static class fr_FR_Windows_Options
+    {
         // I don't think this is actually true for real French keyboard, but on my US keyboard,
         // I have to use Alt 6 0 for `<` and Alt 6 2 for `>` and that means the Alt+< and Alt+>
         // bindings can't work.
-        internal override bool KeyboardHasLessThan => false;
-        internal override bool KeyboardHasGreaterThan => false;
+        internal static bool KeyboardHasLessThan => false;
+        internal static bool KeyboardHasGreaterThan => false;
 
         // These are most likely an issue with .Net on Windows - AltGr turns into Ctrl+Alt and `]` or `@`
         // requires AltGr, so you can't tell the difference b/w `]` and `Ctrl+]`.
-        internal override bool KeyboardHasCtrlRBracket => false;
-        internal override bool KeyboardHasCtrlAt => false;
+        internal static bool KeyboardHasCtrlRBracket => false;
+        internal static bool KeyboardHasCtrlAt => false;
     }
 }

@@ -32,7 +32,7 @@ public static class Singletons
 
     public static Renderer _renderer
     {
-        get => __renderer ??= new();
+        get => __renderer ??= new Renderer();
         set => __renderer = value;
     }
 }

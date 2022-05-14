@@ -109,7 +109,7 @@ namespace Test
         }
 
         private readonly string _layout;
-        private readonly Dictionary<string, ConsoleKeyInfo> _keyMap = new Dictionary<string, ConsoleKeyInfo>();
+        private readonly Dictionary<string, ConsoleKeyInfo> _keyMap = new();
 
         public KeyboardLayout(string lang, string os)
         {

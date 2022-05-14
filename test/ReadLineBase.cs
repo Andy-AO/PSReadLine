@@ -60,8 +60,8 @@ public abstract class ReadLineBase
         typeof(PSConsoleReadLine).Assembly.GetType("Microsoft.PowerShell.Internal.Clipboard")
             .GetMethod("SetText", BindingFlags.Static | BindingFlags.Public);
 
-    protected static readonly NextLineToken NextLine = new NextLineToken();
-    protected static readonly KeyPlaceholder InputAcceptedNow = new KeyPlaceholder();
+    protected static readonly NextLineToken NextLine = new();
+    protected static readonly KeyPlaceholder InputAcceptedNow = new();
     protected string _emptyLine;
     protected TestConsole _console;
     protected MockedMethods _mockedMethods;

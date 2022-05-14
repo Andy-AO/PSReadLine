@@ -15,7 +15,7 @@ namespace Microsoft.PowerShell
 
 
         internal List<StringBuilder> ConsoleBufferLines { get; } = new(1)
-            {new(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
+            {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
 
         internal string StatusLinePrompt { get; set; }
 

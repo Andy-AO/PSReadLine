@@ -25,16 +25,10 @@ public class fr_FR_Windows_HistoryTest : HistoryTest, IClassFixture<ConsoleFixtu
     {
     }
 
-    // I don't think this is actually true for real French keyboard, but on my US keyboard,
-    // I have to use Alt 6 0 for `<` and Alt 6 2 for `>` and that means the Alt+< and Alt+>
-    // bindings can't work.
-    internal override bool KeyboardHasLessThan => false;
-    internal override bool KeyboardHasGreaterThan => false;
-
-    // These are most likely an issue with .Net on Windows - AltGr turns into Ctrl+Alt and `]` or `@`
-    // requires AltGr, so you can't tell the difference b/w `]` and `Ctrl+]`.
-    internal override bool KeyboardHasCtrlRBracket => false;
-    internal override bool KeyboardHasCtrlAt => false;
+    internal override bool KeyboardHasLessThan => fr_FR_Windows_Options.KeyboardHasLessThan;
+    internal override bool KeyboardHasGreaterThan => fr_FR_Windows_Options.KeyboardHasGreaterThan;
+    internal override bool KeyboardHasCtrlRBracket => fr_FR_Windows_Options.KeyboardHasCtrlRBracket;
+    internal override bool KeyboardHasCtrlAt => fr_FR_Windows_Options.KeyboardHasCtrlAt;
 }
 
 public abstract class HistoryTest : MyReadLine
@@ -1188,7 +1182,7 @@ public abstract class HistoryTest : MyReadLine
     public void InteractiveHistorySearchNoDuplicates()
     {
         TestSetup(KeyMode.Emacs);
-        Test("", Keys("",_.UpArrow, _.DownArrow));
+        Test("", Keys("", _.UpArrow, _.DownArrow));
         PSConsoleReadLine.SetOptions(new SetPSReadLineOption {HistoryNoDuplicates = true});
         SetHistory("0000", "echo aaaa", "1111", "echo bbbb", "2222", "echo bbbb", "3333", "echo cccc", "4444");
         Test("echo aaaa", Keys(
@@ -1227,4 +1221,3 @@ public abstract class HistoryTest : MyReadLine
     {
     }
 }
-
