@@ -19,10 +19,13 @@ public static class Singletons
 
     static Singletons()
     {
+        const string outputTemplate = @"{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}";
         logger = new LoggerConfiguration().MinimumLevel.Verbose()
             .WriteTo.File(LoggerFilePath,
                 outputTemplate:
-                @"{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}")
+                outputTemplate)
+            .WriteTo.Debug(outputTemplate:
+                outputTemplate)
             .CreateLogger();
         logger.Information("\nLogging has started.");
     }
