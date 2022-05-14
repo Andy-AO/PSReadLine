@@ -4,11 +4,13 @@ using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
 using Microsoft.PowerShell;
+using UnitTestPSReadLine;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Test
 {
-    public partial class ReadLine
+    public abstract class HistoryTest : MyReadLine
     {
         [SkippableFact]
         public void History()
@@ -1172,6 +1174,10 @@ namespace Test
             Test("bbbb", Keys("bbbb"));
             Test("cccc", Keys("cccc"));
             Test("aaaa", Keys(Enumerable.Repeat(_.UpArrow, 4)));
+        }
+
+        public HistoryTest(ConsoleFixture fixture, ITestOutputHelper output, string lang, string os) : base(fixture, output, lang, os)
+        {
         }
     }
 }
