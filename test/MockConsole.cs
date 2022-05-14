@@ -57,7 +57,7 @@ namespace Test
         }
     }
 
-    internal class TestConsole : IConsole
+    public class TestConsole : IConsole
     {
         internal int index;
         internal object[] inputOrValidateItems;

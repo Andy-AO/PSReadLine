@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 namespace Test
 {
 
-    internal class MockedMethods : IPSConsoleReadLineMockableMethods
+    public class MockedMethods : IPSConsoleReadLineMockableMethods
     {
         internal bool didDing;
         internal IReadOnlyList<string> commandHistory;
@@ -109,7 +109,7 @@ namespace Test
         ListPredictionSelected,
     }
 
-    internal enum KeyMode
+    public enum KeyMode
     {
         Cmd,
         Emacs,

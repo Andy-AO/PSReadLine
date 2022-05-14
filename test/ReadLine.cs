@@ -86,7 +86,7 @@ public abstract partial class ReadLine
         /*ListPredictionSelected*/ ConsoleColor.DarkBlue,
     };
 
-    class KeyHandler
+    public class KeyHandler
     {
         public KeyHandler(string chord, Action<ConsoleKeyInfo?, object> handler)
         {
@@ -98,23 +98,23 @@ public abstract partial class ReadLine
         public Action<ConsoleKeyInfo?, object> Handler { get; }
     }
 
-    private void AssertCursorLeftTopIs(int left, int top)
+    protected void AssertCursorLeftTopIs(int left, int top)
     {
         AssertCursorLeftIs(left);
         AssertCursorTopIs(top);
     }
 
-    private void AssertCursorLeftIs(int expected)
+    protected void AssertCursorLeftIs(int expected)
     {
         Assert.Equal(expected, _console.CursorLeft);
     }
 
-    private void AssertCursorTopIs(int expected)
+    protected void AssertCursorTopIs(int expected)
     {
         Assert.Equal(expected, _console.CursorTop);
     }
 
-    private void AssertLineIs(string expected)
+    protected void AssertLineIs(string expected)
     {
         PSConsoleReadLine.GetBufferState(out var input, out var unused);
         Assert.Equal(expected, input);
@@ -126,23 +126,23 @@ public abstract partial class ReadLine
     static readonly MethodInfo ClipboardSetTextMethod =
         typeof(PSConsoleReadLine).Assembly.GetType("Microsoft.PowerShell.Internal.Clipboard")
             .GetMethod("SetText", BindingFlags.Static | BindingFlags.Public);
-    private static string GetClipboardText()
+    protected static string GetClipboardText()
     {
         return (string)ClipboardGetTextMethod.Invoke(null, null);
     }
 
-    private static void SetClipboardText(string text)
+    protected static void SetClipboardText(string text)
     {
         ClipboardSetTextMethod.Invoke(null, new[] { text });
     }
 
-    private void AssertClipboardTextIs(string text)
+    protected void AssertClipboardTextIs(string text)
     {
         var fromClipboard = GetClipboardText();
         Assert.Equal(text, fromClipboard);
     }
 
-    private void AssertScreenCaptureClipboardIs(params string[] lines)
+    protected void AssertScreenCaptureClipboardIs(params string[] lines)
     {
         var fromClipboard = GetClipboardText();
         var newline = Environment.NewLine;
@@ -154,13 +154,13 @@ public abstract partial class ReadLine
         Assert.Equal(text, fromClipboard);
     }
 
-    private class NextLineToken { }
-    static readonly NextLineToken NextLine = new NextLineToken();
+    protected class NextLineToken { }
+    protected static readonly NextLineToken NextLine = new NextLineToken();
 
-    private class SelectionToken { public string _text; }
-    private static SelectionToken Selected(string s) { return new SelectionToken { _text = s }; }
+    protected class SelectionToken { public string _text; }
+    protected static SelectionToken Selected(string s) { return new SelectionToken { _text = s }; }
 
-    private CHAR_INFO[] CreateCharInfoBuffer(int lines, params object[] items)
+    protected CHAR_INFO[] CreateCharInfoBuffer(int lines, params object[] items)
     {
         var result = new List<CHAR_INFO>();
         var fg = _console.ForegroundColor;
@@ -244,16 +244,16 @@ public abstract partial class ReadLine
         return result.ToArray();
     }
 
-    static Action CheckThat(Action action)
+    public static Action CheckThat(Action action)
     {
         // Syntactic sugar - saves a couple parens when calling Keys
         return action;
     }
 
-    private class KeyPlaceholder { }
-    private static readonly KeyPlaceholder InputAcceptedNow = new KeyPlaceholder();
+    protected class KeyPlaceholder { }
+    protected static readonly KeyPlaceholder InputAcceptedNow = new KeyPlaceholder();
 
-    private object[] Keys(params object[] input)
+    protected object[] Keys(params object[] input)
     {
         bool autoAddEnter = true;
         var list = new List<object>();
@@ -304,7 +304,7 @@ public abstract partial class ReadLine
         return list.ToArray();
     }
 
-    private void NewAddSingleKeyToList(object t, List<object> list)
+    protected void NewAddSingleKeyToList(object t, List<object> list)
     {
         switch (t)
         {
@@ -328,12 +328,12 @@ public abstract partial class ReadLine
         }
     }
 
-    private void AssertScreenIs(int lines, params object[] items)
+    protected void AssertScreenIs(int lines, params object[] items)
     {
         AssertScreenIs(top: 0, lines, items);
     }
 
-    private void AssertScreenIs(int top, int lines, params object[] items)
+    protected void AssertScreenIs(int top, int lines, params object[] items)
     {
         var consoleBuffer = _console.ReadBufferLines(top, lines);
         logger.Information("_console.ReadBufferLines(top, lines) : " + consoleBuffer.ShowContext());
@@ -351,7 +351,7 @@ public abstract partial class ReadLine
         }
     }
 
-    private void SetPrompt(string prompt)
+    protected void SetPrompt(string prompt)
     {
         var options = new SetPSReadLineOption { ExtraPromptLineCount = 0 };
         if (string.IsNullOrEmpty(prompt))
@@ -379,25 +379,25 @@ public abstract partial class ReadLine
     }
 
     [ExcludeFromCodeCoverage]
-    private void Test(string expectedResult, object[] items)
+    protected void Test(string expectedResult, object[] items)
     {
         Test(expectedResult, items, resetCursor: true, prompt: null, mustDing: false);
     }
 
     [ExcludeFromCodeCoverage]
-    private void Test(string expectedResult, object[] items, string prompt)
+    protected void Test(string expectedResult, object[] items, string prompt)
     {
         Test(expectedResult, items, resetCursor: true, prompt: prompt, mustDing: false);
     }
 
     [ExcludeFromCodeCoverage]
-    private void Test(string expectedResult, object[] items, bool resetCursor)
+    protected void Test(string expectedResult, object[] items, bool resetCursor)
     {
         Test(expectedResult, items, resetCursor: resetCursor, prompt: null, mustDing: false);
     }
 
     [ExcludeFromCodeCoverage]
-    private void Test(string expectedResult, object[] items, bool resetCursor, string prompt, bool mustDing)
+    protected void Test(string expectedResult, object[] items, bool resetCursor, string prompt, bool mustDing)
     {
         if (resetCursor)
         {
@@ -431,24 +431,24 @@ public abstract partial class ReadLine
         }
     }
 
-    private void TestMustDing(string expectedResult, object[] items)
+    protected void TestMustDing(string expectedResult, object[] items)
     {
         Test(expectedResult, items, resetCursor: true, prompt: null, mustDing: true);
     }
 
-    private string _emptyLine;
-    private TestConsole _console;
-    private MockedMethods _mockedMethods;
+    protected string _emptyLine;
+    protected TestConsole _console;
+    protected MockedMethods _mockedMethods;
 
-    private static string MakeCombinedColor(ConsoleColor fg, ConsoleColor bg)
+    protected static string MakeCombinedColor(ConsoleColor fg, ConsoleColor bg)
         => VTColorUtils.AsEscapeSequence(fg) + VTColorUtils.AsEscapeSequence(bg, isBackground: true);
 
-    private void TestSetup(KeyMode keyMode, params KeyHandler[] keyHandlers)
+    protected void TestSetup(KeyMode keyMode, params KeyHandler[] keyHandlers)
     {
         TestSetup(console: null, keyMode, keyHandlers);
     }
 
-    private void TestSetup(TestConsole console, KeyMode keyMode, params KeyHandler[] keyHandlers)
+    protected void TestSetup(TestConsole console, KeyMode keyMode, params KeyHandler[] keyHandlers)
     {
         Skip.If(WindowsConsoleFixtureHelper.GetKeyboardLayout() != this.Fixture.Lang,
             $"Keyboard layout must be set to {this.Fixture.Lang}");

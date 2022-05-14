@@ -400,7 +400,7 @@ namespace Microsoft.PowerShell
         }
     }
 
-    internal static class Keys
+    public static class Keys
     {
         public static PSKeyInfo F1 = Key(ConsoleKey.F1);
         public static PSKeyInfo F2 = Key(ConsoleKey.F2);
