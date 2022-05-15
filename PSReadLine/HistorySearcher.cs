@@ -46,7 +46,7 @@ namespace Microsoft.PowerShell.PSReadLine
             using var _ = _rl._Prediction.DisableScoped();
             SaveCurrentLine();
             this.direction = direction;
-            UpdateStatusLinePrompt(direction,AppendUnderline: true);
+            UpdateStatusLinePrompt(direction, AppendUnderline: true);
             _renderer.Render(); // Render prompt
             HandleUserInput();
             _renderer.EmphasisInit();
@@ -214,8 +214,9 @@ namespace Microsoft.PowerShell.PSReadLine
                         if (pair.Value < searchFromPoint)
                             _hs.HashedHistory.Remove(pair.Key);
 
-
-                UpdateBuffer();
+                setStartIndex(_rl.buffer.ToString());
+                if (startIndex >= 0)
+                    UpdateBuffer();
             }
             else
             {
@@ -241,11 +242,8 @@ namespace Microsoft.PowerShell.PSReadLine
                             _hs.HashedHistory.Add(line, searchFromPoint);
                         else if (index != searchFromPoint) continue;
                     }
-
                     UpdateStatusLinePrompt(direction);
-                    _renderer.Current = startIndex;
-                    _renderer.EmphasisStart = startIndex;
-                    _renderer.EmphasisLength = toMatch.Length;
+                    SetEmphasisData(startIndex);
                     CurrentHistoryIndex = searchFromPoint;
                     var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
                         ? HistoryMoveCursor.ToEnd
@@ -289,28 +287,31 @@ namespace Microsoft.PowerShell.PSReadLine
 
         private void Update()
         {
-            UpdateBuffer();
-            if (startIndex < 0)
+            setStartIndex(_rl.buffer.ToString());
+            if (startIndex >= 0)
+                UpdateBuffer();
+            else
                 UpdateHistory();
             searchPositions.Push(CurrentHistoryIndex);
         }
 
         private void UpdateBuffer()
         {
-            setStartIndex(_rl.buffer.ToString());
-            if (startIndex >= 0)
-            {
-                UpdateStatusLinePrompt(direction);
-                Emphasis(startIndex);
-            }
+            UpdateStatusLinePrompt(direction);
+            Emphasis(startIndex);
         }
 
         private void Emphasis(int startIndex)
         {
+            SetEmphasisData(startIndex);
+            _renderer.Render();
+        }
+
+        private void SetEmphasisData(int startIndex)
+        {
             _renderer.Current = startIndex;
             _renderer.EmphasisStart = startIndex;
             _renderer.EmphasisLength = toMatch.Length;
-            _renderer.Render();
         }
 
         private static void GoToEndOfHistory()
