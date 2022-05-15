@@ -44,7 +44,7 @@ namespace Microsoft.PowerShell.PSReadLine
         private void InteractiveHistorySearch(int direction)
         {
             using var _ = _rl._Prediction.DisableScoped();
-            _searcher.SaveCurrentLine();
+            SaveCurrentLine();
             UpdateStatusLinePrompt(direction, AppendUnderline: true);
             _renderer.Render(); // Render prompt
             HandleUserInput(direction);
@@ -74,10 +74,10 @@ namespace Microsoft.PowerShell.PSReadLine
 
         private void HandleUserInput(int direction)
         {
-            searchFromPoint = _searcher.CurrentHistoryIndex;
+            searchFromPoint = CurrentHistoryIndex;
             logger.Debug("searchFromPoint:" + searchFromPoint);
             searchPositions = new Stack<int>();
-            searchPositions.Push(_searcher.CurrentHistoryIndex);
+            searchPositions.Push(CurrentHistoryIndex);
             logger.Debug(ObjectDumper.Dump(searchPositions));
             if (_rl.Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
             toMatch = new StringBuilder(64);
@@ -195,7 +195,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 toMatch.Remove(toMatch.Length - 1, 1);
                 _renderer.StatusBuffer.Remove(_renderer.StatusBuffer.Length - 2, 1);
                 searchPositions.Pop();
-                searchFromPoint = _searcher.CurrentHistoryIndex = searchPositions.Peek();
+                searchFromPoint = CurrentHistoryIndex = searchPositions.Peek();
                 var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
                     ? HistorySearcher.HistoryMoveCursor.ToEnd
                     : HistorySearcher.HistoryMoveCursor.DontMove;
@@ -247,11 +247,11 @@ namespace Microsoft.PowerShell.PSReadLine
                     _renderer.Current = startIndex;
                     _renderer.EmphasisStart = startIndex;
                     _renderer.EmphasisLength = toMatch.Length;
-                    _searcher.CurrentHistoryIndex = searchFromPoint;
+                    CurrentHistoryIndex = searchFromPoint;
                     var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
                         ? HistorySearcher.HistoryMoveCursor.ToEnd
                         : HistorySearcher.HistoryMoveCursor.DontMove;
-                    _searcher.UpdateFromHistory(moveCursor);
+                    UpdateFromHistory(moveCursor);
                     return;
                 }
             }
@@ -291,7 +291,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 Emphasis(startIndex);
             }
 
-            searchPositions.Push(_searcher.CurrentHistoryIndex);
+            searchPositions.Push(CurrentHistoryIndex);
             return false;
         }
 
