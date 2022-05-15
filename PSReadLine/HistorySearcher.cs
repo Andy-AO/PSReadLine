@@ -75,8 +75,10 @@ namespace Microsoft.PowerShell.PSReadLine
         private void HandleUserInput(int direction)
         {
             searchFromPoint = _searcher.CurrentHistoryIndex;
+            logger.Debug("searchFromPoint:" + searchFromPoint);
             searchPositions = new Stack<int>();
             searchPositions.Push(_searcher.CurrentHistoryIndex);
+            logger.Debug(ObjectDumper.Dump(searchPositions));
             if (_rl.Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
             toMatch = new StringBuilder(64);
             while (true)
