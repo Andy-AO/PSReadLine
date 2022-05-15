@@ -215,10 +215,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 if (startIndex >= 0)
                 {
                     UpdateStatusLinePrompt(direction);
-                    _renderer.Current = startIndex;
-                    _renderer.EmphasisStart = startIndex;
-                    _renderer.EmphasisLength = toMatch.Length;
-                    _renderer.Render();
+                    Emphasis(startIndex);
                 }
             }
             else
@@ -291,14 +288,19 @@ namespace Microsoft.PowerShell.PSReadLine
             }
             else
             {
-                _renderer.Current = startIndex;
-                _renderer.EmphasisStart = startIndex;
-                _renderer.EmphasisLength = toMatch.Length;
-                _renderer.Render();
+                Emphasis(startIndex);
             }
 
             searchPositions.Push(_searcher.CurrentHistoryIndex);
             return false;
+        }
+
+        private void Emphasis(int startIndex)
+        {
+            _renderer.Current = startIndex;
+            _renderer.EmphasisStart = startIndex;
+            _renderer.EmphasisLength = toMatch.Length;
+            _renderer.Render();
         }
 
         private static void GoToEndOfHistory()
