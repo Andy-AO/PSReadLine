@@ -45,9 +45,10 @@ namespace Microsoft.PowerShell.PSReadLine
         {
             using var _ = _rl._Prediction.DisableScoped();
             SaveCurrentLine();
-            UpdateStatusLinePrompt(direction, AppendUnderline: true);
+            this.direction = direction;
+            UpdateStatusLinePrompt(direction,AppendUnderline: true);
             _renderer.Render(); // Render prompt
-            HandleUserInput(direction);
+            HandleUserInput();
             _renderer.EmphasisInit();
             // Remove our status line, this will render
             _rl.ClearStatusMessage(true);
@@ -72,7 +73,7 @@ namespace Microsoft.PowerShell.PSReadLine
             }
         }
 
-        private void HandleUserInput(int direction)
+        private void HandleUserInput()
         {
             searchFromPoint = CurrentHistoryIndex;
             logger.Debug("searchFromPoint:" + searchFromPoint);
@@ -89,17 +90,19 @@ namespace Microsoft.PowerShell.PSReadLine
 
                 if (function == ReverseSearchHistory)
                 {
-                    UpdateHistory(-1);
+                    direction = -1;
+                    UpdateHistory();
                 }
                 else if (function == ForwardSearchHistory)
                 {
-                    UpdateHistory(+1);
+                    direction = 1;
+                    UpdateHistory();
                 }
                 else if (function == PSConsoleReadLine.BackwardDeleteChar
                          || key == Keys.Backspace
                          || key == Keys.CtrlH)
                 {
-                    HandleBackward(direction);
+                    HandleBackward();
                 }
                 else if (key == Keys.Escape)
                 {
@@ -114,7 +117,7 @@ namespace Microsoft.PowerShell.PSReadLine
                 }
                 else
                 {
-                    if (HandleCharOfSearchKeyword(direction))
+                    if (AddCharOfSearchKeyword())
                         break;
                 }
             }
@@ -140,6 +143,7 @@ namespace Microsoft.PowerShell.PSReadLine
         // is saved here so it can be restored.
         private readonly HistoryItem _savedCurrentLine = new();
         private int startIndex = -1;
+        private int direction;
         public int CurrentHistoryIndex { get; set; }
 
         public void ClearSavedCurrentLine()
@@ -189,7 +193,7 @@ namespace Microsoft.PowerShell.PSReadLine
             _renderer.Render();
         }
 
-        private int HandleBackward(int direction)
+        private int HandleBackward()
         {
             if (toMatch.Length > 0)
             {
@@ -198,8 +202,8 @@ namespace Microsoft.PowerShell.PSReadLine
                 searchPositions.Pop();
                 searchFromPoint = CurrentHistoryIndex = searchPositions.Peek();
                 var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                    ? HistorySearcher.HistoryMoveCursor.ToEnd
-                    : HistorySearcher.HistoryMoveCursor.DontMove;
+                    ? HistoryMoveCursor.ToEnd
+                    : HistoryMoveCursor.DontMove;
                 UpdateFromHistory(moveCursor);
 
                 if (_hs.HashedHistory != null)
@@ -209,12 +213,9 @@ namespace Microsoft.PowerShell.PSReadLine
                     foreach (var pair in _hs.HashedHistory.ToArray())
                         if (pair.Value < searchFromPoint)
                             _hs.HashedHistory.Remove(pair.Key);
-                setStartIndex(_rl.buffer.ToString());
-                if (startIndex >= 0)
-                {
-                    UpdateStatusLinePrompt(direction);
-                    Emphasis(startIndex);
-                }
+
+
+                UpdateBuffer();
             }
             else
             {
@@ -224,7 +225,7 @@ namespace Microsoft.PowerShell.PSReadLine
             return searchFromPoint;
         }
 
-        private void UpdateHistory(int direction)
+        private void UpdateHistory()
         {
             var toMatch = this.toMatch.ToString();
             searchFromPoint += direction;
@@ -247,8 +248,8 @@ namespace Microsoft.PowerShell.PSReadLine
                     _renderer.EmphasisLength = toMatch.Length;
                     CurrentHistoryIndex = searchFromPoint;
                     var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                        ? HistorySearcher.HistoryMoveCursor.ToEnd
-                        : HistorySearcher.HistoryMoveCursor.DontMove;
+                        ? HistoryMoveCursor.ToEnd
+                        : HistoryMoveCursor.DontMove;
                     UpdateFromHistory(moveCursor);
                     return;
                 }
@@ -271,7 +272,7 @@ namespace Microsoft.PowerShell.PSReadLine
             startIndex = line.IndexOf(toMatch.ToString(), _rl.Options.HistoryStringComparison);
         }
 
-        private bool HandleCharOfSearchKeyword(int direction)
+        private bool AddCharOfSearchKeyword()
         {
             var toAppend = key.KeyChar;
             if (char.IsControl(toAppend))
@@ -282,18 +283,26 @@ namespace Microsoft.PowerShell.PSReadLine
 
             toMatch.Append(toAppend);
             _renderer.StatusBuffer.Insert(_renderer.StatusBuffer.Length - 1, toAppend);
-            setStartIndex(_rl.buffer.ToString());
+            Update();
+            return false;
+        }
+
+        private void Update()
+        {
+            UpdateBuffer();
             if (startIndex < 0)
+                UpdateHistory();
+            searchPositions.Push(CurrentHistoryIndex);
+        }
+
+        private void UpdateBuffer()
+        {
+            setStartIndex(_rl.buffer.ToString());
+            if (startIndex >= 0)
             {
-                UpdateHistory(direction);
-            }
-            else
-            {
+                UpdateStatusLinePrompt(direction);
                 Emphasis(startIndex);
             }
-
-            searchPositions.Push(CurrentHistoryIndex);
-            return false;
         }
 
         private void Emphasis(int startIndex)
@@ -308,7 +317,7 @@ namespace Microsoft.PowerShell.PSReadLine
         {
             int val = _hs.Historys.Count;
             _searcher.CurrentHistoryIndex = val;
-            _searcher.UpdateFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
+            _searcher.UpdateFromHistory(HistoryMoveCursor.ToEnd);
         }
 
         public enum HistoryMoveCursor
