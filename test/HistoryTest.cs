@@ -871,7 +871,7 @@ public abstract class HistoryTest : MyReadLine
     public void InteractiveHistorySearch()
     {
         TestSetup(KeyMode.Emacs);
-
+        Test("", Keys(_.UpArrow, _.DownArrow));
         Simple();
 
         void Simple()
