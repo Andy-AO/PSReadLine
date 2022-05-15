@@ -139,6 +139,7 @@ namespace Microsoft.PowerShell.PSReadLine
         // When cycling through history, the current line (not yet added to history)
         // is saved here so it can be restored.
         private readonly HistoryItem _savedCurrentLine = new();
+        private int startIndex = -1;
         public int CurrentHistoryIndex { get; set; }
 
         public void ClearSavedCurrentLine()
@@ -208,10 +209,7 @@ namespace Microsoft.PowerShell.PSReadLine
                     foreach (var pair in _hs.HashedHistory.ToArray())
                         if (pair.Value < searchFromPoint)
                             _hs.HashedHistory.Remove(pair.Key);
-
-                // Prompt may need to have 'failed-' removed.
-                var toMatchStr = toMatch.ToString();
-                var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
+                setStartIndex(_rl.buffer.ToString());
                 if (startIndex >= 0)
                 {
                     UpdateStatusLinePrompt(direction);
@@ -233,7 +231,7 @@ namespace Microsoft.PowerShell.PSReadLine
             for (; searchFromPoint >= 0 && searchFromPoint < _hs.Historys.Count; searchFromPoint += direction)
             {
                 var line = _hs.Historys[searchFromPoint].CommandLine;
-                var startIndex = line.IndexOf(toMatch, _rl.Options.HistoryStringComparison);
+                setStartIndex(line);
                 if (startIndex >= 0)
                 {
                     if (_rl.Options.HistoryNoDuplicates)
@@ -268,6 +266,11 @@ namespace Microsoft.PowerShell.PSReadLine
             _renderer.Render();
         }
 
+        private void setStartIndex(string line)
+        {
+            startIndex = line.IndexOf(toMatch.ToString(), _rl.Options.HistoryStringComparison);
+        }
+
         private bool HandleCharOfSearchKeyword(int direction)
         {
             var toAppend = key.KeyChar;
@@ -279,9 +282,7 @@ namespace Microsoft.PowerShell.PSReadLine
 
             toMatch.Append(toAppend);
             _renderer.StatusBuffer.Insert(_renderer.StatusBuffer.Length - 1, toAppend);
-
-            var toMatchStr = toMatch.ToString();
-            var startIndex = _rl.buffer.ToString().IndexOf(toMatchStr, _rl.Options.HistoryStringComparison);
+            setStartIndex(_rl.buffer.ToString());
             if (startIndex < 0)
             {
                 UpdateHistory(direction);
