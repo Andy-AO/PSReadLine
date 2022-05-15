@@ -38,9 +38,7 @@ public abstract class HistoryTest : MyReadLine
     {
         TestSetup(KeyMode.Cmd);
 
-        // No history
-        SetHistory();
-        Test("", Keys(_.UpArrow, _.DownArrow));
+        CleanHistory();
 
         SetHistory("dir c*", "ps p*");
 
@@ -108,9 +106,7 @@ public abstract class HistoryTest : MyReadLine
     {
         TestSetup(KeyMode.Cmd);
 
-        // No history
-        SetHistory();
-        Test("", Keys(_.UpArrow, _.DownArrow));
+        CleanHistory();
 
         var options = PSConsoleReadLine.GetOptions();
         var oldHistoryFilePath = options.HistorySavePath;
@@ -185,8 +181,7 @@ public abstract class HistoryTest : MyReadLine
     {
         TestSetup(KeyMode.Cmd);
 
-        // Clear history
-        SetHistory();
+        CleanHistory();
 
         var options = PSConsoleReadLine.GetOptions();
         var oldHistoryFilePath = options.HistorySavePath;
@@ -274,9 +269,7 @@ public abstract class HistoryTest : MyReadLine
     {
         TestSetup(KeyMode.Cmd);
 
-        // No history
-        SetHistory();
-        Test("", Keys(_.UpArrow, _.DownArrow));
+        CleanHistory();
 
         var options = PSConsoleReadLine.GetOptions();
         var oldHistoryFilePath = options.HistorySavePath;
@@ -420,9 +413,7 @@ public abstract class HistoryTest : MyReadLine
     {
         TestSetup(KeyMode.Cmd);
 
-        // No history
-        SetHistory();
-        Test("", Keys(_.UpArrow, _.DownArrow));
+        CleanHistory();
 
         var options = PSConsoleReadLine.GetOptions();
         var oldHistoryFilePath = options.HistorySavePath;
@@ -743,13 +734,7 @@ public abstract class HistoryTest : MyReadLine
             new KeyHandler("UpArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchBackward),
             new KeyHandler("DownArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchForward));
 
-        // No history
-        SetHistory();
-        Test("", Keys(_.UpArrow, _.DownArrow));
-
-        // Clear history in case the above added some history (but it shouldn't)
-        SetHistory();
-        Test(" ", Keys(' ', _.UpArrow, _.DownArrow));
+        CleanHistory();
 
         PSConsoleReadLine.SetOptions(new SetPSReadLineOption {HistorySearchCursorMovesToEnd = false});
         var emphasisColors = Tuple.Create(PSConsoleReadLineOptions.DefaultEmphasisColor, _console.BackgroundColor);
@@ -1155,6 +1140,11 @@ public abstract class HistoryTest : MyReadLine
             Enumerable.Repeat(_.DownArrow, 2)));
 
 
+        CleanHistory();
+    }
+
+    private void CleanHistory()
+    {
         // No history
         SetHistory();
         Test("", Keys(_.UpArrow, _.DownArrow));
