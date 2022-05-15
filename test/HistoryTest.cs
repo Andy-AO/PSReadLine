@@ -872,101 +872,125 @@ public abstract class HistoryTest : MyReadLine
     {
         TestSetup(KeyMode.Emacs);
 
-        SetHistory("echo aaa");
-        Test("echo aaa", Keys(_.Ctrl_r, 'a'));
+        Simple();
+
+        void Simple()
+        {
+            SetHistory("echo aaa");
+            Test("echo aaa", Keys(_.Ctrl_r, 'a'));
+        }
 
         var emphasisColors = Tuple.Create(PSConsoleReadLineOptions.DefaultEmphasisColor, _console.BackgroundColor);
         var statusColors = Tuple.Create(_console.ForegroundColor, _console.BackgroundColor);
 
-        // Test entering multiple characters and the line is updated with new matches
-        SetHistory("zz1", "echo abc", "zz2", "echo abb", "zz3", "echo aaa", "zz4");
-        Test("echo abc", Keys(_.Ctrl_r,
-            'a',
-            CheckThat(() => AssertScreenIs(2,
-                TokenClassification.Command, "echo",
-                TokenClassification.None, " ",
-                emphasisColors, 'a',
-                TokenClassification.None, "aa",
-                NextLine,
-                statusColors, "bck-i-search: a_")),
-            'b', CheckThat(() => AssertScreenIs(2,
-                TokenClassification.Command, "echo",
-                TokenClassification.None, " ",
-                emphasisColors, "ab",
-                TokenClassification.None, 'b',
-                NextLine,
-                statusColors, "bck-i-search: ab_")),
-            'c', CheckThat(() => AssertScreenIs(2,
-                TokenClassification.Command, "echo",
-                TokenClassification.None, " ",
-                emphasisColors, "abc",
-                NextLine,
-                statusColors, "bck-i-search: abc_"))));
+        UpdatedWithNewMatches();
 
-        // Test repeated Ctrl+r goes back through multiple matches
-        SetHistory("zz1", "echo abc", "zz2", "echo abb", "zz3", "echo aaa", "zz4");
-        Test("echo abc", Keys(_.Ctrl_r,
-            'a',
-            CheckThat(() => AssertScreenIs(2,
-                TokenClassification.Command, "echo",
-                TokenClassification.None, " ",
-                emphasisColors, 'a',
-                TokenClassification.None, "aa",
-                NextLine,
-                statusColors, "bck-i-search: a_")),
-            _.Ctrl_r, CheckThat(() => AssertScreenIs(2,
-                TokenClassification.Command, "echo",
-                TokenClassification.None, " ",
-                emphasisColors, 'a',
-                TokenClassification.None, "bb",
-                NextLine,
-                statusColors, "bck-i-search: a_")),
-            _.Ctrl_r, CheckThat(() => AssertScreenIs(2,
-                TokenClassification.Command, "echo",
-                TokenClassification.None, " ",
-                emphasisColors, 'a',
-                TokenClassification.None, "bc",
-                NextLine,
-                statusColors, "bck-i-search: a_"))));
+        void UpdatedWithNewMatches()
+        {
+            SetHistory("zz1", "echo abc", "zz2", "echo abb", "zz3", "echo aaa", "zz4");
+            Test("echo abc", Keys(_.Ctrl_r,
+                'a',
+                CheckThat(() => AssertScreenIs(2,
+                    TokenClassification.Command, "echo",
+                    TokenClassification.None, " ",
+                    emphasisColors, 'a',
+                    TokenClassification.None, "aa",
+                    NextLine,
+                    statusColors, "bck-i-search: a_")),
+                'b', CheckThat(() => AssertScreenIs(2,
+                    TokenClassification.Command, "echo",
+                    TokenClassification.None, " ",
+                    emphasisColors, "ab",
+                    TokenClassification.None, 'b',
+                    NextLine,
+                    statusColors, "bck-i-search: ab_")),
+                'c', CheckThat(() => AssertScreenIs(2,
+                    TokenClassification.Command, "echo",
+                    TokenClassification.None, " ",
+                    emphasisColors, "abc",
+                    NextLine,
+                    statusColors, "bck-i-search: abc_"))));
+        }
 
-        // Test that the current match doesn't change when typing
-        // additional characters, only emphasis should change.
-        SetHistory("zz1", "echo abzz", "echo abc", "zz2");
-        Test("echo abc", Keys(_.Ctrl_r,
-            'a',
-            CheckThat(() => AssertScreenIs(2,
-                TokenClassification.Command, "echo",
-                TokenClassification.None, " ",
-                emphasisColors, 'a',
-                TokenClassification.None, "bc",
-                NextLine,
-                statusColors, "bck-i-search: a_")),
-            'b',
-            CheckThat(() => AssertScreenIs(2,
-                TokenClassification.Command, "echo",
-                TokenClassification.None, " ",
-                emphasisColors, "ab",
-                TokenClassification.None, 'c',
-                NextLine,
-                statusColors, "bck-i-search: ab_"))));
+        RepeatedSearch();
 
-        // Test that abort restores line state before Ctrl+r
-        SetHistory("zz1", "echo abzz", "echo abc", "zz2");
-        Test("echo zed", Keys("echo zed", _.Ctrl_r,
-            'a',
-            CheckThat(() => AssertScreenIs(2,
-                TokenClassification.Command, "echo",
-                TokenClassification.None, " ",
-                emphasisColors, 'a',
-                TokenClassification.None, "bc",
-                NextLine,
-                statusColors, "bck-i-search: a_")),
-            _.Ctrl_g,
-            CheckThat(() => AssertScreenIs(2,
-                TokenClassification.Command, "echo",
-                TokenClassification.None, " ",
-                TokenClassification.None, "zed",
-                NextLine))));
+        void RepeatedSearch()
+        {
+            // Test repeated Ctrl+r goes back through multiple matches
+            SetHistory("zz1", "echo abc", "zz2", "echo abb", "zz3", "echo aaa", "zz4");
+            Test("echo abc", Keys(_.Ctrl_r,
+                'a',
+                CheckThat(() => AssertScreenIs(2,
+                    TokenClassification.Command, "echo",
+                    TokenClassification.None, " ",
+                    emphasisColors, 'a',
+                    TokenClassification.None, "aa",
+                    NextLine,
+                    statusColors, "bck-i-search: a_")),
+                _.Ctrl_r, CheckThat(() => AssertScreenIs(2,
+                    TokenClassification.Command, "echo",
+                    TokenClassification.None, " ",
+                    emphasisColors, 'a',
+                    TokenClassification.None, "bb",
+                    NextLine,
+                    statusColors, "bck-i-search: a_")),
+                _.Ctrl_r, CheckThat(() => AssertScreenIs(2,
+                    TokenClassification.Command, "echo",
+                    TokenClassification.None, " ",
+                    emphasisColors, 'a',
+                    TokenClassification.None, "bc",
+                    NextLine,
+                    statusColors, "bck-i-search: a_"))));
+        }
+
+        OnlyEmphasisChange();
+
+        void OnlyEmphasisChange()
+        {
+            // Test that the current match doesn't change when typing
+            // additional characters, only emphasis should change.
+            SetHistory("zz1", "echo abzz", "echo abc", "zz2");
+            Test("echo abc", Keys(_.Ctrl_r,
+                'a',
+                CheckThat(() => AssertScreenIs(2,
+                    TokenClassification.Command, "echo",
+                    TokenClassification.None, " ",
+                    emphasisColors, 'a',
+                    TokenClassification.None, "bc",
+                    NextLine,
+                    statusColors, "bck-i-search: a_")),
+                'b',
+                CheckThat(() => AssertScreenIs(2,
+                    TokenClassification.Command, "echo",
+                    TokenClassification.None, " ",
+                    emphasisColors, "ab",
+                    TokenClassification.None, 'c',
+                    NextLine,
+                    statusColors, "bck-i-search: ab_"))));
+        }
+
+        AbortRestoresBeforeSearch();
+
+        void AbortRestoresBeforeSearch()
+        {
+            SetHistory("zz1", "echo abzz", "echo abc", "zz2");
+            Test("echo zed", Keys("echo zed", _.Ctrl_r,
+                'a',
+                CheckThat(() => AssertScreenIs(2,
+                    TokenClassification.Command, "echo",
+                    TokenClassification.None, " ",
+                    emphasisColors, 'a',
+                    TokenClassification.None, "bc",
+                    NextLine,
+                    statusColors, "bck-i-search: a_")),
+                _.Ctrl_g,
+                CheckThat(() => AssertScreenIs(2,
+                    TokenClassification.Command, "echo",
+                    TokenClassification.None, " ",
+                    TokenClassification.None, "zed",
+                    NextLine))));
+        }
+
 
         // Test that a random function terminates the search and has an
         // effect on the line found in history
