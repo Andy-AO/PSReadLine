@@ -873,9 +873,6 @@ namespace Microsoft.PowerShell
                     }
                 }
             }
-
-            _searcher.CurrentHistoryIndex = 0;
-
             _killIndex = -1; // So first add indexes 0.
             _killRing = new List<string>(Options.MaximumKillRingCount);
 
