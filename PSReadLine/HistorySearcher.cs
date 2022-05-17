@@ -106,7 +106,8 @@ public class HistorySearcher
                      ", When searchFromPoint is initializing in front of all code of HandleUserInput.");
         logger.Debug("searchPositions is " + ObjectDumper.Dump(searchPositions) +
                      ", When searchFromPoint is initializing in front of all code of HandleUserInput.");
-        searchFromPoint = CurrentHistoryIndex;
+
+        RecoverSearchFromPoint();
         searchPositions = new Stack<int>();
         searchPositions.Push(CurrentHistoryIndex);
         if (_rl.Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
@@ -150,6 +151,11 @@ public class HistorySearcher
                     break;
             }
         }
+    }
+
+    private void RecoverSearchFromPoint()
+    {
+        searchFromPoint = CurrentHistoryIndex;
     }
 
     public void SaveCurrentLine()
@@ -222,7 +228,8 @@ public class HistorySearcher
             toMatch.Remove(toMatch.Length - 1, 1);
             _renderer.StatusBuffer.Remove(_renderer.StatusBuffer.Length - 2, 1);
             searchPositions.Pop();
-            searchFromPoint = CurrentHistoryIndex = searchPositions.Peek();
+            searchFromPoint = searchPositions.Peek();
+            SaveSearchFromPoint();
             var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
                 ? HistoryMoveCursor.ToEnd
                 : HistoryMoveCursor.DontMove;
