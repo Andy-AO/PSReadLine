@@ -670,8 +670,7 @@ namespace Microsoft.PowerShell
                     {
                         _searcher.ClearSavedCurrentLine();
                         _hs.HashedHistory = null;
-                        int val = _hs.Historys.Count;
-                        _searcher.CurrentHistoryIndex = val;
+                        _searcher.ResetCurrentHistoryIndex();
                     }
 
                     _hs.AnyHistoryCommandCount = 0;
@@ -819,8 +818,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                int val = _hs.Historys.Count;
-                _searcher.CurrentHistoryIndex = val;
+                _searcher.ResetCurrentHistoryIndex();
                 _hs.SearchHistoryCommandCount = 0;
             }
 

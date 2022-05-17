@@ -23,6 +23,7 @@ public class HistorySearcher
     // is saved here so it can be restored.
     private readonly HistoryItem _savedCurrentLine = new();
     private int direction;
+    private int _currentHistoryIndex;
 
     static HistorySearcher()
     {
@@ -33,9 +34,28 @@ public class HistorySearcher
     private int searchFromPoint { get; set; }
     private StringBuilder toMatch { get; set; }
     private PSKeyInfo key { get; set; }
+
+    public void ResetCurrentHistoryIndex(bool ToBegin = false)
+    {
+        const int InitialValue = 0;
+        if (ToBegin)
+        {
+            _searcher.CurrentHistoryIndex = InitialValue;
+        }
+        else
+        {
+            _searcher.CurrentHistoryIndex = _hs?.Historys?.Count ?? InitialValue;
+        }
+    }
+
     public static HistorySearcher Singleton { get; }
     private Action<ConsoleKeyInfo?, object> function { get; set; }
-    public int CurrentHistoryIndex { get; set; }
+
+    public int CurrentHistoryIndex
+    {
+        get => _currentHistoryIndex;
+        set { _currentHistoryIndex = value; }
+    }
 
     /// <summary>
     ///     Perform an incremental backward search through history.
@@ -320,8 +340,7 @@ public class HistorySearcher
 
     private static void GoToEndOfHistory()
     {
-        var val = _hs.Historys.Count;
-        _searcher.CurrentHistoryIndex = val;
+        _searcher.ResetCurrentHistoryIndex();
         _searcher.UpdateFromHistory(HistoryMoveCursor.ToEnd);
     }
 }

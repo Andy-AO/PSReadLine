@@ -88,8 +88,7 @@ namespace Microsoft.PowerShell
 
             Singleton.buffer.Clear(); // Clear so we don't actually run the input
             _renderer.Current = 0; // If Render is called, _current must be correct.
-            int val1 = _hs.Historys.Count;
-            _searcher.CurrentHistoryIndex = val1;
+            _searcher.ResetCurrentHistoryIndex();
             Singleton._inputAccepted = true;
         }
 

@@ -223,7 +223,7 @@ public class History
     public static void BeginningOfHistory(ConsoleKeyInfo? key = null, object arg = null)
     {
         _searcher.SaveCurrentLine();
-        _searcher.CurrentHistoryIndex = 0;
+        _searcher.ResetCurrentHistoryIndex(true);
         _searcher.UpdateFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
     }
 
@@ -235,7 +235,7 @@ public class History
     {
         Singleton.Historys?.Clear();
         Singleton.RecentHistory?.Clear();
-        _searcher.CurrentHistoryIndex = 0;
+        _searcher.ResetCurrentHistoryIndex();
     }
 
     /// <summary>
@@ -732,7 +732,7 @@ public class History
 
             Historys.Enqueue(PreviousHistoryItem);
 
-            _searcher.CurrentHistoryIndex = Historys.Count;
+            _searcher.ResetCurrentHistoryIndex();
 
             if (_rl.Options.HistorySaveStyle == HistorySaveStyle.SaveIncrementally && !fromHistoryFile)
                 IncrementalHistoryWrite();
@@ -802,7 +802,7 @@ public class History
 
     private static void GoToEndOfHistory()
     {
-        _searcher.CurrentHistoryIndex = Singleton.Historys.Count;
+        _searcher.ResetCurrentHistoryIndex();
         _searcher.UpdateFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
     }
 
