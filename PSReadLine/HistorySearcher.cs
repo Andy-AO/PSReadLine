@@ -62,6 +62,7 @@ public class HistorySearcher
         UpdateStatusLinePrompt(direction, AppendUnderline: true);
         _renderer.Render(); // Render prompt
         HandleUserInput();
+        logger.Debug("CurrentHistoryIndex is " + CurrentHistoryIndex + ", When HandleUserInput is return.");
         _renderer.EmphasisInit();
         // Remove our status line, this will render
         _rl.ClearStatusMessage(true);
@@ -81,11 +82,13 @@ public class HistorySearcher
 
     private void HandleUserInput()
     {
+        logger.Debug("CurrentHistoryIndex is " + CurrentHistoryIndex +
+                     ", When searchFromPoint is initializing in front of all code of HandleUserInput.");
+        logger.Debug("searchPositions is " + ObjectDumper.Dump(searchPositions) +
+                     ", When searchFromPoint is initializing in front of all code of HandleUserInput.");
         searchFromPoint = CurrentHistoryIndex;
-        logger.Debug("searchFromPoint:" + searchFromPoint);
         searchPositions = new Stack<int>();
         searchPositions.Push(CurrentHistoryIndex);
-        logger.Debug(ObjectDumper.Dump(searchPositions));
         if (_rl.Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
         toMatch = new StringBuilder(64);
         while (true)
