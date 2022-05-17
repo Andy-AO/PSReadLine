@@ -267,7 +267,7 @@ public class HistorySearcher
 
                 UpdateStatusLinePrompt(direction);
                 SetEmphasisData(startIndex);
-                CurrentHistoryIndex = searchFromPoint;
+                SaveSearchFromPoint();
                 var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
                     ? HistoryMoveCursor.ToEnd
                     : HistoryMoveCursor.DontMove;
@@ -286,6 +286,11 @@ public class HistorySearcher
         _renderer.EmphasisInit();
         UpdateStatusLinePrompt(direction, true);
         _renderer.Render();
+    }
+
+    private void SaveSearchFromPoint()
+    {
+        CurrentHistoryIndex = searchFromPoint;
     }
 
     private int GetStartIndex(string line)
