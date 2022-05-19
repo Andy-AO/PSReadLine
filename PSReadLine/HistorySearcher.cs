@@ -102,16 +102,7 @@ public class HistorySearcher
 
     private void HandleUserInput()
     {
-        logger.Debug("CurrentHistoryIndex is " + CurrentHistoryIndex +
-                     ", When searchFromPoint is initializing in front of all code of HandleUserInput.");
-        logger.Debug("searchPositions is " + ObjectDumper.Dump(searchPositions) +
-                     ", When searchFromPoint is initializing in front of all code of HandleUserInput.");
-
-        RecoverSearchFromPoint();
-        searchPositions = new Stack<int>();
-        searchPositions.Push(CurrentHistoryIndex);
-        if (_rl.Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
-        toMatch = new StringBuilder(64);
+        InitData();
         while (true)
         {
             key = PSConsoleReadLine.ReadKey();
@@ -151,6 +142,20 @@ public class HistorySearcher
                     break;
             }
         }
+    }
+
+    private void InitData()
+    {
+        logger.Debug("CurrentHistoryIndex is " + CurrentHistoryIndex +
+                     ", When searchFromPoint is initializing in front of all code of HandleUserInput.");
+        logger.Debug("searchPositions is " + ObjectDumper.Dump(searchPositions) +
+                     ", When searchFromPoint is initializing in front of all code of HandleUserInput.");
+
+        RecoverSearchFromPoint();
+        searchPositions = new Stack<int>();
+        searchPositions.Push(CurrentHistoryIndex);
+        if (_rl.Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
+        toMatch = new StringBuilder(64);
     }
 
     private void RecoverSearchFromPoint()
