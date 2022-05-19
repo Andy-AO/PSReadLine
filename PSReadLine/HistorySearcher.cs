@@ -24,6 +24,7 @@ public class HistorySearcher
     private readonly HistoryItem _savedCurrentLine = new();
     private int direction;
     private int _currentHistoryIndex;
+    private int _searchFromPoint;
 
     static HistorySearcher()
     {
@@ -31,7 +32,22 @@ public class HistorySearcher
     }
 
     private Stack<int> searchPositions { get; set; }
-    private int searchFromPoint { get; set; }
+
+    private int searchFromPoint
+    {
+        get => _searchFromPoint;
+        set
+        {
+            // Make sure we're never more than 1 away from being in range so if they
+            // reverse direction, the first time they reverse they are back in range.
+            if (value < 0)
+                value = -1;
+            else if (value >= _hs.Historys.Count)
+                value = _hs.Historys.Count;
+            _searchFromPoint = value;
+        }
+    }
+
     private StringBuilder toMatch { get; set; }
     private PSKeyInfo key { get; set; }
 
@@ -262,6 +278,25 @@ public class HistorySearcher
 
     private void UpdateHistory()
     {
+        FindInHistory(startIndex =>
+        {
+            UpdateStatusLinePrompt(direction);
+            SetEmphasisData(startIndex);
+            SaveSearchFromPoint();
+            var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
+                ? HistoryMoveCursor.ToEnd
+                : HistoryMoveCursor.DontMove;
+            UpdateFromHistory(moveCursor);
+        }, () =>
+        {
+            _renderer.EmphasisInit();
+            UpdateStatusLinePrompt(direction, true);
+            _renderer.Render();
+        });
+    }
+
+    private void FindInHistory(Action<int> whenFound, Action whenNotFound = default)
+    {
         searchFromPoint += direction;
         for (; searchFromPoint >= 0 && searchFromPoint < _hs.Historys.Count; searchFromPoint += direction)
         {
@@ -276,27 +311,12 @@ public class HistorySearcher
                     else if (index != searchFromPoint) continue;
                 }
 
-                UpdateStatusLinePrompt(direction);
-                SetEmphasisData(startIndex);
-                SaveSearchFromPoint();
-                var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                    ? HistoryMoveCursor.ToEnd
-                    : HistoryMoveCursor.DontMove;
-                UpdateFromHistory(moveCursor);
+                whenFound?.Invoke(startIndex);
                 return;
             }
         }
 
-        // Make sure we're never more than 1 away from being in range so if they
-        // reverse direction, the first time they reverse they are back in range.
-        if (searchFromPoint < 0)
-            searchFromPoint = -1;
-        else if (searchFromPoint >= _hs.Historys.Count)
-            searchFromPoint = _hs.Historys.Count;
-
-        _renderer.EmphasisInit();
-        UpdateStatusLinePrompt(direction, true);
-        _renderer.Render();
+        whenNotFound?.Invoke();
     }
 
     private void SaveSearchFromPoint()
