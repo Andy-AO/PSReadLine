@@ -210,19 +210,15 @@ public class HistorySearcher
     public void UpdateBufferFromHistory(HistoryMoveCursor moveCursor)
     {
         SaveToBuffer();
-        switch (moveCursor)
+
+        _renderer.Current = moveCursor switch
         {
-            case HistoryMoveCursor.ToEnd:
-                _renderer.Current = Math.Max(0, _rl.buffer.Length + PSConsoleReadLine.ViEndOfLineFactor);
-                break;
-            case HistoryMoveCursor.ToBeginning:
-                _renderer.Current = 0;
-                break;
-            default:
-                if (_renderer.Current > _rl.buffer.Length)
-                    _renderer.Current = Math.Max(0, _rl.buffer.Length + RL.ViEndOfLineFactor);
-                break;
-        }
+            HistoryMoveCursor.ToEnd => Math.Max(0, _rl.buffer.Length + PSConsoleReadLine.ViEndOfLineFactor),
+            HistoryMoveCursor.ToBeginning => 0,
+            _ => _renderer.Current > _rl.buffer.Length
+                ? Math.Max(0, _rl.buffer.Length + RL.ViEndOfLineFactor)
+                : _renderer.Current
+        };
 
         using var _ = _rl._Prediction.DisableScoped();
         _renderer.Render();
