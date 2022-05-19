@@ -182,7 +182,7 @@ public class HistorySearcherReadLine
             UpdateStatusLinePrompt(_model.direction, true);
             _renderer.Render();
         };
-        _model.FindInHistory(startIndex =>
+        _model.SearchInHistory(startIndex =>
         {
             UpdateStatusLinePrompt(_model.direction);
             SetEmphasisData(startIndex);

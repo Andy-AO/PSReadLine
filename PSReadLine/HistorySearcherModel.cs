@@ -68,7 +68,7 @@ public class HistorySearcherModel
         toMatch = new StringBuilder(64);
     }
 
-    public void FindInHistory(Action<int> whenFound, Action whenNotFound = default)
+    public void SearchInHistory(Action<int> whenFound, Action whenNotFound = default)
     {
         searchFromPoint = searchFromPoint + direction;
         for (;
