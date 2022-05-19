@@ -26,6 +26,10 @@ public class HistorySearcher
     private int _currentHistoryIndex;
     private int _searchFromPoint;
 
+    private HistoryMoveCursor _moveCursor => _rl.Options.HistorySearchCursorMovesToEnd
+        ? HistoryMoveCursor.ToEnd
+        : HistoryMoveCursor.DontMove;
+
     static HistorySearcher()
     {
         Singleton = new HistorySearcher();
@@ -242,7 +246,20 @@ public class HistorySearcher
         _renderer.Render();
     }
 
-    private int HandleBackward()
+    private void HandleBackward()
+    {
+        Action whenSuccessful = () =>
+        {
+            UpdateFromHistory(_moveCursor);
+            var startIndex = GetStartIndex(_rl.buffer.ToString());
+            if (startIndex >= 0)
+                UpdateBuffer(startIndex);
+        };
+
+        Backward(whenSuccessful, whenFailed: PSConsoleReadLine.Ding);
+    }
+
+    private void Backward(Action whenSuccessful, Action whenFailed)
     {
         if (toMatch.Length > 0)
         {
@@ -251,10 +268,6 @@ public class HistorySearcher
             searchPositions.Pop();
             searchFromPoint = searchPositions.Peek();
             SaveSearchFromPoint();
-            var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                ? HistoryMoveCursor.ToEnd
-                : HistoryMoveCursor.DontMove;
-            UpdateFromHistory(moveCursor);
 
             if (_hs.HashedHistory != null)
                 // Remove any entries with index < searchFromPoint because
@@ -263,17 +276,12 @@ public class HistorySearcher
                 foreach (var pair in _hs.HashedHistory.ToArray())
                     if (pair.Value < searchFromPoint)
                         _hs.HashedHistory.Remove(pair.Key);
-
-            var startIndex = GetStartIndex(_rl.buffer.ToString());
-            if (startIndex >= 0)
-                UpdateBuffer(startIndex);
+            whenSuccessful?.Invoke();
         }
         else
         {
-            PSConsoleReadLine.Ding();
+            whenFailed?.Invoke();
         }
-
-        return searchFromPoint;
     }
 
     private void UpdateHistory()
@@ -283,10 +291,7 @@ public class HistorySearcher
             UpdateStatusLinePrompt(direction);
             SetEmphasisData(startIndex);
             SaveSearchFromPoint();
-            var moveCursor = _rl.Options.HistorySearchCursorMovesToEnd
-                ? HistoryMoveCursor.ToEnd
-                : HistoryMoveCursor.DontMove;
-            UpdateFromHistory(moveCursor);
+            UpdateFromHistory(_moveCursor);
         }, () =>
         {
             _renderer.EmphasisInit();
