@@ -37,17 +37,13 @@ public class HistorySearcherReadLine
 
     public int CurrentHistoryIndex
     {
-        get => _model._currentHistoryIndex;
-        set => _model._currentHistoryIndex = value;
+        get => _model.CurrentHistoryIndex;
+        set => _model.CurrentHistoryIndex = value;
     }
 
     public void ResetCurrentHistoryIndex(bool ToBegin = false)
     {
-        const int InitialValue = 0;
-        if (ToBegin)
-            SearcherReadLine.CurrentHistoryIndex = InitialValue;
-        else
-            SearcherReadLine.CurrentHistoryIndex = _hs?.Historys?.Count ?? InitialValue;
+        _model.ResetCurrentHistoryIndex(ToBegin);
     }
 
     /// <summary>
@@ -70,12 +66,12 @@ public class HistorySearcherReadLine
     private void InteractiveHistorySearch(int direction)
     {
         using var _ = _rl._Prediction.DisableScoped();
-        SaveCurrentLine();
+        _model.SaveCurrentLine();
         _model.direction = direction;
         UpdateStatusLinePrompt(direction, AppendUnderline: true);
         _renderer.Render(); // Render prompt
         HandleUserInput();
-        logger.Debug("CurrentHistoryIndex is " + CurrentHistoryIndex + ", When HandleUserInput is return.");
+        logger.Debug("CurrentHistoryIndex is " + _model.CurrentHistoryIndex + ", When HandleUserInput is return.");
         _renderer.EmphasisInit();
         // Remove our status line, this will render
         _rl.ClearStatusMessage(true);
@@ -95,7 +91,7 @@ public class HistorySearcherReadLine
 
     private void HandleUserInput()
     {
-        InitData();
+        _model.InitData();
         while (true)
         {
             key = PSConsoleReadLine.ReadKey();
@@ -137,52 +133,19 @@ public class HistorySearcherReadLine
         }
     }
 
-    private void InitData()
-    {
-        logger.Debug("CurrentHistoryIndex is " + CurrentHistoryIndex +
-                     ", When searchFromPoint is initializing in front of all code of HandleUserInput.");
-        logger.Debug("searchPositions is " + ObjectDumper.Dump(_model.searchPositions) +
-                     ", When searchFromPoint is initializing in front of all code of HandleUserInput.");
-
-        RecoverSearchFromPoint();
-        _model.searchPositions =  new Stack<int>();
-        _model.searchPositions.Push(CurrentHistoryIndex);
-        if (_rl.Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
-        _model.toMatch = new StringBuilder(64);
-    }
-
-    private void RecoverSearchFromPoint()
-    {
-        _model.searchFromPoint = CurrentHistoryIndex;
-    }
-
     public void SaveCurrentLine()
     {
-        // We're called before any history operation - so it's convenient
-        // to check if we need to load history from another sessions now.
-        _hs.MaybeReadHistoryFile();
-
-        _hs.AnyHistoryCommandCount += 1;
-        if (_model._savedCurrentLine.CommandLine == null)
-        {
-            _model._savedCurrentLine.CommandLine = _rl.buffer.ToString();
-            _model._savedCurrentLine._edits = _rl._edits;
-            _model._savedCurrentLine._undoEditIndex = _rl._undoEditIndex;
-            _model._savedCurrentLine._editGroupStart = _rl._editGroupStart;
-        }
+        _model.SaveCurrentLine();
     }
 
     public void ClearSavedCurrentLine()
     {
-        _model._savedCurrentLine.CommandLine = null;
-        _model._savedCurrentLine._edits = null;
-        _model._savedCurrentLine._undoEditIndex = 0;
-        _model._savedCurrentLine._editGroupStart = -1;
+        _model.ClearSavedCurrentLine();
     }
 
     public void UpdateBufferFromHistory(HistoryMoveCursor moveCursor)
     {
-        SaveToBuffer();
+        _model.SaveToBuffer();
 
         _renderer.Current = moveCursor switch
         {
@@ -197,109 +160,36 @@ public class HistorySearcherReadLine
         _renderer.Render();
     }
 
-    private void SaveToBuffer()
-    {
-        var historyItem = CurrentHistoryIndex == _hs.Historys.Count
-            ? _model._savedCurrentLine
-            : _hs.Historys[CurrentHistoryIndex];
-
-        _rl._edits = new List<EditItem>(historyItem._edits);
-        _rl._undoEditIndex = historyItem._undoEditIndex;
-        _rl._editGroupStart = historyItem._editGroupStart;
-
-        _rl.buffer.Clear();
-        _rl.buffer.Append(historyItem.CommandLine);
-    }
-
     private void HandleBackward()
     {
         var whenSuccessful = () =>
         {
             UpdateBufferFromHistory(_moveCursor);
-            var startIndex = GetStartIndex(_rl.buffer.ToString());
+            var startIndex = _model.GetStartIndex(_rl.buffer.ToString());
             if (startIndex >= 0)
                 UpdateBuffer(startIndex);
         };
 
-        Backward(whenSuccessful, PSConsoleReadLine.Ding);
-    }
-
-    private void Backward(Action whenSuccessful, Action whenFailed)
-    {
-        if (_model.toMatch.Length > 0)
-        {
-            _model.toMatch.Remove(_model.toMatch.Length - 1, 1);
-            _renderer.StatusBuffer.Remove(_renderer.StatusBuffer.Length - 2, 1);
-            _model.searchPositions.Pop();
-            int val = _model.searchPositions.Peek();
-            _model.searchFromPoint = val;
-            SaveSearchFromPoint();
-
-            if (_hs.HashedHistory != null)
-                // Remove any entries with index < searchFromPoint because
-                // we are starting the search from this new index - we always
-                // want to find the latest entry that matches the search string
-                foreach (var pair in _hs.HashedHistory.ToArray())
-                    if (pair.Value < _model.searchFromPoint)
-                        _hs.HashedHistory.Remove(pair.Key);
-            whenSuccessful?.Invoke();
-        }
-        else
-        {
-            whenFailed?.Invoke();
-        }
+        Action whenFailed = PSConsoleReadLine.Ding;
+        _model.Backward(whenSuccessful,whenFailed);
     }
 
     private void UpdateHistory()
     {
-        FindInHistory(startIndex =>
-        {
-            UpdateStatusLinePrompt(_model.direction);
-            SetEmphasisData(startIndex);
-            SaveSearchFromPoint();
-            UpdateBufferFromHistory(_moveCursor);
-        }, () =>
+        Action whenNotFound = () =>
         {
             _renderer.EmphasisInit();
             UpdateStatusLinePrompt(_model.direction, true);
             _renderer.Render();
-        });
-    }
-
-    private void FindInHistory(Action<int> whenFound, Action whenNotFound = default)
-    {
-        _model.searchFromPoint = _model.searchFromPoint + _model.direction;
-        for (; _model.searchFromPoint >= 0 && _model.searchFromPoint < _hs.Historys.Count; _model.searchFromPoint = _model.searchFromPoint + _model.direction)
+        };
+        _model.FindInHistory(startIndex =>
         {
-            var line = _hs.Historys[_model.searchFromPoint].CommandLine;
-            var startIndex = GetStartIndex(line);
-            if (startIndex >= 0)
-            {
-                if (_rl.Options.HistoryNoDuplicates)
-                {
-                    if (!_hs.HashedHistory.TryGetValue(line, out var index))
-                        _hs.HashedHistory.Add(line, _model.searchFromPoint);
-                    else if (index != _model.searchFromPoint) continue;
-                }
-
-                whenFound?.Invoke(startIndex);
-                return;
-            }
-        }
-
-        whenNotFound?.Invoke();
+            UpdateStatusLinePrompt(_model.direction);
+            SetEmphasisData(startIndex);
+            _model.SaveSearchFromPoint();
+            UpdateBufferFromHistory(_moveCursor);
+        }, whenNotFound);
     }
-
-    private void SaveSearchFromPoint()
-    {
-        CurrentHistoryIndex = _model.searchFromPoint;
-    }
-
-    private int GetStartIndex(string line)
-    {
-        return line.IndexOf(_model.toMatch.ToString(), _rl.Options.HistoryStringComparison);
-    }
-
 
     private bool AddCharOfSearchKeyword()
     {
@@ -318,12 +208,12 @@ public class HistorySearcherReadLine
 
     private void Update()
     {
-        var startIndex = GetStartIndex(_rl.buffer.ToString());
+        var startIndex = _model.GetStartIndex(_rl.buffer.ToString());
         if (startIndex >= 0)
             UpdateBuffer(startIndex);
         else
             UpdateHistory();
-        _model.searchPositions.Push(CurrentHistoryIndex);
+        _model.searchPositions.Push(_model.CurrentHistoryIndex);
     }
 
     private void UpdateBuffer(int startIndex)
@@ -347,7 +237,7 @@ public class HistorySearcherReadLine
 
     private static void GoToEndOfHistory()
     {
-        SearcherReadLine.ResetCurrentHistoryIndex();
+        _model.ResetCurrentHistoryIndex(false);
         SearcherReadLine.UpdateBufferFromHistory(HistoryMoveCursor.ToEnd);
     }
 }

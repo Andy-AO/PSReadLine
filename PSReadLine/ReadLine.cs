@@ -670,7 +670,7 @@ namespace Microsoft.PowerShell
                     {
                         SearcherReadLine.ClearSavedCurrentLine();
                         _hs.HashedHistory = null;
-                        SearcherReadLine.ResetCurrentHistoryIndex();
+                        SearcherReadLine.ResetCurrentHistoryIndex(false);
                     }
 
                     _hs.AnyHistoryCommandCount = 0;
@@ -818,7 +818,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                SearcherReadLine.ResetCurrentHistoryIndex();
+                SearcherReadLine.ResetCurrentHistoryIndex(false);
                 _hs.SearchHistoryCommandCount = 0;
             }
 
