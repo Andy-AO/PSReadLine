@@ -257,7 +257,6 @@ public class HistorySearcher
 
     private void UpdateHistory()
     {
-        var toMatch = this.toMatch.ToString();
         searchFromPoint += direction;
         for (; searchFromPoint >= 0 && searchFromPoint < _hs.Historys.Count; searchFromPoint += direction)
         {
