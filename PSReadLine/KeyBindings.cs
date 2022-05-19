@@ -184,8 +184,8 @@ namespace Microsoft.PowerShell
                 {Keys.CtrlC, MakeKeyHandler(CopyOrCancelLine, "CopyOrCancelLine")},
                 {Keys.CtrlShiftC, MakeKeyHandler(Copy, "Copy")},
                 {Keys.CtrlL, MakeKeyHandler(ClearScreen, "ClearScreen")},
-                {Keys.CtrlR, MakeKeyHandler(HistorySearcher.ReverseSearchHistory, "ReverseSearchHistory")},
-                {Keys.CtrlS, MakeKeyHandler(HistorySearcher.ForwardSearchHistory, "ForwardSearchHistory")},
+                {Keys.CtrlR, MakeKeyHandler(HistorySearcherReadLine.ReverseSearchHistory, "ReverseSearchHistory")},
+                {Keys.CtrlS, MakeKeyHandler(HistorySearcherReadLine.ForwardSearchHistory, "ForwardSearchHistory")},
                 {Keys.CtrlV, MakeKeyHandler(Paste, "Paste")},
                 {Keys.ShiftInsert, MakeKeyHandler(Paste, "Paste")},
                 {Keys.CtrlX, MakeKeyHandler(Cut, "Cut")},
@@ -280,8 +280,8 @@ namespace Microsoft.PowerShell
                 {Keys.CtrlN, MakeKeyHandler(History.NextHistory, "NextHistory")},
                 {Keys.CtrlO, MakeKeyHandler(AcceptAndGetNext, "AcceptAndGetNext")},
                 {Keys.CtrlP, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
-                {Keys.CtrlR, MakeKeyHandler(HistorySearcher.ReverseSearchHistory, "ReverseSearchHistory")},
-                {Keys.CtrlS, MakeKeyHandler(HistorySearcher.ForwardSearchHistory, "ForwardSearchHistory")},
+                {Keys.CtrlR, MakeKeyHandler(HistorySearcherReadLine.ReverseSearchHistory, "ReverseSearchHistory")},
+                {Keys.CtrlS, MakeKeyHandler(HistorySearcherReadLine.ForwardSearchHistory, "ForwardSearchHistory")},
                 {Keys.CtrlT, MakeKeyHandler(SwapCharacters, "SwapCharacters")},
                 {Keys.CtrlU, MakeKeyHandler(BackwardKillInput, "BackwardKillInput")},
                 {Keys.CtrlX, MakeKeyHandler(Chord, "ChordFirstKey")},
@@ -519,12 +519,12 @@ namespace Microsoft.PowerShell
                 case nameof(History.BeginningOfHistory):
                 case nameof(History.ClearHistory):
                 case nameof(History.EndOfHistory):
-                case nameof(HistorySearcher.ForwardSearchHistory):
+                case nameof(HistorySearcherReadLine.ForwardSearchHistory):
                 case nameof(History.HistorySearchBackward):
                 case nameof(History.HistorySearchForward):
                 case nameof(History.NextHistory):
                 case nameof(History.PreviousHistory):
-                case nameof(HistorySearcher.ReverseSearchHistory):
+                case nameof(HistorySearcherReadLine.ReverseSearchHistory):
                 case nameof(ViSearchHistoryBackward):
                     return KeyHandlerGroup.History;
 

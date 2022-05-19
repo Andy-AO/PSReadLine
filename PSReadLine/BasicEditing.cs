@@ -88,7 +88,7 @@ namespace Microsoft.PowerShell
 
             Singleton.buffer.Clear(); // Clear so we don't actually run the input
             _renderer.Current = 0; // If Render is called, _current must be correct.
-            _searcher.ResetCurrentHistoryIndex();
+            SearcherReadLine.ResetCurrentHistoryIndex();
             Singleton._inputAccepted = true;
         }
 
@@ -422,8 +422,8 @@ namespace Microsoft.PowerShell
         {
             if (Singleton.AcceptLineImpl(false))
             {
-                if (_searcher.CurrentHistoryIndex < _hs.Historys.Count - 1)
-                    _hs.GetNextHistoryIndex = _searcher.CurrentHistoryIndex + 1;
+                if (SearcherReadLine.CurrentHistoryIndex < _hs.Historys.Count - 1)
+                    _hs.GetNextHistoryIndex = SearcherReadLine.CurrentHistoryIndex + 1;
                 else
                     Ding();
             }

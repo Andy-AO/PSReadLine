@@ -424,7 +424,7 @@ namespace Microsoft.PowerShell
             {
                 // ReadLine was cancelled. Save the current line to be restored next time ReadLine
                 // is called, clear the buffer and throw an exception so we can return an empty string.
-                _searcher.SaveCurrentLine();
+                SearcherReadLine.SaveCurrentLine();
                 _hs.GetNextHistoryIndex = _hs.Historys.Count;
                 _renderer.Current = 0;
                 Singleton.buffer.Clear();
@@ -668,9 +668,9 @@ namespace Microsoft.PowerShell
                 {
                     if (_hs.AnyHistoryCommandCount > 0)
                     {
-                        _searcher.ClearSavedCurrentLine();
+                        SearcherReadLine.ClearSavedCurrentLine();
                         _hs.HashedHistory = null;
-                        _searcher.ResetCurrentHistoryIndex();
+                        SearcherReadLine.ResetCurrentHistoryIndex();
                     }
 
                     _hs.AnyHistoryCommandCount = 0;
@@ -807,8 +807,8 @@ namespace Microsoft.PowerShell
             if (_hs.GetNextHistoryIndex > 0)
             {
                 int val = _hs.GetNextHistoryIndex;
-                _searcher.CurrentHistoryIndex = val;
-                _searcher.UpdateBufferFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
+                SearcherReadLine.CurrentHistoryIndex = val;
+                SearcherReadLine.UpdateBufferFromHistory(HistorySearcherReadLine.HistoryMoveCursor.ToEnd);
                 _hs.GetNextHistoryIndex = 0;
                 if (_hs.SearchHistoryCommandCount > 0)
                 {
@@ -818,7 +818,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                _searcher.ResetCurrentHistoryIndex();
+                SearcherReadLine.ResetCurrentHistoryIndex();
                 _hs.SearchHistoryCommandCount = 0;
             }
 

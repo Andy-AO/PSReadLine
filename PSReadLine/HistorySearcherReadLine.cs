@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Microsoft.PowerShell.PSReadLine;
 
-public class HistorySearcher
+public class HistorySearcherReadLine
 {
     public enum HistoryMoveCursor
     {
@@ -30,9 +30,9 @@ public class HistorySearcher
         ? HistoryMoveCursor.ToEnd
         : HistoryMoveCursor.DontMove;
 
-    static HistorySearcher()
+    static HistorySearcherReadLine()
     {
-        Singleton = new HistorySearcher();
+        Singleton = new HistorySearcherReadLine();
     }
 
     private Stack<int> searchPositions { get; set; }
@@ -60,15 +60,15 @@ public class HistorySearcher
         const int InitialValue = 0;
         if (ToBegin)
         {
-            _searcher.CurrentHistoryIndex = InitialValue;
+            SearcherReadLine.CurrentHistoryIndex = InitialValue;
         }
         else
         {
-            _searcher.CurrentHistoryIndex = _hs?.Historys?.Count ?? InitialValue;
+            SearcherReadLine.CurrentHistoryIndex = _hs?.Historys?.Count ?? InitialValue;
         }
     }
 
-    public static HistorySearcher Singleton { get; }
+    public static HistorySearcherReadLine Singleton { get; }
     private Action<ConsoleKeyInfo?, object> function { get; set; }
 
     public int CurrentHistoryIndex
@@ -373,7 +373,7 @@ public class HistorySearcher
 
     private static void GoToEndOfHistory()
     {
-        _searcher.ResetCurrentHistoryIndex();
-        _searcher.UpdateBufferFromHistory(HistoryMoveCursor.ToEnd);
+        SearcherReadLine.ResetCurrentHistoryIndex();
+        SearcherReadLine.UpdateBufferFromHistory(HistoryMoveCursor.ToEnd);
     }
 }

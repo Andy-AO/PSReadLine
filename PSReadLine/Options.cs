@@ -35,7 +35,7 @@ namespace Microsoft.PowerShell
                     while (_hs.Historys.Count > Options.MaximumHistoryCount) _hs.Historys.Dequeue();
                     while (_hs.Historys.Count > 0) newHistory.Enqueue(_hs.Historys.Dequeue());
                     _hs.Historys = newHistory;
-                    _searcher.ResetCurrentHistoryIndex();
+                    SearcherReadLine.ResetCurrentHistoryIndex();
                 }
             }
 

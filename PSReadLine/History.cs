@@ -124,7 +124,7 @@ public class History
 
         var count = Math.Abs(direction);
         direction = direction < 0 ? -1 : +1;
-        var newHistoryIndex = _searcher.CurrentHistoryIndex;
+        var newHistoryIndex = SearcherReadLine.CurrentHistoryIndex;
         while (count > 0)
         {
             newHistoryIndex += direction;
@@ -159,13 +159,13 @@ public class History
             // Set '_current' back to where it was when starting the first search, because
             // it might be changed during the rendering of the last matching history command.
             _renderer.Current = _renderer.EmphasisLength;
-            _searcher.CurrentHistoryIndex = newHistoryIndex;
+            SearcherReadLine.CurrentHistoryIndex = newHistoryIndex;
             var moveCursor = RL.InViCommandMode()
-                ? HistorySearcher.HistoryMoveCursor.ToBeginning
+                ? HistorySearcherReadLine.HistoryMoveCursor.ToBeginning
                 : _rl.Options.HistorySearchCursorMovesToEnd
-                    ? HistorySearcher.HistoryMoveCursor.ToEnd
-                    : HistorySearcher.HistoryMoveCursor.DontMove;
-            _searcher.UpdateBufferFromHistory(moveCursor);
+                    ? HistorySearcherReadLine.HistoryMoveCursor.ToEnd
+                    : HistorySearcherReadLine.HistoryMoveCursor.DontMove;
+            SearcherReadLine.UpdateBufferFromHistory(moveCursor);
         }
     }
 
@@ -179,7 +179,7 @@ public class History
         RL.TryGetArgAsInt(arg, out var numericArg, -1);
         if (numericArg > 0) numericArg = -numericArg;
 
-        _searcher.SaveCurrentLine();
+        SearcherReadLine.SaveCurrentLine();
         Singleton.HistorySearch(numericArg);
     }
 
@@ -193,7 +193,7 @@ public class History
 
         if (RL.UpdateListSelection(numericArg)) return;
 
-        _searcher.SaveCurrentLine();
+        SearcherReadLine.SaveCurrentLine();
         Singleton.HistoryRecall(numericArg);
     }
 
@@ -205,7 +205,7 @@ public class History
         RL.TryGetArgAsInt(arg, out var numericArg, +1);
         if (RL.UpdateListSelection(numericArg)) return;
 
-        _searcher.SaveCurrentLine();
+        SearcherReadLine.SaveCurrentLine();
         Singleton.HistoryRecall(numericArg);
     }
 
@@ -222,9 +222,9 @@ public class History
     /// </summary>
     public static void BeginningOfHistory(ConsoleKeyInfo? key = null, object arg = null)
     {
-        _searcher.SaveCurrentLine();
-        _searcher.ResetCurrentHistoryIndex(true);
-        _searcher.UpdateBufferFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
+        SearcherReadLine.SaveCurrentLine();
+        SearcherReadLine.ResetCurrentHistoryIndex(true);
+        SearcherReadLine.UpdateBufferFromHistory(HistorySearcherReadLine.HistoryMoveCursor.ToEnd);
     }
 
 
@@ -235,7 +235,7 @@ public class History
     {
         Singleton.Historys?.Clear();
         Singleton.RecentHistory?.Clear();
-        _searcher.ResetCurrentHistoryIndex();
+        SearcherReadLine.ResetCurrentHistoryIndex();
     }
 
     /// <summary>
@@ -243,7 +243,7 @@ public class History
     /// </summary>
     public static void EndOfHistory(ConsoleKeyInfo? key = null, object arg = null)
     {
-        _searcher.SaveCurrentLine();
+        SearcherReadLine.SaveCurrentLine();
         GoToEndOfHistory();
     }
 
@@ -519,7 +519,7 @@ public class History
 
         var count = Math.Abs(direction);
         direction = direction < 0 ? -1 : +1;
-        var newHistoryIndex = _searcher.CurrentHistoryIndex;
+        var newHistoryIndex = SearcherReadLine.CurrentHistoryIndex;
         while (count > 0)
         {
             newHistoryIndex += direction;
@@ -549,11 +549,11 @@ public class History
         RecallHistoryCommandCount = RecallHistoryCommandCount + 1;
         if (newHistoryIndex >= 0 && newHistoryIndex <= Historys.Count)
         {
-            _searcher.CurrentHistoryIndex = newHistoryIndex;
+            SearcherReadLine.CurrentHistoryIndex = newHistoryIndex;
             var moveCursor = RL.InViCommandMode() && !_rl.Options.HistorySearchCursorMovesToEnd
-                ? HistorySearcher.HistoryMoveCursor.ToBeginning
-                : HistorySearcher.HistoryMoveCursor.ToEnd;
-            _searcher.UpdateBufferFromHistory(moveCursor);
+                ? HistorySearcherReadLine.HistoryMoveCursor.ToBeginning
+                : HistorySearcherReadLine.HistoryMoveCursor.ToEnd;
+            SearcherReadLine.UpdateBufferFromHistory(moveCursor);
         }
     }
 
@@ -689,7 +689,7 @@ public class History
 
     private void IncrementalHistoryWrite()
     {
-        var i = _searcher.CurrentHistoryIndex - 1;
+        var i = SearcherReadLine.CurrentHistoryIndex - 1;
         while (i >= 0)
         {
             if (Historys[i]._saved) break;
@@ -732,7 +732,7 @@ public class History
 
             Historys.Enqueue(PreviousHistoryItem);
 
-            _searcher.ResetCurrentHistoryIndex();
+            SearcherReadLine.ResetCurrentHistoryIndex();
 
             if (_rl.Options.HistorySaveStyle == HistorySaveStyle.SaveIncrementally && !fromHistoryFile)
                 IncrementalHistoryWrite();
@@ -745,7 +745,7 @@ public class History
         // Clear the saved line unless we used AcceptAndGetNext in which
         // case we're really still in middle of history and might want
         // to recall the saved line.
-        if (GetNextHistoryIndex == 0) _searcher.ClearSavedCurrentLine();
+        if (GetNextHistoryIndex == 0) SearcherReadLine.ClearSavedCurrentLine();
         return result;
     }
 
@@ -796,14 +796,14 @@ public class History
     {
         PSConsoleReadLine.TryGetArgAsInt(arg, out var numericArg, +1);
 
-        _searcher.SaveCurrentLine();
+        SearcherReadLine.SaveCurrentLine();
         Singleton.HistorySearch(numericArg);
     }
 
     private static void GoToEndOfHistory()
     {
-        _searcher.ResetCurrentHistoryIndex();
-        _searcher.UpdateBufferFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
+        SearcherReadLine.ResetCurrentHistoryIndex();
+        SearcherReadLine.UpdateBufferFromHistory(HistorySearcherReadLine.HistoryMoveCursor.ToEnd);
     }
 
     //class start
