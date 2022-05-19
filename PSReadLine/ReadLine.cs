@@ -808,7 +808,7 @@ namespace Microsoft.PowerShell
             {
                 int val = _hs.GetNextHistoryIndex;
                 _searcher.CurrentHistoryIndex = val;
-                _searcher.UpdateFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
+                _searcher.UpdateBufferFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
                 _hs.GetNextHistoryIndex = 0;
                 if (_hs.SearchHistoryCommandCount > 0)
                 {

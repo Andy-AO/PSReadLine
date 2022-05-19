@@ -915,7 +915,7 @@ namespace Microsoft.PowerShell
                     if (_hs.Historys[i].CommandLine.ToLower().Contains(_hs.SearchHistoryPrefix.ToLower()))
                     {
                         _searcher.CurrentHistoryIndex = i;
-                        _searcher.UpdateFromHistory(moveCursor);
+                        _searcher.UpdateBufferFromHistory(moveCursor);
                         return;
                     }
                 }
@@ -924,7 +924,7 @@ namespace Microsoft.PowerShell
                     if (_hs.Historys[i].CommandLine.Contains(_hs.SearchHistoryPrefix))
                     {
                         _searcher.CurrentHistoryIndex = i;
-                        _searcher.UpdateFromHistory(moveCursor);
+                        _searcher.UpdateBufferFromHistory(moveCursor);
                         return;
                     }
                 }

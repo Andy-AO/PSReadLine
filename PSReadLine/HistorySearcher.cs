@@ -207,27 +207,9 @@ public class HistorySearcher
         _savedCurrentLine._editGroupStart = -1;
     }
 
-    public void UpdateFromHistory(HistoryMoveCursor moveCursor)
+    public void UpdateBufferFromHistory(HistoryMoveCursor moveCursor)
     {
-        string line;
-        if (CurrentHistoryIndex == _hs.Historys.Count)
-        {
-            line = _savedCurrentLine.CommandLine;
-            _rl._edits = new List<EditItem>(_savedCurrentLine._edits);
-            _rl._undoEditIndex = _savedCurrentLine._undoEditIndex;
-            _rl._editGroupStart = _savedCurrentLine._editGroupStart;
-        }
-        else
-        {
-            line = _hs.Historys[CurrentHistoryIndex].CommandLine;
-            _rl._edits = new List<EditItem>(_hs.Historys[CurrentHistoryIndex]._edits);
-            _rl._undoEditIndex = _hs.Historys[CurrentHistoryIndex]._undoEditIndex;
-            _rl._editGroupStart = _hs.Historys[CurrentHistoryIndex]._editGroupStart;
-        }
-
-        _rl.buffer.Clear();
-        _rl.buffer.Append(line);
-
+        SaveToBuffer();
         switch (moveCursor)
         {
             case HistoryMoveCursor.ToEnd:
@@ -246,11 +228,25 @@ public class HistorySearcher
         _renderer.Render();
     }
 
+    private void SaveToBuffer()
+    {
+        HistoryItem historyItem = CurrentHistoryIndex == _hs.Historys.Count
+            ? _savedCurrentLine
+            : _hs.Historys[CurrentHistoryIndex];
+
+        _rl._edits = new List<EditItem>(historyItem._edits);
+        _rl._undoEditIndex = historyItem._undoEditIndex;
+        _rl._editGroupStart = historyItem._editGroupStart;
+
+        _rl.buffer.Clear();
+        _rl.buffer.Append(historyItem.CommandLine);
+    }
+
     private void HandleBackward()
     {
         Action whenSuccessful = () =>
         {
-            UpdateFromHistory(_moveCursor);
+            UpdateBufferFromHistory(_moveCursor);
             var startIndex = GetStartIndex(_rl.buffer.ToString());
             if (startIndex >= 0)
                 UpdateBuffer(startIndex);
@@ -291,7 +287,7 @@ public class HistorySearcher
             UpdateStatusLinePrompt(direction);
             SetEmphasisData(startIndex);
             SaveSearchFromPoint();
-            UpdateFromHistory(_moveCursor);
+            UpdateBufferFromHistory(_moveCursor);
         }, () =>
         {
             _renderer.EmphasisInit();
@@ -382,6 +378,6 @@ public class HistorySearcher
     private static void GoToEndOfHistory()
     {
         _searcher.ResetCurrentHistoryIndex();
-        _searcher.UpdateFromHistory(HistoryMoveCursor.ToEnd);
+        _searcher.UpdateBufferFromHistory(HistoryMoveCursor.ToEnd);
     }
 }

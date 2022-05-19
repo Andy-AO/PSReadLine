@@ -165,7 +165,7 @@ public class History
                 : _rl.Options.HistorySearchCursorMovesToEnd
                     ? HistorySearcher.HistoryMoveCursor.ToEnd
                     : HistorySearcher.HistoryMoveCursor.DontMove;
-            _searcher.UpdateFromHistory(moveCursor);
+            _searcher.UpdateBufferFromHistory(moveCursor);
         }
     }
 
@@ -224,7 +224,7 @@ public class History
     {
         _searcher.SaveCurrentLine();
         _searcher.ResetCurrentHistoryIndex(true);
-        _searcher.UpdateFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
+        _searcher.UpdateBufferFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
     }
 
 
@@ -553,7 +553,7 @@ public class History
             var moveCursor = RL.InViCommandMode() && !_rl.Options.HistorySearchCursorMovesToEnd
                 ? HistorySearcher.HistoryMoveCursor.ToBeginning
                 : HistorySearcher.HistoryMoveCursor.ToEnd;
-            _searcher.UpdateFromHistory(moveCursor);
+            _searcher.UpdateBufferFromHistory(moveCursor);
         }
     }
 
@@ -803,7 +803,7 @@ public class History
     private static void GoToEndOfHistory()
     {
         _searcher.ResetCurrentHistoryIndex();
-        _searcher.UpdateFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
+        _searcher.UpdateBufferFromHistory(HistorySearcher.HistoryMoveCursor.ToEnd);
     }
 
     //class start
