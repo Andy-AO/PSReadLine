@@ -18,7 +18,7 @@ namespace Microsoft.PowerShell
         private int _currentLogicalLine = 0;
         private bool _inSelectedRegion = false;
 
-        private void RenderOneChar(char charToRender, bool toEmphasize)
+        private void BuildOneChar(char charToRender, bool toEmphasize)
         {
             if (charToRender == '\n')
             {
@@ -84,9 +84,6 @@ namespace Microsoft.PowerShell
             _text = _rl.buffer.ToString();
             _rl._Prediction.QueryForSuggestion(_text);
             _color = defaultColor;
-
-
-            foreach (var buf in _consoleBufferLines) buf.Clear();
 
             var tokenStack = new Stack<Renderer.SavedTokenState>();
             tokenStack.Push(new Renderer.SavedTokenState
@@ -186,7 +183,7 @@ namespace Microsoft.PowerShell
                 var toEmphasize = i >= _renderer.EmphasisStart &&
                                   i < _renderer.EmphasisStart + _renderer.EmphasisLength;
 
-                RenderOneChar(charToRender, toEmphasize);
+                BuildOneChar(charToRender, toEmphasize);
             }
 
             if (_inSelectedRegion)
