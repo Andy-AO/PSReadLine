@@ -14,7 +14,7 @@ namespace Microsoft.PowerShell
         private readonly Stopwatch _lastRenderTime = Stopwatch.StartNew();
 
 
-        internal List<StringBuilder> ConsoleBufferLines { get; } = new(1)
+        private List<StringBuilder> ConsoleBufferLines { get; set; } = new(1)
             {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
 
         internal string StatusLinePrompt { get; set; }
@@ -239,7 +239,7 @@ namespace Microsoft.PowerShell
             }
         }
 
-        private int GenerateRender(string defaultColor)
+        private List<StringBuilder> Generate(string defaultColor)
         {
             var text = _rl.buffer.ToString();
             _rl._Prediction.QueryForSuggestion(text);
@@ -249,6 +249,7 @@ namespace Microsoft.PowerShell
             var afterLastToken = false;
             var currentLogicalLine = 0;
             var inSelectedRegion = false;
+            List<StringBuilder> ConsoleBufferLines = this.ConsoleBufferLines.ToList();
 
             void UpdateColorsIfNecessary(string newColor)
             {
@@ -432,8 +433,7 @@ namespace Microsoft.PowerShell
 
                 ConsoleBufferLines[currentLogicalLine].Append(StatusBuffer);
             }
-
-            return currentLogicalLine + 1;
+            return ConsoleBufferLines;
         }
 
         internal void ForceRender()
@@ -441,7 +441,9 @@ namespace Microsoft.PowerShell
             var defaultColor = VTColorUtils.DefaultColor;
 
             // Generate a sequence of logical lines with escape sequences for coloring.
-            var logicalLineCount = GenerateRender(defaultColor);
+            var ConsoleBufferLines = Generate(defaultColor);
+
+            var logicalLineCount = ConsoleBufferLines.Count;
 
             // Now write that out (and remember what we did so we can clear previous renders
             // and minimize writing more than necessary on the next render.)
