@@ -11,29 +11,32 @@ namespace Microsoft.PowerShell
 {
     class DataBuilder
     {
+        private string _text;
+        private string _color;
+        private string _activeColor = string.Empty;
+        private bool _afterLastToken = false;
+        private int _currentLogicalLine = 0;
+        private bool _inSelectedRegion = false;
+
+        private List<StringBuilder> _consoleBufferLines = new(1)
+            {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
+
         public List<StringBuilder> Generate(string defaultColor)
         {
-            var text = _rl.buffer.ToString();
-            _rl._Prediction.QueryForSuggestion(text);
-
-            var color = defaultColor;
-            var activeColor = string.Empty;
-            var afterLastToken = false;
-            var currentLogicalLine = 0;
-            var inSelectedRegion = false;
-            List<StringBuilder> ConsoleBufferLines = new(1)
-                {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
+            _text = _rl.buffer.ToString();
+            _rl._Prediction.QueryForSuggestion(_text);
+            _color = defaultColor;
 
             void UpdateColorsIfNecessary(string newColor)
             {
-                if (!ReferenceEquals(newColor, activeColor))
+                if (!ReferenceEquals(newColor, _activeColor))
                 {
-                    if (!inSelectedRegion)
-                        ConsoleBufferLines[currentLogicalLine]
+                    if (!_inSelectedRegion)
+                        _consoleBufferLines[_currentLogicalLine]
                             .Append(VTColorUtils.AnsiReset)
                             .Append(newColor);
 
-                    activeColor = newColor;
+                    _activeColor = newColor;
                 }
             }
 
@@ -41,48 +44,48 @@ namespace Microsoft.PowerShell
             {
                 if (charToRender == '\n')
                 {
-                    if (inSelectedRegion)
+                    if (_inSelectedRegion)
                         // Turn off inverse before end of line, turn on after continuation prompt
-                        ConsoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                        _consoleBufferLines[_currentLogicalLine].Append(VTColorUtils.AnsiReset);
 
-                    currentLogicalLine += 1;
-                    if (currentLogicalLine == ConsoleBufferLines.Count)
-                        ConsoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
+                    _currentLogicalLine += 1;
+                    if (_currentLogicalLine == _consoleBufferLines.Count)
+                        _consoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
 
                     // Reset the color for continuation prompt so the color sequence will always be explicitly
                     // specified for continuation prompt in the generated render strings.
                     // This is necessary because we will likely not rewrite all texts during rendering, and thus
                     // we cannot assume the continuation prompt can continue to use the active color setting from
                     // the previous rendering string.
-                    activeColor = string.Empty;
+                    _activeColor = string.Empty;
 
                     if (_rl.Options.ContinuationPrompt.Length > 0)
                     {
                         UpdateColorsIfNecessary(_rl.Options._continuationPromptColor);
-                        ConsoleBufferLines[currentLogicalLine].Append(_rl.Options.ContinuationPrompt);
+                        _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.ContinuationPrompt);
                     }
 
-                    if (inSelectedRegion)
+                    if (_inSelectedRegion)
                         // Turn off inverse before end of line, turn on after continuation prompt
-                        ConsoleBufferLines[currentLogicalLine].Append(_rl.Options.SelectionColor);
+                        _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.SelectionColor);
 
                     return;
                 }
 
-                UpdateColorsIfNecessary(toEmphasize ? _rl.Options._emphasisColor : color);
+                UpdateColorsIfNecessary(toEmphasize ? _rl.Options._emphasisColor : _color);
 
                 if (char.IsControl(charToRender))
                 {
-                    ConsoleBufferLines[currentLogicalLine].Append('^');
-                    ConsoleBufferLines[currentLogicalLine].Append((char) ('@' + charToRender));
+                    _consoleBufferLines[_currentLogicalLine].Append('^');
+                    _consoleBufferLines[_currentLogicalLine].Append((char) ('@' + charToRender));
                 }
                 else
                 {
-                    ConsoleBufferLines[currentLogicalLine].Append(charToRender);
+                    _consoleBufferLines[_currentLogicalLine].Append(charToRender);
                 }
             }
 
-            foreach (var buf in ConsoleBufferLines) buf.Clear();
+            foreach (var buf in _consoleBufferLines) buf.Clear();
 
             var tokenStack = new Stack<Renderer.SavedTokenState>();
             tokenStack.Push(new Renderer.SavedTokenState
@@ -104,21 +107,21 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            for (var i = 0; i < text.Length; i++)
+            for (var i = 0; i < _text.Length; i++)
             {
                 if (i == selectionStart)
                 {
-                    ConsoleBufferLines[currentLogicalLine].Append(_rl.Options.SelectionColor);
-                    inSelectedRegion = true;
+                    _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.SelectionColor);
+                    _inSelectedRegion = true;
                 }
                 else if (i == selectionEnd)
                 {
-                    ConsoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
-                    ConsoleBufferLines[currentLogicalLine].Append(activeColor);
-                    inSelectedRegion = false;
+                    _consoleBufferLines[_currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                    _consoleBufferLines[_currentLogicalLine].Append(_activeColor);
+                    _inSelectedRegion = false;
                 }
 
-                if (!afterLastToken)
+                if (!_afterLastToken)
                 {
                     // Figure out the color of the character - if it's in a token,
                     // use the tokens color otherwise use the initial color.
@@ -131,9 +134,9 @@ namespace Microsoft.PowerShell
                             tokenStack.Pop();
                             if (tokenStack.Count == 0)
                             {
-                                afterLastToken = true;
+                                _afterLastToken = true;
                                 token = null;
-                                color = defaultColor;
+                                _color = defaultColor;
                                 break;
                             }
 
@@ -148,13 +151,13 @@ namespace Microsoft.PowerShell
                             continue;
                         }
 
-                        color = state.Color;
+                        _color = state.Color;
                         token = state.Tokens[++state.Index];
                     }
 
-                    if (!afterLastToken && i == token.Extent.StartOffset)
+                    if (!_afterLastToken && i == token.Extent.StartOffset)
                     {
-                        color = _renderer.GetTokenColor(token);
+                        _color = _renderer.GetTokenColor(token);
 
                         if (token is StringExpandableToken stringToken)
                             // We might have nested tokens.
@@ -170,45 +173,45 @@ namespace Microsoft.PowerShell
                                 {
                                     Tokens = tokens,
                                     Index = 0,
-                                    Color = color
+                                    Color = _color
                                 });
 
-                                if (i == tokens[0].Extent.StartOffset) color = _renderer.GetTokenColor(tokens[0]);
+                                if (i == tokens[0].Extent.StartOffset) _color = _renderer.GetTokenColor(tokens[0]);
                             }
                     }
                 }
 
-                var charToRender = text[i];
+                var charToRender = _text[i];
                 var toEmphasize = i >= _renderer.EmphasisStart &&
                                   i < _renderer.EmphasisStart + _renderer.EmphasisLength;
 
                 RenderOneChar(charToRender, toEmphasize);
             }
 
-            if (inSelectedRegion)
+            if (_inSelectedRegion)
             {
-                ConsoleBufferLines[currentLogicalLine].Append(VTColorUtils.AnsiReset);
-                inSelectedRegion = false;
+                _consoleBufferLines[_currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                _inSelectedRegion = false;
             }
 
-            _rl._Prediction.ActiveView.RenderSuggestion(ConsoleBufferLines, ref currentLogicalLine);
-            activeColor = string.Empty;
+            _rl._Prediction.ActiveView.RenderSuggestion(_consoleBufferLines, ref _currentLogicalLine);
+            _activeColor = string.Empty;
 
             if (!string.IsNullOrEmpty(_renderer.StatusLinePrompt))
             {
-                currentLogicalLine += 1;
-                if (currentLogicalLine > ConsoleBufferLines.Count - 1)
-                    ConsoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
+                _currentLogicalLine += 1;
+                if (_currentLogicalLine > _consoleBufferLines.Count - 1)
+                    _consoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
 
-                color = _rl._statusIsErrorMessage ? _rl.Options._errorColor : defaultColor;
-                UpdateColorsIfNecessary(color);
+                _color = _rl._statusIsErrorMessage ? _rl.Options._errorColor : defaultColor;
+                UpdateColorsIfNecessary(_color);
 
-                foreach (var c in _renderer.StatusLinePrompt) ConsoleBufferLines[currentLogicalLine].Append(c);
+                foreach (var c in _renderer.StatusLinePrompt) _consoleBufferLines[_currentLogicalLine].Append(c);
 
-                ConsoleBufferLines[currentLogicalLine].Append(_renderer.StatusBuffer);
+                _consoleBufferLines[_currentLogicalLine].Append(_renderer.StatusBuffer);
             }
 
-            return ConsoleBufferLines;
+            return _consoleBufferLines;
         }
     }
 
