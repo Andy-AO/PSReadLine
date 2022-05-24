@@ -11,10 +11,6 @@ namespace Microsoft.PowerShell
 {
     class DataBuilder
     {
-        public DataBuilder()
-        {
-        }
-
         public List<StringBuilder> Generate(string defaultColor)
         {
             var text = _rl.buffer.ToString();
@@ -446,17 +442,12 @@ namespace Microsoft.PowerShell
             }
         }
 
-        private List<StringBuilder> Generate(string defaultColor)
-        {
-            return new DataBuilder().Generate(defaultColor);
-        }
-
         internal void ForceRender()
         {
             var defaultColor = VTColorUtils.DefaultColor;
 
             // Generate a sequence of logical lines with escape sequences for coloring.
-            var ConsoleBufferLines = Generate(defaultColor);
+            var ConsoleBufferLines = new DataBuilder().Generate(defaultColor);
 
             var logicalLineCount = ConsoleBufferLines.Count;
 
