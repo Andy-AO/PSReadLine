@@ -18,6 +18,19 @@ namespace Microsoft.PowerShell
         private int _currentLogicalLine = 0;
         private bool _inSelectedRegion = false;
 
+        private void UpdateColorsIfNecessary(string newColor)
+        {
+            if (!ReferenceEquals(newColor, _activeColor))
+            {
+                if (!_inSelectedRegion)
+                    _consoleBufferLines[_currentLogicalLine]
+                        .Append(VTColorUtils.AnsiReset)
+                        .Append(newColor);
+
+                _activeColor = newColor;
+            }
+        }
+
         private List<StringBuilder> _consoleBufferLines = new(1)
             {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
 
@@ -27,18 +40,6 @@ namespace Microsoft.PowerShell
             _rl._Prediction.QueryForSuggestion(_text);
             _color = defaultColor;
 
-            void UpdateColorsIfNecessary(string newColor)
-            {
-                if (!ReferenceEquals(newColor, _activeColor))
-                {
-                    if (!_inSelectedRegion)
-                        _consoleBufferLines[_currentLogicalLine]
-                            .Append(VTColorUtils.AnsiReset)
-                            .Append(newColor);
-
-                    _activeColor = newColor;
-                }
-            }
 
             void RenderOneChar(char charToRender, bool toEmphasize)
             {
