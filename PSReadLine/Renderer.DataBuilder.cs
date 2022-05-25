@@ -19,13 +19,13 @@ public partial class Renderer
 
         public DataBuilder()
         {
-            InitHandleSelection();
-            InitHandleToken();
+            InitAppendColorAccordingSelection();
+            InitSetTokenColorAction();
         }
 
-        private void InitHandleToken()
+        private void InitSetTokenColorAction()
         {
-            if (_handleToken is null)
+            if (_setTokenColorAction is null)
             {
                 var tokenStack = new Stack<SavedTokenState>();
                 tokenStack.Push(new SavedTokenState
@@ -35,7 +35,7 @@ public partial class Renderer
                     Color = _defaultColor
                 });
 
-                _handleToken = i =>
+                _setTokenColorAction = i =>
                 {
                     if (!_afterLastToken)
                     {
@@ -102,9 +102,9 @@ public partial class Renderer
             }
         }
 
-        private void InitHandleSelection()
+        private void InitAppendColorAccordingSelection()
         {
-            if (_handleSelection is null)
+            if (_appendColorAccordingSelection is null)
             {
                 var selectionStart = -1;
                 var selectionEnd = -1;
@@ -118,7 +118,7 @@ public partial class Renderer
                     }
                 }
 
-                _handleSelection = i =>
+                _appendColorAccordingSelection = i =>
                 {
                     if (i == selectionStart)
                     {
@@ -186,11 +186,11 @@ public partial class Renderer
             }
             else
             {
-                HandleEmphasis(i);
+                ColorChar(i);
 
                 if (char.IsControl(charToRender))
                 {
-                    HandleControlChar(i);
+                    AppendControlChar(i);
                 }
                 else
                 {
@@ -199,13 +199,13 @@ public partial class Renderer
             }
         }
 
-        private void HandleControlChar(int i)
+        private void AppendControlChar(int i)
         {
             _consoleBufferLines[_currentLogicalLine].Append('^');
             _consoleBufferLines[_currentLogicalLine].Append((char) ('@' + _text[i]));
         }
 
-        private void HandleEmphasis(int i)
+        private void ColorChar(int i)
         {
             UpdateColorsIfNecessary(ToEmphasize(i) ? _rl.Options._emphasisColor : _tokenColor);
         }
@@ -260,9 +260,9 @@ public partial class Renderer
         private List<StringBuilder> _consoleBufferLines = new(1)
             {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
 
-        private Action<int> _handleSelection;
-        private Action<int> _handleToken;
-        private string _defaultColor = String.Empty;
+        private Action<int> _appendColorAccordingSelection;
+        private Action<int> _setTokenColorAction;
+        private string _defaultColor = string.Empty;
 
 
         public RenderData Generate(string defaultColor)
@@ -275,9 +275,9 @@ public partial class Renderer
 
             for (var i = 0; i < _text.Length; i++)
             {
-                _handleSelection.Invoke(i);
+                _appendColorAccordingSelection.Invoke(i);
 
-                _handleToken.Invoke(i);
+                _setTokenColorAction(i);
 
                 GenerateOneChar(i);
             }
