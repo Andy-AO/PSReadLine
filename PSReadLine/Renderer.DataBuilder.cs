@@ -165,8 +165,8 @@ public partial class Renderer
             _rl._Prediction.QueryForSuggestion(_text);
             _color = defaultColor;
 
-            var tokenStack = new Stack<Renderer.SavedTokenState>();
-            tokenStack.Push(new Renderer.SavedTokenState
+            var tokenStack = new Stack<SavedTokenState>();
+            tokenStack.Push(new SavedTokenState
             {
                 Tokens = _rl.Tokens,
                 Index = 0,
@@ -224,7 +224,7 @@ public partial class Renderer
                                 // the string literal token for that purpose.
                                 tokens[tokens.Length - 1] = stringToken;
 
-                                tokenStack.Push(new Renderer.SavedTokenState
+                                tokenStack.Push(new SavedTokenState
                                 {
                                     Tokens = tokens,
                                     Index = 0,
