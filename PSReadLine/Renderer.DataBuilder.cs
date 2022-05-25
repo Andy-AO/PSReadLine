@@ -17,6 +17,44 @@ public partial class Renderer
         private int _currentLogicalLine = 0;
         private bool _inSelectedRegion = false;
 
+        public DataBuilder()
+        {
+            InitHandleSelection();
+        }
+
+        private void InitHandleSelection()
+        {
+            if (_handleSelection is null)
+            {
+                var selectionStart = -1;
+                var selectionEnd = -1;
+                if (_rl._visualSelectionCommandCount > 0)
+                {
+                    _renderer.GetRegion(out var regionStart, out var regionLength);
+                    if (regionLength > 0)
+                    {
+                        selectionStart = regionStart;
+                        selectionEnd = selectionStart + regionLength;
+                    }
+                }
+
+                _handleSelection = i =>
+                {
+                    if (i == selectionStart)
+                    {
+                        _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.SelectionColor);
+                        _inSelectedRegion = true;
+                    }
+                    else if (i == selectionEnd)
+                    {
+                        _consoleBufferLines[_currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                        _consoleBufferLines[_currentLogicalLine].Append(_activeColor);
+                        _inSelectedRegion = false;
+                    }
+                };
+            }
+        }
+
         private Action<int> handleToken
         {
             get
@@ -99,44 +137,6 @@ public partial class Renderer
             }
         }
 
-
-        private Action<int> handleSelection
-        {
-            get
-            {
-                if (_handleSelection is null)
-                {
-                    var selectionStart = -1;
-                    var selectionEnd = -1;
-                    if (_rl._visualSelectionCommandCount > 0)
-                    {
-                        _renderer.GetRegion(out var regionStart, out var regionLength);
-                        if (regionLength > 0)
-                        {
-                            selectionStart = regionStart;
-                            selectionEnd = selectionStart + regionLength;
-                        }
-                    }
-
-                    _handleSelection = i =>
-                    {
-                        if (i == selectionStart)
-                        {
-                            _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.SelectionColor);
-                            _inSelectedRegion = true;
-                        }
-                        else if (i == selectionEnd)
-                        {
-                            _consoleBufferLines[_currentLogicalLine].Append(VTColorUtils.AnsiReset);
-                            _consoleBufferLines[_currentLogicalLine].Append(_activeColor);
-                            _inSelectedRegion = false;
-                        }
-                    };
-                }
-
-                return _handleSelection;
-            }
-        }
 
         private string GetTokenColor(Token token)
         {
@@ -254,7 +254,7 @@ public partial class Renderer
 
             for (var i = 0; i < _text.Length; i++)
             {
-                handleSelection.Invoke(i);
+                _handleSelection.Invoke(i);
 
                 handleToken.Invoke(i);
 
