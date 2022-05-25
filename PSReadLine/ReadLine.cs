@@ -834,8 +834,6 @@ namespace Microsoft.PowerShell
             // specifies a custom history save file, we don't want to try reading
             // from the default one.
 
-            InitActionsAfterOptionLoad.ForEach(a => a.Invoke());
-            logger.Information("DelayedOneTimeInitialize()");
             if (Options.MaximumHistoryCount == 0)
             {
                 // Initialize 'MaximumHistoryCount' if it's not defined in user's profile.
@@ -871,6 +869,7 @@ namespace Microsoft.PowerShell
                     }
                 }
             }
+            _hs.DelayedInit();
             _killIndex = -1; // So first add indexes 0.
             _killRing = new List<string>(Options.MaximumKillRingCount);
 
@@ -898,7 +897,7 @@ namespace Microsoft.PowerShell
             Singleton._readKeyThread.Start();
         }
 
-        public List<Action> InitActionsAfterOptionLoad { get; } = new();
+ 
 
         private static void Chord(ConsoleKeyInfo? key = null, object arg = null)
         {

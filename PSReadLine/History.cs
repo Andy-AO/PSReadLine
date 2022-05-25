@@ -18,6 +18,37 @@ public class History
 {
     private Mutex _historyFileMutex;
 
+    public void DelayedInit()
+    {
+        Historys = new HistoryQueue<HistoryItem>(_rl.Options.MaximumHistoryCount);
+        HistoryFileMutex = new Mutex(false, GetHistorySaveFileMutexName());
+        ReadHistoryFile1();
+
+        void ReadHistoryFile1()
+        {
+            var readHistoryFile = true;
+            try
+            {
+                if (_rl.Options.HistorySaveStyle == HistorySaveStyle.SaveNothing &&
+                    Runspace.DefaultRunspace != null)
+                    using (var ps = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace))
+                    {
+                        ps.AddCommand("Microsoft.PowerShell.Core\\Get-History");
+                        foreach (var historyInfo in ps.Invoke<HistoryInfo>())
+                            History.AddToHistory(historyInfo.CommandLine);
+
+                        readHistoryFile = false;
+                    }
+            }
+            catch
+            {
+                // ignored
+            }
+
+            if (readHistoryFile) this.ReadHistoryFile();
+        }
+    }
+
     static History()
     {
         Singleton = new History();
@@ -26,36 +57,6 @@ public class History
     private History()
     {
         RecentHistory = new HistoryQueue<string>(5);
-
-        _rl.InitActionsAfterOptionLoad.Add(() =>
-        {
-            Historys = new HistoryQueue<HistoryItem>(_rl.Options.MaximumHistoryCount);
-            HistoryFileMutex = new Mutex(false, GetHistorySaveFileMutexName());
-            ReadHistoryFile1();
-
-            void ReadHistoryFile1()
-            {
-                var readHistoryFile = true;
-                try
-                {
-                    if (_rl.Options.HistorySaveStyle == HistorySaveStyle.SaveNothing &&
-                        Runspace.DefaultRunspace != null)
-                        using (var ps = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace))
-                        {
-                            ps.AddCommand("Microsoft.PowerShell.Core\\Get-History");
-                            foreach (var historyInfo in ps.Invoke<HistoryInfo>())
-                                History.AddToHistory(historyInfo.CommandLine);
-
-                            readHistoryFile = false;
-                        }
-                }
-                catch
-                {
-                }
-
-                if (readHistoryFile) this.ReadHistoryFile();
-            }
-        });
     }
 
     // When cycling through history, the current line (not yet added to history)
@@ -263,7 +264,7 @@ public class History
     public static void AddToHistory(string command)
     {
         command = command.Replace("\r\n", "\n");
-        var editItems = new List<EditItem> {PSConsoleReadLine.EditItemInsertString.Create(command, 0)};
+        var editItems = new List<EditItem> { PSConsoleReadLine.EditItemInsertString.Create(command, 0) };
         Singleton.MaybeAddToHistory(command, editItems, 1);
     }
 
@@ -271,7 +272,7 @@ public class History
     {
         if (param.Argument is not null) return param.Argument;
 
-        var command = (CommandAst) param.Parent;
+        var command = (CommandAst)param.Parent;
         var index = 1;
         for (; index < command.CommandElements.Count; index++)
             if (ReferenceEquals(command.CommandElements[index], param))
@@ -389,13 +390,13 @@ public class History
             {
                 sb.Append(line);
                 var l = sb.ToString();
-                var editItems = new List<EditItem> {PSConsoleReadLine.EditItemInsertString.Create(l, 0)};
+                var editItems = new List<EditItem> { PSConsoleReadLine.EditItemInsertString.Create(l, 0) };
                 MaybeAddToHistory(l, editItems, 1, fromDifferentSession, fromInitialRead);
                 sb.Clear();
             }
             else
             {
-                var editItems = new List<EditItem> {PSConsoleReadLine.EditItemInsertString.Create(line, 0)};
+                var editItems = new List<EditItem> { PSConsoleReadLine.EditItemInsertString.Create(line, 0) };
                 MaybeAddToHistory(line, editItems, 1, fromDifferentSession, fromInitialRead);
             }
     }
@@ -457,7 +458,7 @@ public class History
 
             try
             {
-                retry_after_creating_directory:
+            retry_after_creating_directory:
                 try
                 {
                     using (var file = overwritten
@@ -586,7 +587,7 @@ public class History
             ? _rl.RLAst
             : Parser.ParseInput(line, out _, out parseErrors);
 
-        if (parseErrors is {Length: > 0})
+        if (parseErrors is { Length: > 0 })
             // If the input has any parsing errors, we cannot reliably analyze the AST. We just consider
             // it sensitive in this case, given that it contains matches of our sensitive pattern.
             return AddToHistoryOption.MemoryOnly;
@@ -642,7 +643,7 @@ public class History
                         // Argument is a variable. It's fine to use a variable for a sensitive parameter.
                         // e.g. `Invoke-WebRequest -Token $token`
                         match = sSensitivePattern.Match(line, arg.Extent.EndOffset);
-                    else if (arg is ParenExpressionAst {Pipeline: PipelineAst pipeline} &&
+                    else if (arg is ParenExpressionAst { Pipeline: PipelineAst pipeline } &&
                              pipeline.PipelineElements[0] is not CommandExpressionAst)
                         // Argument is a command invocation, such as `Invoke-WebRequest -Token (Get-Secret)`.
                         match = match.NextMatch();
@@ -831,10 +832,10 @@ public class History
 
             foreach (var ch in input)
             {
-                var lowByte = (uint) (ch & 0x00FF);
+                var lowByte = (uint)(ch & 0x00FF);
                 hash = unchecked((hash ^ lowByte) * FNV32_PRIME);
 
-                var highByte = (uint) (ch >> 8);
+                var highByte = (uint)(ch >> 8);
                 hash = unchecked((hash ^ highByte) * FNV32_PRIME);
             }
 
