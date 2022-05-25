@@ -16,6 +16,47 @@ public partial class Renderer
         private int _currentLogicalLine = 0;
         private bool _inSelectedRegion = false;
 
+        private string GetTokenColor(Token token)
+        {
+            if ((token.TokenFlags & TokenFlags.CommandName) != 0) return _rl.Options._commandColor;
+
+            switch (token.Kind)
+            {
+                case TokenKind.Comment:
+                    return _rl.Options._commentColor;
+
+                case TokenKind.Parameter:
+                case TokenKind.Generic when token is StringLiteralToken slt && slt.Text.StartsWith("--"):
+                    return _rl.Options._parameterColor;
+
+                case TokenKind.Variable:
+                case TokenKind.SplattedVariable:
+                    return _rl.Options._variableColor;
+
+                case TokenKind.StringExpandable:
+                case TokenKind.StringLiteral:
+                case TokenKind.HereStringExpandable:
+                case TokenKind.HereStringLiteral:
+                    return _rl.Options._stringColor;
+
+                case TokenKind.Number:
+                    return _rl.Options._numberColor;
+            }
+
+            if ((token.TokenFlags & TokenFlags.Keyword) != 0) return _rl.Options._keywordColor;
+
+            if (token.Kind != TokenKind.Generic && (token.TokenFlags &
+                                                    (TokenFlags.BinaryOperator | TokenFlags.UnaryOperator |
+                                                     TokenFlags.AssignmentOperator)) != 0)
+                return _rl.Options._operatorColor;
+
+            if ((token.TokenFlags & TokenFlags.TypeName) != 0) return _rl.Options._typeColor;
+
+            if ((token.TokenFlags & TokenFlags.MemberName) != 0) return _rl.Options._memberColor;
+
+            return _rl.Options._defaultTokenColor;
+        }
+
         private void BuildOneChar(char charToRender, bool toEmphasize)
         {
             if (charToRender == '\n')
@@ -153,7 +194,7 @@ public partial class Renderer
 
                     if (!_afterLastToken && i == token.Extent.StartOffset)
                     {
-                        _color = _renderer.GetTokenColor(token);
+                        _color = GetTokenColor(token);
 
                         if (token is StringExpandableToken stringToken)
                             // We might have nested tokens.
@@ -172,7 +213,7 @@ public partial class Renderer
                                     Color = _color
                                 });
 
-                                if (i == tokens[0].Extent.StartOffset) _color = _renderer.GetTokenColor(tokens[0]);
+                                if (i == tokens[0].Extent.StartOffset) _color = GetTokenColor(tokens[0]);
                             }
                     }
                 }
