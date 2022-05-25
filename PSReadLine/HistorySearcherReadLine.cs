@@ -18,7 +18,11 @@ public class HistorySearcherReadLine
     private const string _backwardISearchPrompt = "bck-i-search: ";
     private const string _failedForwardISearchPrompt = "failed-fwd-i-search: ";
     private const string _failedBackwardISearchPrompt = "failed-bck-i-search: ";
-
+    public static bool ToEmphasize(int index)
+    {
+        return index >= _renderer.EmphasisStart &&
+               index < _renderer.EmphasisStart + _renderer.EmphasisLength;
+    }
     static HistorySearcherReadLine()
     {
         Singleton = new HistorySearcherReadLine();

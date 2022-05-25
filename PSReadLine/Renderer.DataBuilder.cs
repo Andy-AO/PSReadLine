@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Text;
+using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell;
 
@@ -207,13 +208,7 @@ public partial class Renderer
 
         private void ColorChar(int i)
         {
-            UpdateColorsIfNecessary(ToEmphasize(i) ? _rl.Options._emphasisColor : _tokenColor);
-        }
-
-        private static bool ToEmphasize(int i)
-        {
-            return i >= _renderer.EmphasisStart &&
-                   i < _renderer.EmphasisStart + _renderer.EmphasisLength;
+            UpdateColorsIfNecessary(HistorySearcherReadLine.ToEmphasize(i) ? _rl.Options._emphasisColor : _tokenColor);
         }
 
         private void HandleLF(int i)
