@@ -11,7 +11,7 @@ public partial class Renderer
     private class DataBuilder
     {
         private string _text;
-        private string _color;
+        private string _tokenColor;
         private string _activeColor = string.Empty;
         private bool _afterLastToken = false;
         private int _currentLogicalLine = 0;
@@ -52,7 +52,7 @@ public partial class Renderer
                                 {
                                     _afterLastToken = true;
                                     token = null;
-                                    _color = _defaultColor;
+                                    _tokenColor = _defaultColor;
                                     break;
                                 }
 
@@ -67,13 +67,13 @@ public partial class Renderer
                                 continue;
                             }
 
-                            _color = state.Color;
+                            _tokenColor = state.Color;
                             token = state.Tokens[++state.Index];
                         }
 
                         if (!_afterLastToken && i == token.Extent.StartOffset)
                         {
-                            _color = GetTokenColor(token);
+                            _tokenColor = GetTokenColor(token);
 
                             if (token is StringExpandableToken stringToken)
                                 // We might have nested tokens.
@@ -89,15 +89,15 @@ public partial class Renderer
                                     {
                                         Tokens = tokens,
                                         Index = 0,
-                                        Color = _color
+                                        Color = _tokenColor
                                     });
 
-                                    if (i == tokens[0].Extent.StartOffset) _color = GetTokenColor(tokens[0]);
+                                    if (i == tokens[0].Extent.StartOffset) _tokenColor = GetTokenColor(tokens[0]);
                                 }
                         }
                     }
                     logger.Debug("char is " + _text[i] + ", at the end of InitHandleToken()");
-                    logger.Debug("_color is " + _color + ", at the end of InitHandleToken()");
+                    logger.Debug("_tokenColor is " + _tokenColor + ", at the end of InitHandleToken()");
                 };
             }
         }
@@ -210,7 +210,7 @@ public partial class Renderer
             var toEmphasize = i >= _renderer.EmphasisStart &&
                               i < _renderer.EmphasisStart + _renderer.EmphasisLength;
 
-            UpdateColorsIfNecessary(toEmphasize ? _rl.Options._emphasisColor : _color);
+            UpdateColorsIfNecessary(toEmphasize ? _rl.Options._emphasisColor : _tokenColor);
         }
 
         private void HandleLF(int i)
@@ -267,7 +267,7 @@ public partial class Renderer
             _text = _rl.buffer.ToString();
             _rl._Prediction.QueryForSuggestion(_text);
             _defaultColor = defaultColor;
-            _color = defaultColor;
+            _tokenColor = defaultColor;
 
 
             for (var i = 0; i < _text.Length; i++)
@@ -294,8 +294,8 @@ public partial class Renderer
                 if (_currentLogicalLine > _consoleBufferLines.Count - 1)
                     _consoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
 
-                _color = _rl._statusIsErrorMessage ? _rl.Options._errorColor : defaultColor;
-                UpdateColorsIfNecessary(_color);
+                _tokenColor = _rl._statusIsErrorMessage ? _rl.Options._errorColor : defaultColor;
+                UpdateColorsIfNecessary(_tokenColor);
 
                 foreach (var c in _renderer.StatusLinePrompt) _consoleBufferLines[_currentLogicalLine].Append(c);
 
