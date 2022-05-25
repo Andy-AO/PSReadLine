@@ -96,6 +96,8 @@ public partial class Renderer
                                 }
                         }
                     }
+                    logger.Debug("char is " + _text[i] + ", at the end of InitHandleToken()");
+                    logger.Debug("_color is " + _color + ", at the end of InitHandleToken()");
                 };
             }
         }
