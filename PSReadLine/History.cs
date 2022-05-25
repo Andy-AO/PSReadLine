@@ -115,8 +115,7 @@ public class History
             }
 
             SearchHistoryPrefix = _rl.buffer.ToString(0, _renderer.Current);
-            _renderer.EmphasisStart = 0;
-            _renderer.EmphasisLength = _renderer.Current;
+            HistorySearcherReadLine.SetEmphasisData(0, _renderer.Current);
             if (_rl.Options.HistoryNoDuplicates) HashedHistory = new Dictionary<string, int>();
         }
 

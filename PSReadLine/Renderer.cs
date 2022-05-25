@@ -5,6 +5,7 @@ using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.PowerShell.Internal;
+using Microsoft.PowerShell.PSReadLine;
 
 namespace Microsoft.PowerShell
 {
@@ -39,7 +40,7 @@ namespace Microsoft.PowerShell
 
         public Renderer()
         {
-            EmphasisInit();
+            HistorySearcherReadLine.EmphasisInit();
             PreviousRender.bufferWidth = Console.BufferWidth;
             PreviousRender.bufferHeight = Console.BufferHeight;
             InitialX = Console.CursorLeft;
@@ -58,12 +59,6 @@ namespace Microsoft.PowerShell
         internal static IConsole Console;
 
         private static Renderer _s => _renderer;
-
-        internal void EmphasisInit()
-        {
-            EmphasisStart = -1;
-            EmphasisLength = 0;
-        }
 
         internal void RenderWithPredictionQueryPaused()
         {

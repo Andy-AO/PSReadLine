@@ -256,9 +256,9 @@ namespace Microsoft.PowerShell
             //
             // Also - if there was an emphasis, we want to clear that before accepting
             // and that requires rendering.
-            var renderNeeded = _renderer.EmphasisStart >= 0 || _queuedKeys.Count > 0;
+            var renderNeeded = HistorySearcherReadLine.IsEmphasisDataValid() || _queuedKeys.Count > 0;
 
-            _renderer.EmphasisInit();
+            HistorySearcherReadLine.EmphasisInit();
 
             var insertionPoint = _renderer.Current;
             // Make sure cursor is at the end before writing the line

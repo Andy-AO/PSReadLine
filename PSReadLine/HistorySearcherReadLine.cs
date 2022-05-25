@@ -23,6 +23,11 @@ public class HistorySearcherReadLine
         return index >= _renderer.EmphasisStart &&
                index < _renderer.EmphasisStart + _renderer.EmphasisLength;
     }
+    internal static void EmphasisInit()
+    {
+        _renderer.EmphasisStart = -1;
+        _renderer.EmphasisLength = 0;
+    }
     static HistorySearcherReadLine()
     {
         Singleton = new HistorySearcherReadLine();
@@ -76,7 +81,7 @@ public class HistorySearcherReadLine
         _renderer.Render(); // Render prompt
         HandleUserInput();
         logger.Debug("CurrentHistoryIndex is " + _model.CurrentHistoryIndex + ", When HandleUserInput is return.");
-        _renderer.EmphasisInit();
+        HistorySearcherReadLine.EmphasisInit();
         // Remove our status line, this will render
         _rl.ClearStatusMessage(true);
     }
@@ -175,21 +180,22 @@ public class HistorySearcherReadLine
         };
 
         Action whenFailed = PSConsoleReadLine.Ding;
-        _model.Backward(whenSuccessful,whenFailed);
+        _model.Backward(whenSuccessful, whenFailed);
     }
 
     private void UpdateHistory()
     {
         Action whenNotFound = () =>
         {
-            _renderer.EmphasisInit();
+            HistorySearcherReadLine.EmphasisInit();
             UpdateStatusLinePrompt(_model.direction, true);
             _renderer.Render();
         };
         _model.SearchInHistory(startIndex =>
         {
             UpdateStatusLinePrompt(_model.direction);
-            SetEmphasisData(startIndex);
+            _renderer.Current = startIndex;
+            SetEmphasisData(startIndex, _model.toMatch.Length);
             _model.SaveSearchFromPoint();
             UpdateBufferFromHistory(_moveCursor);
         }, whenNotFound);
@@ -228,15 +234,15 @@ public class HistorySearcherReadLine
 
     private void Emphasis(int startIndex)
     {
-        SetEmphasisData(startIndex);
+        _renderer.Current = startIndex;
+        SetEmphasisData(startIndex, _model.toMatch.Length);
         _renderer.Render();
     }
 
-    private void SetEmphasisData(int startIndex)
+    public static void SetEmphasisData(int startIndex, int length)
     {
-        _renderer.Current = startIndex;
         _renderer.EmphasisStart = startIndex;
-        _renderer.EmphasisLength = _model.toMatch.Length;
+        _renderer.EmphasisLength = length;
     }
 
     private static void GoToEndOfHistory()
@@ -244,4 +250,7 @@ public class HistorySearcherReadLine
         _model.ResetCurrentHistoryIndex(false);
         SearcherReadLine.UpdateBufferFromHistory(HistoryMoveCursor.ToEnd);
     }
+
+    public static bool IsEmphasisDataValid() => _renderer.EmphasisStart >= 0;
+
 }
