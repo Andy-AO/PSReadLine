@@ -179,7 +179,8 @@ public partial class Renderer
 
         private void BuildOneChar(int i)
         {
-            if (_text[i] == '\n')
+            var charToRender = _text[i];
+            if (charToRender == '\n')
             {
                 HandleLF(i);
             }
@@ -187,13 +188,13 @@ public partial class Renderer
             {
                 HandleEmphasis(i);
 
-                if (char.IsControl(_text[i]))
+                if (char.IsControl(charToRender))
                 {
                     HandleControlChar(i);
                 }
                 else
                 {
-                    _consoleBufferLines[_currentLogicalLine].Append(_text[i]);
+                    _consoleBufferLines[_currentLogicalLine].Append(charToRender);
                 }
             }
         }
