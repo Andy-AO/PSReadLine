@@ -177,52 +177,65 @@ public partial class Renderer
 
         private void BuildOneChar(int i)
         {
-
-            var charToRender = _text[i];
-            var toEmphasize = i >= _renderer.EmphasisStart &&
-                              i < _renderer.EmphasisStart + _renderer.EmphasisLength;
-
-            if (charToRender == '\n')
+            if (_text[i] == '\n')
             {
-                if (_inSelectedRegion)
-                    // Turn off inverse before end of line, turn on after continuation prompt
-                    _consoleBufferLines[_currentLogicalLine].Append(VTColorUtils.AnsiReset);
-
-                _currentLogicalLine += 1;
-                if (_currentLogicalLine == _consoleBufferLines.Count)
-                    _consoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
-
-                // Reset the color for continuation prompt so the color sequence will always be explicitly
-                // specified for continuation prompt in the generated render strings.
-                // This is necessary because we will likely not rewrite all texts during rendering, and thus
-                // we cannot assume the continuation prompt can continue to use the active color setting from
-                // the previous rendering string.
-                _activeColor = string.Empty;
-
-                if (_rl.Options.ContinuationPrompt.Length > 0)
-                {
-                    UpdateColorsIfNecessary(_rl.Options._continuationPromptColor);
-                    _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.ContinuationPrompt);
-                }
-
-                if (_inSelectedRegion)
-                    // Turn off inverse before end of line, turn on after continuation prompt
-                    _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.SelectionColor);
-
-                return;
-            }
-
-            UpdateColorsIfNecessary(toEmphasize ? _rl.Options._emphasisColor : _color);
-
-            if (char.IsControl(charToRender))
-            {
-                _consoleBufferLines[_currentLogicalLine].Append('^');
-                _consoleBufferLines[_currentLogicalLine].Append((char) ('@' + charToRender));
+                HandleLF(i);
             }
             else
             {
-                _consoleBufferLines[_currentLogicalLine].Append(charToRender);
+                HandleEmphasis(i);
+
+                if (char.IsControl(_text[i]))
+                {
+                    HandleControlChar(i);
+                }
+                else
+                {
+                    _consoleBufferLines[_currentLogicalLine].Append(_text[i]);
+                }
             }
+        }
+
+        private void HandleControlChar(int i)
+        {
+            _consoleBufferLines[_currentLogicalLine].Append('^');
+            _consoleBufferLines[_currentLogicalLine].Append((char) ('@' + _text[i]));
+        }
+
+        private void HandleEmphasis(int i)
+        {
+            var toEmphasize = i >= _renderer.EmphasisStart &&
+                              i < _renderer.EmphasisStart + _renderer.EmphasisLength;
+
+            UpdateColorsIfNecessary(toEmphasize ? _rl.Options._emphasisColor : _color);
+        }
+
+        private void HandleLF(int i)
+        {
+            if (_inSelectedRegion)
+                // Turn off inverse before end of line, turn on after continuation prompt
+                _consoleBufferLines[_currentLogicalLine].Append(VTColorUtils.AnsiReset);
+
+            _currentLogicalLine += 1;
+            if (_currentLogicalLine == _consoleBufferLines.Count)
+                _consoleBufferLines.Add(new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth));
+
+            // Reset the color for continuation prompt so the color sequence will always be explicitly
+            // specified for continuation prompt in the generated render strings.
+            // This is necessary because we will likely not rewrite all texts during rendering, and thus
+            // we cannot assume the continuation prompt can continue to use the active color setting from
+            // the previous rendering string.
+            _activeColor = string.Empty;
+
+            if (_rl.Options.ContinuationPrompt.Length > 0)
+            {
+                UpdateColorsIfNecessary(_rl.Options._continuationPromptColor);
+                _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.ContinuationPrompt);
+            }
+
+            if (_inSelectedRegion)
+                // Turn off inverse before end of line, turn on after continuation prompt
+                _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.SelectionColor);
         }
 
         private void UpdateColorsIfNecessary(string newColor)
