@@ -16,6 +16,8 @@ namespace Microsoft.PowerShell.PSReadLine;
 
 public class History
 {
+    private Mutex _historyFileMutex;
+
     static History()
     {
         Singleton = new History();
@@ -90,7 +92,15 @@ public class History
 
     public long HistoryFileLastSavedSize { get; set; }
 
-    public Mutex HistoryFileMutex { get; set; }
+    public Mutex HistoryFileMutex
+    {
+        get => _historyFileMutex;
+        set
+        {
+            logger.Debug("set HistoryFileMutex");
+            _historyFileMutex = value;
+        }
+    }
 
     public HistoryItem PreviousHistoryItem { get; private set; }
 
