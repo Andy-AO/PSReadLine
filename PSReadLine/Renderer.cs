@@ -19,7 +19,6 @@ namespace Microsoft.PowerShell
 
         internal string StatusLinePrompt { get; set; }
 
-        internal int EmphasisLength { get; set; }
 
         internal RenderData PreviousRender { get; set; } = InitialPrevRender;
 
@@ -30,8 +29,6 @@ namespace Microsoft.PowerShell
         private bool WaitingToRender { get; set; }
 
         internal int Current { get; set; }
-
-        internal int EmphasisStart { get; set; }
 
         internal static RenderData InitialPrevRender { get; } = new()
         {

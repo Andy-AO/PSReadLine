@@ -20,13 +20,13 @@ public class HistorySearcherReadLine
     private const string _failedBackwardISearchPrompt = "failed-bck-i-search: ";
     public static bool ToEmphasize(int index)
     {
-        return index >= _renderer.EmphasisStart &&
-               index < _renderer.EmphasisStart + _renderer.EmphasisLength;
+        return index >= SearcherReadLine.EmphasisStart &&
+               index < SearcherReadLine.EmphasisStart + SearcherReadLine.EmphasisLength;
     }
     internal static void EmphasisInit()
     {
-        _renderer.EmphasisStart = -1;
-        _renderer.EmphasisLength = 0;
+        SearcherReadLine.EmphasisStart = -1;
+        SearcherReadLine.EmphasisLength = 0;
     }
     static HistorySearcherReadLine()
     {
@@ -241,8 +241,9 @@ public class HistorySearcherReadLine
 
     public static void SetEmphasisData(int startIndex, int length)
     {
-        _renderer.EmphasisStart = startIndex;
-        _renderer.EmphasisLength = length;
+        
+        SearcherReadLine.EmphasisStart = startIndex;
+        SearcherReadLine.EmphasisLength = length;
     }
 
     private static void GoToEndOfHistory()
@@ -251,6 +252,7 @@ public class HistorySearcherReadLine
         SearcherReadLine.UpdateBufferFromHistory(HistoryMoveCursor.ToEnd);
     }
 
-    public static bool IsEmphasisDataValid() => _renderer.EmphasisStart >= 0;
-
+    public static bool IsEmphasisDataValid() => SearcherReadLine.EmphasisStart >= 0;
+    private int EmphasisStart { get; set; }
+    internal int EmphasisLength { get; set; }
 }

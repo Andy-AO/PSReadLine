@@ -157,7 +157,7 @@ public class History
         {
             // Set '_current' back to where it was when starting the first search, because
             // it might be changed during the rendering of the last matching history command.
-            _renderer.Current = _renderer.EmphasisLength;
+            _renderer.Current = SearcherReadLine.EmphasisLength;
             SearcherReadLine.CurrentHistoryIndex = newHistoryIndex;
             var moveCursor = RL.InViCommandMode()
                 ? HistorySearcherReadLine.HistoryMoveCursor.ToBeginning
