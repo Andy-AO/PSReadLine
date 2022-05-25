@@ -177,7 +177,7 @@ public partial class Renderer
             return _rl.Options._defaultTokenColor;
         }
 
-        private void BuildOneChar(int i)
+        private void GenerateOneChar(int i)
         {
             var charToRender = _text[i];
             if (charToRender == '\n')
@@ -276,7 +276,7 @@ public partial class Renderer
 
                 _handleToken.Invoke(i);
 
-                BuildOneChar(i);
+                GenerateOneChar(i);
             }
 
             if (_inSelectedRegion)
