@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
@@ -15,6 +16,44 @@ public partial class Renderer
         private bool _afterLastToken = false;
         private int _currentLogicalLine = 0;
         private bool _inSelectedRegion = false;
+
+        private Action<int> handleSelection
+        {
+            get
+            {
+                if (_handleSelection is null)
+                {
+                    var selectionStart = -1;
+                    var selectionEnd = -1;
+                    if (_rl._visualSelectionCommandCount > 0)
+                    {
+                        _renderer.GetRegion(out var regionStart, out var regionLength);
+                        if (regionLength > 0)
+                        {
+                            selectionStart = regionStart;
+                            selectionEnd = selectionStart + regionLength;
+                        }
+                    }
+
+                    _handleSelection = i =>
+                    {
+                        if (i == selectionStart)
+                        {
+                            _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.SelectionColor);
+                            _inSelectedRegion = true;
+                        }
+                        else if (i == selectionEnd)
+                        {
+                            _consoleBufferLines[_currentLogicalLine].Append(VTColorUtils.AnsiReset);
+                            _consoleBufferLines[_currentLogicalLine].Append(_activeColor);
+                            _inSelectedRegion = false;
+                        }
+                    };
+                }
+
+                return _handleSelection;
+            }
+        }
 
         private string GetTokenColor(Token token)
         {
@@ -118,6 +157,8 @@ public partial class Renderer
         private List<StringBuilder> _consoleBufferLines = new(1)
             {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
 
+        private Action<int> _handleSelection;
+
         public List<StringBuilder> Generate(string defaultColor)
         {
             _text = _rl.buffer.ToString();
@@ -132,32 +173,9 @@ public partial class Renderer
                 Color = defaultColor
             });
 
-            var selectionStart = -1;
-            var selectionEnd = -1;
-            if (_rl._visualSelectionCommandCount > 0)
-            {
-                _renderer.GetRegion(out var regionStart, out var regionLength);
-                if (regionLength > 0)
-                {
-                    selectionStart = regionStart;
-                    selectionEnd = selectionStart + regionLength;
-                }
-            }
-
             for (var i = 0; i < _text.Length; i++)
             {
-                if (i == selectionStart)
-                {
-                    _consoleBufferLines[_currentLogicalLine].Append(_rl.Options.SelectionColor);
-                    _inSelectedRegion = true;
-                }
-                else if (i == selectionEnd)
-                {
-                    _consoleBufferLines[_currentLogicalLine].Append(VTColorUtils.AnsiReset);
-                    _consoleBufferLines[_currentLogicalLine].Append(_activeColor);
-                    _inSelectedRegion = false;
-                }
-
+                handleSelection.Invoke(i);
                 if (!_afterLastToken)
                 {
                     // Figure out the color of the character - if it's in a token,
