@@ -207,10 +207,13 @@ public partial class Renderer
 
         private void HandleEmphasis(int i)
         {
-            var toEmphasize = i >= _renderer.EmphasisStart &&
-                              i < _renderer.EmphasisStart + _renderer.EmphasisLength;
+            UpdateColorsIfNecessary(ToEmphasize(i) ? _rl.Options._emphasisColor : _tokenColor);
+        }
 
-            UpdateColorsIfNecessary(toEmphasize ? _rl.Options._emphasisColor : _tokenColor);
+        private static bool ToEmphasize(int i)
+        {
+            return i >= _renderer.EmphasisStart &&
+                   i < _renderer.EmphasisStart + _renderer.EmphasisLength;
         }
 
         private void HandleLF(int i)
