@@ -175,8 +175,13 @@ public partial class Renderer
             return _rl.Options._defaultTokenColor;
         }
 
-        private void BuildOneChar(char charToRender, bool toEmphasize)
+        private void BuildOneChar(int i)
         {
+
+            var charToRender = _text[i];
+            var toEmphasize = i >= _renderer.EmphasisStart &&
+                              i < _renderer.EmphasisStart + _renderer.EmphasisLength;
+
             if (charToRender == '\n')
             {
                 if (_inSelectedRegion)
@@ -254,11 +259,7 @@ public partial class Renderer
 
                 _handleToken.Invoke(i);
 
-                var charToRender = _text[i];
-                var toEmphasize = i >= _renderer.EmphasisStart &&
-                                  i < _renderer.EmphasisStart + _renderer.EmphasisLength;
-
-                BuildOneChar(charToRender, toEmphasize);
+                BuildOneChar(i);
             }
 
             if (_inSelectedRegion)
