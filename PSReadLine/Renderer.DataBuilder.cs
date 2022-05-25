@@ -261,7 +261,8 @@ public partial class Renderer
         private Action<int> _handleToken;
         private string _defaultColor = String.Empty;
 
-        public List<StringBuilder> Generate(string defaultColor)
+
+        public RenderData Generate(string defaultColor)
         {
             _text = _rl.buffer.ToString();
             _rl._Prediction.QueryForSuggestion(_text);
@@ -301,7 +302,26 @@ public partial class Renderer
                 _consoleBufferLines[_currentLogicalLine].Append(_renderer.StatusBuffer);
             }
 
-            return _consoleBufferLines;
+            return SolidifyData(_consoleBufferLines);
+        }
+
+        private static RenderData SolidifyData(List<StringBuilder> bufferLines)
+        {
+            var logicalLineCount = bufferLines.Count;
+
+            // Now write that out (and remember what we did so we can clear previous renders
+            // and minimize writing more than necessary on the next render.)
+
+            var renderLines = new RenderedLineData[logicalLineCount];
+            var renderData = new RenderData { lines = renderLines };
+            for (var i = 0; i < logicalLineCount; i++)
+            {
+                var line = bufferLines[i].ToString();
+                renderLines[i].line = line;
+                renderLines[i].columns = _renderer.LengthInBufferCells(line);
+            }
+
+            return renderData;
         }
     }
 }

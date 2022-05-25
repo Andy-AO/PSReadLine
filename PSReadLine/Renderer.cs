@@ -202,22 +202,7 @@ namespace Microsoft.PowerShell
         {
             var defaultColor = VTColorUtils.DefaultColor;
 
-            // Generate a sequence of logical lines with escape sequences for coloring.
-            var ConsoleBufferLines = new DataBuilder().Generate(defaultColor);
-
-            var logicalLineCount = ConsoleBufferLines.Count;
-
-            // Now write that out (and remember what we did so we can clear previous renders
-            // and minimize writing more than necessary on the next render.)
-
-            var renderLines = new RenderedLineData[logicalLineCount];
-            var renderData = new RenderData {lines = renderLines};
-            for (var i = 0; i < logicalLineCount; i++)
-            {
-                var line = ConsoleBufferLines[i].ToString();
-                renderLines[i].line = line;
-                renderLines[i].columns = LengthInBufferCells(line);
-            }
+            RenderData renderData = new DataBuilder().Generate(defaultColor);
 
             // And then do the real work of writing to the screen.
             // Rendering data is in reused
@@ -225,8 +210,8 @@ namespace Microsoft.PowerShell
 
             // Cleanup some excess buffers, saving a few because we know we'll use them.
             var bufferCount = ConsoleBufferLines.Count;
-            var excessBuffers = bufferCount - renderLines.Length;
-            if (excessBuffers > 5) ConsoleBufferLines.RemoveRange(renderLines.Length, excessBuffers);
+            var excessBuffers = bufferCount - renderData.lines.Length;
+            if (excessBuffers > 5) ConsoleBufferLines.RemoveRange(renderData.lines.Length, excessBuffers);
         }
 
         internal int ConvertLineAndColumnToOffset(Point point)
