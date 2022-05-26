@@ -15,20 +15,15 @@ public readonly record struct EmphasisRange
     {
         End = end;
         Start = start;
-        IsValid(start, end);
+        IsValid();
     }
 
-    public void IsValid()
+    private void IsValid()
     {
-        IsValid(Start, End);
-    }
+        var state = $"\nstart is {Start}, end is {End}.";
+        if (Start > End) throw new ArgumentException("The start must be less than the end." + state);
 
-    private void IsValid(int start, int end)
-    {
-        var state = $"\nstart is {start}, end is {end}.";
-        if (start > end) throw new ArgumentException("The start must be less than the end." + state);
-
-        if (start < MinimumValue || end < MinimumValue)
+        if (Start < MinimumValue || End < MinimumValue)
             throw new ArgumentException($"Index must be greater than or equal to {MinimumValue}" + state);
     }
 
