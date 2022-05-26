@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.PowerShell.PSReadLine;
 
-public record EmphasisRange
+public readonly record struct EmphasisRange
 {
     private static readonly int MinimumValue = -1;
     public readonly int End;
@@ -13,9 +13,9 @@ public record EmphasisRange
 
     public EmphasisRange(int start, int end)
     {
-        IsValid(start, end);
         End = end;
         Start = start;
+        IsValid(start, end);
     }
 
     public void IsValid()
@@ -42,7 +42,20 @@ public static class Emphasis
 {
     private static List<EmphasisRange> _ranges = new();
 
-    public static bool ToEmphasize(int index) => _ranges.FirstOrDefault(r => r.IsIn(index)) is not null;
+
+    public static bool ToEmphasize(int index)
+    {
+        foreach (var r in _ranges)
+        {
+            if (r.IsIn(index))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     internal static void EmphasisInit()
     {
