@@ -126,7 +126,7 @@ public class History
             }
 
             SearchHistoryPrefix = _rl.buffer.ToString(0, _renderer.Current);
-            HistorySearcherReadLine.SetEmphasisData(0, _renderer.Current);
+            HistorySearcherReadLine.SetEmphasisData(0, _renderer.Current, CursorPosition.End);
             if (_rl.Options.HistoryNoDuplicates) HashedHistory = new Dictionary<string, int>();
         }
 
@@ -168,7 +168,7 @@ public class History
         {
             // Set '_current' back to where it was when starting the first search, because
             // it might be changed during the rendering of the last matching history command.
-            _renderer.Current = SearcherReadLine.EmphasisLength;
+            // _renderer.Current = SearcherReadLine.EmphasisLength;
             SearcherReadLine.CurrentHistoryIndex = newHistoryIndex;
             var moveCursor = RL.InViCommandMode()
                 ? HistorySearcherReadLine.HistoryMoveCursor.ToBeginning
