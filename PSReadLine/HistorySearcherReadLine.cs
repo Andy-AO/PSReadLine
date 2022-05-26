@@ -185,7 +185,10 @@ public class HistorySearcherReadLine
         _model.SearchInHistory(startIndex =>
         {
             UpdateStatusLinePrompt(_model.direction);
-            PSReadLine.Emphasis.SetEmphasisData(startIndex, _model.toMatch.Length, CursorPosition.Start);
+            SetRenderData(new List<EmphasisRange>
+            {
+                new(startIndex, _model.toMatch.Length)
+            }, CursorPosition.Start);
             _model.SaveSearchFromPoint();
             UpdateBufferFromHistory(_moveCursor);
         }, whenNotFound);
@@ -233,7 +236,6 @@ public class HistorySearcherReadLine
 
     private void SetRenderData(List<EmphasisRange> ranges, CursorPosition p)
     {
-
         PSReadLine.Emphasis.SetEmphasisData(ranges);
         _renderer.Current = p switch
         {
