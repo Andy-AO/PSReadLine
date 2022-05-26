@@ -8,29 +8,26 @@ namespace Microsoft.PowerShell.PSReadLine;
 public readonly record struct EmphasisRange
 {
     private static readonly int MinimumValue = -1;
-    public readonly int End;
-    public readonly int Start;
+    private readonly int _start;
+    private readonly int _end;
 
-    public EmphasisRange(int start, int end)
+    public EmphasisRange(int start, int length)
     {
-        End = end;
-        Start = start;
+        _start = start;
+        _end = start + length;
         IsValid();
     }
 
     private void IsValid()
     {
-        var state = $"\nstart is {Start}, end is {End}.";
-        if (Start > End) throw new ArgumentException("The start must be less than the end." + state);
+        var state = $"\nstart is {_start}, end is {_end}.";
+        if (_start > _end) throw new ArgumentException("The start must be less than the end." + state);
 
-        if (Start < MinimumValue || End < MinimumValue)
+        if (_start < MinimumValue || _end < MinimumValue)
             throw new ArgumentException($"Index must be greater than or equal to {MinimumValue}" + state);
     }
 
-    public bool IsIn(int index)
-    {
-        return Start <= index && index < End;
-    }
+    public bool IsIn(int index) => _start <= index && index < _end;
 }
 
 public static class Emphasis
@@ -66,7 +63,7 @@ public static class Emphasis
             CursorPosition.End => endIndex,
             _ => throw new ArgumentException(@"Invalid enum value for CursorPosition", nameof(p))
         };
-        _ranges = new List<EmphasisRange> {new(startIndex, endIndex)};
+        _ranges = new List<EmphasisRange> { new(startIndex, length) };
     }
 
     public static bool IsNotEmphasisEmpty() => _ranges.Any();
