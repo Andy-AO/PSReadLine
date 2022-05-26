@@ -10,6 +10,8 @@ public readonly record struct EmphasisRange
     private static readonly int MinimumValue = -1;
     private readonly int _start;
     private readonly int _end;
+    public int Start => _start;
+    public int End => _end;
 
     public EmphasisRange(int start, int length)
     {
@@ -67,4 +69,15 @@ public static class Emphasis
     }
 
     public static bool IsNotEmphasisEmpty() => _ranges.Any();
+
+    public static void SetEmphasisData(List<EmphasisRange> ranges, CursorPosition p)
+    {
+        _renderer.Current = p switch
+        {
+            CursorPosition.Start => ranges[0].Start,
+            CursorPosition.End => ranges[ranges.Count - 1].End,
+            _ => throw new ArgumentException(@"Invalid enum value for CursorPosition", nameof(p))
+        };
+        _ranges = ranges.ToList();
+    }
 }

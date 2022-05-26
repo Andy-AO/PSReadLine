@@ -228,6 +228,12 @@ public class HistorySearcherReadLine
         _renderer.Render();
     }
 
+    private static void Emphasis(List<EmphasisRange> ranges)
+    {
+        PSReadLine.Emphasis.SetEmphasisData(ranges, CursorPosition.Start);
+        _renderer.Render();
+    }
+
     private static void GoToEndOfHistory()
     {
         _model.ResetCurrentHistoryIndex(false);
