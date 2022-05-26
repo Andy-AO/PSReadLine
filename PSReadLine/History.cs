@@ -115,6 +115,21 @@ public class History
 
     private int HistoryErrorReportedCount { get; set; }
 
+    public static void SetRenderData(int startIndex, int length, CursorPosition p)
+    {
+        Emphasis.SetEmphasisData(new List<EmphasisRange>
+        {
+            new(startIndex, length)
+        });
+        int endIndex = startIndex + length;
+        _renderer.Current = p switch
+        {
+            CursorPosition.Start => startIndex,
+            CursorPosition.End => endIndex,
+            _ => throw new ArgumentException(@"Invalid enum value for CursorPosition", nameof(p))
+        };
+    }
+
     private void HistorySearch(int direction)
     {
         if (SearchHistoryCommandCount == 0)
@@ -126,7 +141,9 @@ public class History
             }
 
             SearchHistoryPrefix = _rl.buffer.ToString(0, _renderer.Current);
-            Emphasis.SetEmphasisData(0, _renderer.Current, CursorPosition.End);
+
+            SetRenderData(0, _renderer.Current, CursorPosition.End);
+
             if (_rl.Options.HistoryNoDuplicates) HashedHistory = new Dictionary<string, int>();
         }
 
