@@ -225,10 +225,22 @@ public class HistorySearcherReadLine
         });
     }
 
-    private static void Emphasis(List<EmphasisRange> ranges)
+    private void Emphasis(List<EmphasisRange> ranges)
     {
-        PSReadLine.Emphasis.SetEmphasisData(ranges, CursorPosition.Start);
+        SetRenderData(ranges, CursorPosition.Start);
         _renderer.Render();
+    }
+
+    private void SetRenderData(List<EmphasisRange> ranges, CursorPosition p)
+    {
+
+        PSReadLine.Emphasis.SetEmphasisData(ranges);
+        _renderer.Current = p switch
+        {
+            CursorPosition.Start => ranges[0].Start,
+            CursorPosition.End => ranges[ranges.Count - 1].End,
+            _ => throw new ArgumentException(@"Invalid enum value for CursorPosition", nameof(p))
+        };
     }
 
     private static void GoToEndOfHistory()

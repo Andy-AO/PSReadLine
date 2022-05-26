@@ -70,14 +70,9 @@ public static class Emphasis
 
     public static bool IsNotEmphasisEmpty() => _ranges.Any();
 
-    public static void SetEmphasisData(List<EmphasisRange> ranges, CursorPosition p)
+    public static void SetEmphasisData(IEnumerable<EmphasisRange> ranges)
     {
-        _renderer.Current = p switch
-        {
-            CursorPosition.Start => ranges[0].Start,
-            CursorPosition.End => ranges[ranges.Count - 1].End,
-            _ => throw new ArgumentException(@"Invalid enum value for CursorPosition", nameof(p))
-        };
         _ranges = ranges.ToList();
     }
+
 }
