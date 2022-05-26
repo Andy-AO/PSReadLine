@@ -72,7 +72,7 @@ public class HistorySearcherReadLine
         _renderer.Render(); // Render prompt
         HandleUserInput();
         logger.Debug("CurrentHistoryIndex is " + _model.CurrentHistoryIndex + ", When HandleUserInput is return.");
-        PSReadLine.Emphasis.EmphasisInit();
+        EP.EmphasisInit();
         // Remove our status line, this will render
         _rl.ClearStatusMessage(true);
     }
@@ -178,7 +178,7 @@ public class HistorySearcherReadLine
     {
         Action whenNotFound = () =>
         {
-            PSReadLine.Emphasis.EmphasisInit();
+            EP.EmphasisInit();
             UpdateStatusLinePrompt(_model.direction, true);
             _renderer.Render();
         };
@@ -236,7 +236,7 @@ public class HistorySearcherReadLine
 
     private void SetRenderData(List<EmphasisRange> ranges, CursorPosition p)
     {
-        PSReadLine.Emphasis.SetEmphasisData(ranges);
+        EP.SetEmphasisData(ranges);
         _renderer.Current = p switch
         {
             CursorPosition.Start => ranges[0].Start,

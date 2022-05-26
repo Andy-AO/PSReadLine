@@ -208,7 +208,7 @@ public partial class Renderer
 
         private void ColorChar(int i)
         {
-            UpdateColorsIfNecessary(Emphasis.ToEmphasize(i) ? _rl.Options._emphasisColor : _tokenColor);
+            UpdateColorsIfNecessary(EP.ToEmphasize(i) ? _rl.Options._emphasisColor : _tokenColor);
         }
 
         private void HandleLF(int i)

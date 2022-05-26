@@ -256,9 +256,9 @@ namespace Microsoft.PowerShell
             //
             // Also - if there was an emphasis, we want to clear that before accepting
             // and that requires rendering.
-            var renderNeeded = Emphasis.IsNotEmphasisEmpty() || _queuedKeys.Count > 0;
+            var renderNeeded = EP.IsNotEmphasisEmpty() || _queuedKeys.Count > 0;
 
-            Emphasis.EmphasisInit();
+            EP.EmphasisInit();
 
             var insertionPoint = _renderer.Current;
             // Make sure cursor is at the end before writing the line

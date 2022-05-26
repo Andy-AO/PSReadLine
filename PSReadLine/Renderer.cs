@@ -37,7 +37,7 @@ namespace Microsoft.PowerShell
 
         public Renderer()
         {
-            Emphasis.EmphasisInit();
+            EP.EmphasisInit();
             PreviousRender.bufferWidth = Console.BufferWidth;
             PreviousRender.bufferHeight = Console.BufferHeight;
             InitialX = Console.CursorLeft;
