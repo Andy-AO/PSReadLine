@@ -219,13 +219,10 @@ public class HistorySearcherReadLine
     private void UpdateBuffer(int startIndex)
     {
         UpdateStatusLinePrompt(_model.direction);
-        Emphasis(startIndex);
-    }
-
-    private static void Emphasis(int startIndex)
-    {
-        PSReadLine.Emphasis.SetEmphasisData(startIndex, _model.toMatch.Length, CursorPosition.Start);
-        _renderer.Render();
+        Emphasis(new List<EmphasisRange>
+        {
+            new(startIndex, _model.toMatch.Length)
+        });
     }
 
     private static void Emphasis(List<EmphasisRange> ranges)
