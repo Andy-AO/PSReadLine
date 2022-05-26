@@ -20,13 +20,13 @@ public class HistorySearcherReadLine
     private const string _failedBackwardISearchPrompt = "failed-bck-i-search: ";
     public static bool ToEmphasize(int index)
     {
-        return index >= SearcherReadLine.EmphasisStart &&
-               index < SearcherReadLine.EmphasisStart + SearcherReadLine.EmphasisLength;
+        return index >= HistorySearcherReadLine.EmphasisStart &&
+               index < HistorySearcherReadLine.EmphasisStart + HistorySearcherReadLine.EmphasisLength;
     }
     internal static void EmphasisInit()
     {
-        SearcherReadLine.EmphasisStart = -1;
-        SearcherReadLine.EmphasisLength = 0;
+        HistorySearcherReadLine.EmphasisStart = -1;
+        HistorySearcherReadLine.EmphasisLength = 0;
     }
     static HistorySearcherReadLine()
     {
@@ -249,8 +249,8 @@ public class HistorySearcherReadLine
             _ => throw new ArgumentException(@"Invalid enum value for CursorPosition", nameof(p))
         };
 
-        SearcherReadLine.EmphasisStart = startIndex;
-        SearcherReadLine.EmphasisLength = length;
+        HistorySearcherReadLine.EmphasisStart = startIndex;
+        HistorySearcherReadLine.EmphasisLength = length;
     }
 
     private static void GoToEndOfHistory()
@@ -259,9 +259,10 @@ public class HistorySearcherReadLine
         SearcherReadLine.UpdateBufferFromHistory(HistoryMoveCursor.ToEnd);
     }
 
-    public static bool IsEmphasisDataValid() => SearcherReadLine.EmphasisStart >= 0;
-    private int EmphasisStart { get; set; }
-    private int EmphasisLength { get; set; }
+    public static bool IsEmphasisDataValid() => HistorySearcherReadLine.EmphasisStart >= 0;
+    private static int EmphasisStart { get; set; }
+    private static int EmphasisLength { get; set; }
 }
 
 public enum CursorPosition { Start, End }
+
