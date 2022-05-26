@@ -654,7 +654,7 @@ namespace Microsoft.PowerShell
                 {
                     if (_hs.SearchHistoryCommandCount > 0)
                     {
-                        HistorySearcherReadLine.EmphasisInit();
+                        Emphasis.EmphasisInit();
                         _renderer.RenderWithPredictionQueryPaused();
                     }
 

@@ -18,16 +18,7 @@ public class HistorySearcherReadLine
     private const string _backwardISearchPrompt = "bck-i-search: ";
     private const string _failedForwardISearchPrompt = "failed-fwd-i-search: ";
     private const string _failedBackwardISearchPrompt = "failed-bck-i-search: ";
-    public static bool ToEmphasize(int index)
-    {
-        return index >= HistorySearcherReadLine.EmphasisStart &&
-               index < HistorySearcherReadLine.EmphasisStart + HistorySearcherReadLine.EmphasisLength;
-    }
-    internal static void EmphasisInit()
-    {
-        HistorySearcherReadLine.EmphasisStart = -1;
-        HistorySearcherReadLine.EmphasisLength = 0;
-    }
+
     static HistorySearcherReadLine()
     {
         Singleton = new HistorySearcherReadLine();
@@ -81,7 +72,7 @@ public class HistorySearcherReadLine
         _renderer.Render(); // Render prompt
         HandleUserInput();
         logger.Debug("CurrentHistoryIndex is " + _model.CurrentHistoryIndex + ", When HandleUserInput is return.");
-        HistorySearcherReadLine.EmphasisInit();
+        PSReadLine.Emphasis.EmphasisInit();
         // Remove our status line, this will render
         _rl.ClearStatusMessage(true);
     }
@@ -187,7 +178,7 @@ public class HistorySearcherReadLine
     {
         Action whenNotFound = () =>
         {
-            HistorySearcherReadLine.EmphasisInit();
+            PSReadLine.Emphasis.EmphasisInit();
             UpdateStatusLinePrompt(_model.direction, true);
             _renderer.Render();
         };
@@ -195,7 +186,7 @@ public class HistorySearcherReadLine
         {
             UpdateStatusLinePrompt(_model.direction);
             _renderer.Current = startIndex;
-            SetEmphasisData(startIndex, _model.toMatch.Length, CursorPosition.Start);
+            PSReadLine.Emphasis.SetEmphasisData(startIndex, _model.toMatch.Length, CursorPosition.Start);
             _model.SaveSearchFromPoint();
             UpdateBufferFromHistory(_moveCursor);
         }, whenNotFound);
@@ -235,22 +226,8 @@ public class HistorySearcherReadLine
     private static void Emphasis(int startIndex)
     {
         _renderer.Current = startIndex;
-        SetEmphasisData(startIndex, _model.toMatch.Length, CursorPosition.Start);
+        PSReadLine.Emphasis.SetEmphasisData(startIndex, _model.toMatch.Length, CursorPosition.Start);
         _renderer.Render();
-    }
-
-    public static void SetEmphasisData(int startIndex, int length, CursorPosition p)
-    {
-
-        _renderer.Current = p switch
-        {
-            CursorPosition.Start => startIndex,
-            CursorPosition.End => startIndex + length,
-            _ => throw new ArgumentException(@"Invalid enum value for CursorPosition", nameof(p))
-        };
-
-        HistorySearcherReadLine.EmphasisStart = startIndex;
-        HistorySearcherReadLine.EmphasisLength = length;
     }
 
     private static void GoToEndOfHistory()
@@ -258,10 +235,6 @@ public class HistorySearcherReadLine
         _model.ResetCurrentHistoryIndex(false);
         SearcherReadLine.UpdateBufferFromHistory(HistoryMoveCursor.ToEnd);
     }
-
-    public static bool IsEmphasisDataValid() => HistorySearcherReadLine.EmphasisStart >= 0;
-    private static int EmphasisStart { get; set; }
-    private static int EmphasisLength { get; set; }
 }
 
 public enum CursorPosition { Start, End }
