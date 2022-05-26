@@ -232,7 +232,7 @@ public class HistorySearcherReadLine
         Emphasis(startIndex);
     }
 
-    private void Emphasis(int startIndex)
+    private static void Emphasis(int startIndex)
     {
         _renderer.Current = startIndex;
         SetEmphasisData(startIndex, _model.toMatch.Length, CursorPosition.Start);
