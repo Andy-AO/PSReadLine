@@ -1,6 +1,6 @@
+using System.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 
 namespace Microsoft.PowerShell.PSReadLine;
@@ -34,7 +34,7 @@ public record EmphasisRange
 
     public bool IsIn(int index)
     {
-        return Start <= index && index <= End;
+        return Start <= index && index < End;
     }
 }
 
@@ -42,38 +42,24 @@ public static class Emphasis
 {
     private static List<EmphasisRange> _ranges = new();
 
-    public static bool ToEmphasize(int index)
-    {
-        return index >= EmphasisStart &&
-               index < EmphasisStart + EmphasisLength;
-    }
-
-    private static List<EmphasisRange> Ranges
-    {
-        get => _ranges.ToList();
-        set => _ranges = value.ToList();
-    }
+    public static bool ToEmphasize(int index) => _ranges.FirstOrDefault(r => r.IsIn(index)) is not null;
 
     internal static void EmphasisInit()
     {
-        EmphasisStart = -1;
-        EmphasisLength = 0;
+        _ranges = new();
     }
 
     public static void SetEmphasisData(int startIndex, int length, CursorPosition p)
     {
+        int endIndex = startIndex + length;
         _renderer.Current = p switch
         {
             CursorPosition.Start => startIndex,
-            CursorPosition.End => startIndex + length,
+            CursorPosition.End => endIndex,
             _ => throw new ArgumentException(@"Invalid enum value for CursorPosition", nameof(p))
         };
-
-        EmphasisStart = startIndex;
-        EmphasisLength = length;
+        _ranges = new List<EmphasisRange> {new(startIndex, endIndex)};
     }
 
-    public static bool IsEmphasisDataValid() => EmphasisStart >= 0;
-    private static int EmphasisStart { get; set; }
-    private static int EmphasisLength { get; set; }
+    public static bool IsNotEmphasisEmpty() => _ranges.Any();
 }

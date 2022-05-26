@@ -256,7 +256,7 @@ namespace Microsoft.PowerShell
             //
             // Also - if there was an emphasis, we want to clear that before accepting
             // and that requires rendering.
-            var renderNeeded = Emphasis.IsEmphasisDataValid() || _queuedKeys.Count > 0;
+            var renderNeeded = Emphasis.IsNotEmphasisEmpty() || _queuedKeys.Count > 0;
 
             Emphasis.EmphasisInit();
 
