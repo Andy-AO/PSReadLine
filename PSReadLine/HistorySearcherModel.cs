@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.PowerShell.PSReadLine;
 
@@ -68,7 +69,7 @@ public class HistorySearcherModel
         toMatch = new StringBuilder(64);
     }
 
-    public void SearchInHistory(Action<int> whenFound, Action whenNotFound = default)
+    public void SearchInHistory(Action<IEnumerable<EmphasisRange>> whenFound, Action whenNotFound = default)
     {
         searchFromPoint = searchFromPoint + direction;
         for (;
@@ -86,7 +87,7 @@ public class HistorySearcherModel
                     else if (index != searchFromPoint) continue;
                 }
 
-                whenFound?.Invoke(startIndex);
+                whenFound?.Invoke(new EmphasisRange[] { new(startIndex, toMatch.Length) });
                 return;
             }
         }
@@ -171,4 +172,13 @@ public class HistorySearcherModel
     {
         return line.IndexOf(toMatch.ToString(), _rl.Options.HistoryStringComparison);
     }
+
+
+    public IEnumerable<int> GetRanges(string line)
+    {
+        var toMatchString = toMatch.ToString().Trim();
+        var keywords = toMatchString.Split(' ').Where(s => s != "").Distinct();
+        return keywords.Select(k => line.IndexOf(k, _rl.Options.HistoryStringComparison));
+    }
+
 }

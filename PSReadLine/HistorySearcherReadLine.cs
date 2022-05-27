@@ -182,12 +182,10 @@ public class HistorySearcherReadLine
             UpdateStatusLinePrompt(_model.direction, true);
             _renderer.Render();
         };
-        _model.SearchInHistory(startIndex =>
+        _model.SearchInHistory(ranges =>
         {
             UpdateStatusLinePrompt(_model.direction);
-            var length = _model.toMatch.Length;
-
-            SetRenderData(new EmphasisRange[] { new(startIndex, length) }, CursorPosition.Start);
+            SetRenderData(ranges, CursorPosition.Start);
             _model.SaveSearchFromPoint();
             UpdateBufferFromHistory(_moveCursor);
         }, whenNotFound);
