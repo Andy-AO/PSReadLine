@@ -178,7 +178,7 @@ public class HistorySearcherModel
     {
         var toMatchString = toMatch.ToString().Trim();
         var keywords = toMatchString.Split(' ').Where(s => s != "").Distinct();
-        return keywords.Select(k => line.IndexOf(k, _rl.Options.HistoryStringComparison));
+        return keywords.Select(k => line.IndexOf(k, _rl.Options.HistoryStringComparison)).Where(i => i > -1);
     }
 
 }
