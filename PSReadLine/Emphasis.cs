@@ -34,7 +34,7 @@ public readonly record struct EmphasisRange
 
 public static class Emphasis
 {
-    private static List<EmphasisRange> _ranges = new();
+    private static IEnumerable<EmphasisRange> _ranges = Array.Empty<EmphasisRange>();
 
 
     public static bool ToEmphasize(int index)
@@ -53,14 +53,14 @@ public static class Emphasis
 
     internal static void EmphasisInit()
     {
-        _ranges = new();
+        _ranges = Array.Empty<EmphasisRange>();
     }
 
     public static bool IsNotEmphasisEmpty() => _ranges.Any();
 
     public static void SetEmphasisData(IEnumerable<EmphasisRange> ranges)
     {
-        _ranges = ranges.ToList();
+        _ranges = ranges.ToArray();
     }
 
 }

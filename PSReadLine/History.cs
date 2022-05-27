@@ -117,10 +117,7 @@ public class History
 
     public static void SetRenderData(int startIndex, int length, CursorPosition p)
     {
-        EP.SetEmphasisData(new List<EmphasisRange>
-        {
-            new(startIndex, length)
-        });
+        EP.SetEmphasisData(new EmphasisRange[] { new(startIndex, length) });
         int endIndex = startIndex + length;
         _renderer.Current = p switch
         {

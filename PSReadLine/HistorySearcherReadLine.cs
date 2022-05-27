@@ -185,10 +185,9 @@ public class HistorySearcherReadLine
         _model.SearchInHistory(startIndex =>
         {
             UpdateStatusLinePrompt(_model.direction);
-            SetRenderData(new List<EmphasisRange>
-            {
-                new(startIndex, _model.toMatch.Length)
-            }, CursorPosition.Start);
+            var length = _model.toMatch.Length;
+
+            SetRenderData(new EmphasisRange[] { new(startIndex, length) }, CursorPosition.Start);
             _model.SaveSearchFromPoint();
             UpdateBufferFromHistory(_moveCursor);
         }, whenNotFound);
@@ -222,25 +221,23 @@ public class HistorySearcherReadLine
     private void UpdateBuffer(int startIndex)
     {
         UpdateStatusLinePrompt(_model.direction);
-        Emphasis(new List<EmphasisRange>
-        {
-            new(startIndex, _model.toMatch.Length)
-        });
+        var length = _model.toMatch.Length;
+        Emphasis(new EmphasisRange[] { new(startIndex, length) });
     }
 
-    private void Emphasis(List<EmphasisRange> ranges)
+    private void Emphasis(IEnumerable<EmphasisRange> ranges)
     {
         SetRenderData(ranges, CursorPosition.Start);
         _renderer.Render();
     }
 
-    private void SetRenderData(List<EmphasisRange> ranges, CursorPosition p)
+    private void SetRenderData(IEnumerable<EmphasisRange> ranges, CursorPosition p)
     {
         EP.SetEmphasisData(ranges);
         _renderer.Current = p switch
         {
-            CursorPosition.Start => ranges[0].Start,
-            CursorPosition.End => ranges[ranges.Count - 1].End,
+            CursorPosition.Start => ranges.First().Start,
+            CursorPosition.End => ranges.Last().End,
             _ => throw new ArgumentException(@"Invalid enum value for CursorPosition", nameof(p))
         };
     }
