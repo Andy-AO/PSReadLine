@@ -77,8 +77,8 @@ public class HistorySearcherModel
              searchFromPoint = searchFromPoint + direction)
         {
             var line = _hs.Historys[searchFromPoint].CommandLine;
-            var startIndex = GetStartIndex(line);
-            if (startIndex >= 0)
+            IEnumerable<EmphasisRange> ranges = GetRanges(line);
+            if (ranges.Any())
             {
                 if (_rl.Options.HistoryNoDuplicates)
                 {
@@ -87,7 +87,7 @@ public class HistorySearcherModel
                     else if (index != searchFromPoint) continue;
                 }
 
-                whenFound?.Invoke(new EmphasisRange[] { new(startIndex, toMatch.Length) });
+                whenFound?.Invoke(ranges);
                 return;
             }
         }
@@ -168,17 +168,41 @@ public class HistorySearcherModel
         CurrentHistoryIndex = searchFromPoint;
     }
 
-    public int GetStartIndex(string line)
+    public EmphasisRange[] GetRanges(string line)
     {
-        return line.IndexOf(toMatch.ToString(), _rl.Options.HistoryStringComparison);
+        return SingleKeyword(line);
+    }
+    public EmphasisRange[] MultiKeyword(string line)
+    {
+        var keywords = GetKeywords(toMatch.ToString());
+        return keywords.Select(k =>
+        {
+            var i = line.IndexOf(k, _rl.Options.HistoryStringComparison);
+            if (i > -1)
+            {
+                return new EmphasisRange(i, k.Length);
+            }
+            return EmphasisRange.Empty;
+        }).Where(r => !r.IsEmpty).ToArray();
+    }
+    public EmphasisRange[] SingleKeyword(string line)
+    {
+        var keywords = new[]{ toMatch.ToString() };
+        return keywords.Select(k =>
+        {
+            var i = line.IndexOf(k, _rl.Options.HistoryStringComparison);
+            if (i > -1)
+            {
+                return new EmphasisRange(i, k.Length);
+            }
+            return EmphasisRange.Empty;
+        }).Where(r => !r.IsEmpty).ToArray();
     }
 
 
-    public IEnumerable<int> GetRanges(string line)
+    private IEnumerable<string> GetKeywords(string toMatchString)
     {
-        var toMatchString = toMatch.ToString().Trim();
-        var keywords = toMatchString.Split(' ').Where(s => s != "").Distinct();
-        return keywords.Select(k => line.IndexOf(k, _rl.Options.HistoryStringComparison)).Where(i => i > -1);
+        var keywords = toMatchString.Trim().Split(' ').Where(s => s != "").Distinct();
+        return keywords;
     }
-
 }

@@ -5,17 +5,25 @@ using System.Collections.Generic;
 
 namespace Microsoft.PowerShell.PSReadLine;
 
-public readonly record struct EmphasisRange
+
+public record struct EmphasisRange
 {
     private static readonly int MinimumValue = -1;
     private readonly int _start;
     private readonly int _end;
+    private bool _empty = false;
     public int Start => _start;
     public int End => _end;
+
+    public static EmphasisRange Empty = new(0, 0) { _empty = true };
+    public bool IsEmpty => _empty;
+
+    public int Length { get; }
 
     public EmphasisRange(int start, int length)
     {
         _start = start;
+        Length = length;
         _end = start + length;
         IsValid();
     }

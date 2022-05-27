@@ -165,9 +165,9 @@ public class HistorySearcherReadLine
         var whenSuccessful = () =>
         {
             UpdateBufferFromHistory(_moveCursor);
-            var startIndex = _model.GetStartIndex(_rl.buffer.ToString());
-            if (startIndex >= 0)
-                UpdateBuffer(new EmphasisRange[] { new(startIndex, _model.toMatch.Length) });
+            var ranges = _model.GetRanges(_rl.buffer.ToString());
+            if (ranges.Any())
+                UpdateBuffer(ranges);
         };
 
         Action whenFailed = PSConsoleReadLine.Ding;
@@ -208,9 +208,9 @@ public class HistorySearcherReadLine
 
     private void Update()
     {
-        var startIndex = _model.GetStartIndex(_rl.buffer.ToString());
-        if (startIndex >= 0)
-            UpdateBuffer(new EmphasisRange[] { new(startIndex, _model.toMatch.Length) });
+        var ranges = _model.GetRanges(_rl.buffer.ToString());
+        if (ranges.Any())
+            UpdateBuffer(ranges);
         else
             UpdateHistory();
         _model.searchPositions.Push(_model.CurrentHistoryIndex);
