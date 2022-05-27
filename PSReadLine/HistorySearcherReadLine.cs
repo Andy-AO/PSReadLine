@@ -167,7 +167,7 @@ public class HistorySearcherReadLine
             UpdateBufferFromHistory(_moveCursor);
             var startIndex = _model.GetStartIndex(_rl.buffer.ToString());
             if (startIndex >= 0)
-                UpdateBuffer(startIndex);
+                UpdateBuffer(new EmphasisRange[] { new(startIndex, _model.toMatch.Length) });
         };
 
         Action whenFailed = PSConsoleReadLine.Ding;
@@ -212,18 +212,18 @@ public class HistorySearcherReadLine
     {
         var startIndex = _model.GetStartIndex(_rl.buffer.ToString());
         if (startIndex >= 0)
-            UpdateBuffer(startIndex);
+            UpdateBuffer(new EmphasisRange[] { new(startIndex, _model.toMatch.Length) });
         else
             UpdateHistory();
         _model.searchPositions.Push(_model.CurrentHistoryIndex);
     }
 
-    private void UpdateBuffer(int startIndex)
+    private void UpdateBuffer(IEnumerable<EmphasisRange> ranges)
     {
         UpdateStatusLinePrompt(_model.direction);
-        var length = _model.toMatch.Length;
-        Emphasis(new EmphasisRange[] { new(startIndex, length) });
+        Emphasis(ranges);
     }
+
 
     private void Emphasis(IEnumerable<EmphasisRange> ranges)
     {
