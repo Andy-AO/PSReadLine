@@ -170,7 +170,12 @@ public class HistorySearcherModel
 
     public EmphasisRange[] GetRanges(string line)
     {
-        return SingleKeyword(line);
+        if (_rl.Options.InteractiveHistorySearchStrategy == SearchStrategy.MultiKeyword)
+            return MultiKeyword(line);
+        else
+        {
+            return SingleKeyword(line);
+        }
     }
     public EmphasisRange[] MultiKeyword(string line)
     {
@@ -187,7 +192,7 @@ public class HistorySearcherModel
     }
     public EmphasisRange[] SingleKeyword(string line)
     {
-        var keywords = new[]{ toMatch.ToString() };
+        var keywords = new[] { toMatch.ToString() };
         return keywords.Select(k =>
         {
             var i = line.IndexOf(k, _rl.Options.HistoryStringComparison);

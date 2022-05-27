@@ -329,6 +329,8 @@ namespace Microsoft.PowerShell
         public bool HistoryNoDuplicates { get; set; }
 
         public int MaximumHistoryCount { get; set; }
+        public SearchStrategy InteractiveHistorySearchStrategy = SearchStrategy.SingleKeyword;
+
         public int MaximumKillRingCount { get; set; }
         public bool HistorySearchCursorMovesToEnd { get; set; }
         public bool ShowToolTips { get; set; }
@@ -582,6 +584,8 @@ namespace Microsoft.PowerShell
                     PSReadLineResources.InvalidColorProperty, property));
         }
     }
+
+    public enum SearchStrategy { SingleKeyword = 0, MultiKeyword = 1};
 
     [Cmdlet("Get", "PSReadLineOption", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=528808")]
     [OutputType(typeof(PSConsoleReadLineOptions))]

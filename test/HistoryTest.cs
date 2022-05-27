@@ -871,6 +871,7 @@ public abstract class HistoryTest : MyReadLine
     public void InteractiveHistorySearch()
     {
         TestSetup(KeyMode.Emacs);
+        CleanHistory();
         Test("", Keys(_.UpArrow, _.DownArrow));
         Simple();
 
@@ -1129,6 +1130,8 @@ public abstract class HistoryTest : MyReadLine
         // TODO: start with Ctrl+s
         // TODO: "fast" typing in search where buffered keys after search is accepted
     }
+
+
 
     [SkippableFact]
     public void AddToHistoryHandler()
