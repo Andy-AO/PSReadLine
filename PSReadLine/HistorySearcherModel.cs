@@ -168,7 +168,7 @@ public class HistorySearcherModel
         CurrentHistoryIndex = searchFromPoint;
     }
 
-    public EmphasisRange[] GetRanges(string line)
+    public IEnumerable<EmphasisRange> GetRanges(string line)
     {
         if (_rl.Options.InteractiveHistorySearchStrategy == SearchStrategy.MultiKeyword)
             return MultiKeyword(line);
@@ -177,7 +177,7 @@ public class HistorySearcherModel
             return SingleKeyword(line);
         }
     }
-    public EmphasisRange[] MultiKeyword(string line)
+    public IEnumerable<EmphasisRange> MultiKeyword(string line)
     {
         var keywords = GetKeywords(toMatch.ToString());
         var matchFailed = false;
@@ -190,12 +190,12 @@ public class HistorySearcherModel
             }
             matchFailed = true;
             return EmphasisRange.Empty;
-        }).ToArray();
+        });
         if (matchFailed)
             return Array.Empty<EmphasisRange>();
         return result;
     }
-    public EmphasisRange[] SingleKeyword(string line)
+    public IEnumerable<EmphasisRange> SingleKeyword(string line)
     {
         var keywords = new[] { toMatch.ToString() };
         return keywords.Select(k =>
@@ -205,8 +205,9 @@ public class HistorySearcherModel
             {
                 return new EmphasisRange(i, k.Length);
             }
+
             return EmphasisRange.Empty;
-        }).Where(r => !r.IsEmpty).ToArray();
+        }).Where(r => !r.IsEmpty);
     }
 
 
