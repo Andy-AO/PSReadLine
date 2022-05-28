@@ -850,7 +850,7 @@ namespace Microsoft.PowerShell
         private readonly Lazy<RuntimeDefinedParameterDictionary>
             _dynamicParameters = new(CreateDynamicParametersResult);
 
-        public static Type[] _functionProvider = { typeof(PSConsoleReadLine), typeof(HistorySearcherReadLine), typeof(History)
+        public static Type[] FunctionProvider = { typeof(PSConsoleReadLine), typeof(HistorySearcherReadLine), typeof(History)
         };
 
         [Parameter(Position = 1, Mandatory = true, ParameterSetName = "ScriptBlock")]
@@ -878,7 +878,7 @@ namespace Microsoft.PowerShell
                 {
                     var function = (string)_dynamicParameters.Value[FunctionParameter].Value;
 
-                    MethodInfo mi = _functionProvider.Select(t => t.GetMethod(function,
+                    MethodInfo mi = FunctionProvider.Select(t => t.GetMethod(function,
                         BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase)).First(f => f is not null);
 
                     var keyHandler = (Action<ConsoleKeyInfo?, object>)
@@ -900,7 +900,7 @@ namespace Microsoft.PowerShell
 
             List<MethodInfo> Methods = new List<MethodInfo>();
             
-            foreach (var type in _functionProvider)
+            foreach (var type in FunctionProvider)
             {
                 Methods.AddRange(type.GetMethods(BindingFlags.Public | BindingFlags.Static));
             }
