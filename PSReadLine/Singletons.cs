@@ -20,7 +20,8 @@ public static class Singletons
     static Singletons()
     {
         const string outputTemplate = @"{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}";
-        logger = new LoggerConfiguration().MinimumLevel.Verbose()
+        var configuration = DeBugMode.IsDeBugMode()? new LoggerConfiguration().MinimumLevel.Debug() : new LoggerConfiguration().MinimumLevel.Warning();
+        logger = configuration
             .WriteTo.File(LoggerFilePath,
                 outputTemplate:
                 outputTemplate)
