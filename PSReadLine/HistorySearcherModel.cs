@@ -190,7 +190,7 @@ public class HistorySearcherModel
             }
             matchFailed = true;
             return EmphasisRange.Empty;
-        });
+        }).ToArray();
         if (matchFailed)
             return Array.Empty<EmphasisRange>();
         return result;
