@@ -4,6 +4,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
 using Microsoft.PowerShell;
+using Microsoft.PowerShell.PSReadLine;
 using UnitTestPSReadLine;
 using Xunit;
 using Xunit.Abstractions;
@@ -1131,6 +1132,60 @@ public abstract class HistoryTest : MyReadLine
         // TODO: "fast" typing in search where buffered keys after search is accepted
     }
 
+    [SkippableFact]
+    public void InteractiveHistorySearchMultiKeyword()
+    {
+        //Only the parts different from InteractiveHistorySearch need to be tested
+        TestSetup(KeyMode.Emacs, new KeyHandler("Ctrl+o", HistorySearcherReadLine.ReverseSearchHistoryMultiKeyword));
+        CleanHistory();
+        Test("", Keys(_.UpArrow, _.DownArrow));
+
+        var emphasisColors = Tuple.Create(PSConsoleReadLineOptions.DefaultEmphasisColor, _console.BackgroundColor);
+        var statusColors = Tuple.Create(_console.ForegroundColor, _console.BackgroundColor);
+        SetHistory("write abcde", "echo abcde", "write abc", "echo abc");
+
+        UpdatedWithNewMatches();
+        void UpdatedWithNewMatches()
+        {
+            Test("echo abcde", Keys(_.Ctrl_o,
+            'e',
+            CheckThat(() => AssertScreenIs(2,
+                emphasisColors, "e",
+                TokenClassification.Command, "cho",
+                TokenClassification.None, " ",
+                TokenClassification.None, "abc",
+                NextLine,
+                statusColors, "bck-i-search: e_")),
+            'c',
+            CheckThat(() => AssertScreenIs(2,
+                emphasisColors, "ec",
+                TokenClassification.Command, "ho",
+                TokenClassification.None, " ",
+                TokenClassification.None, "abc",
+                NextLine,
+                statusColors, "bck-i-search: ec_")),
+            ' ',
+            CheckThat(() => AssertScreenIs(2,
+                emphasisColors, "ec",
+                TokenClassification.Command, "ho",
+                TokenClassification.None, " ",
+                TokenClassification.None, "abc",
+                NextLine,
+                statusColors, "bck-i-search: ec _")),
+            'd',
+            CheckThat(() => AssertScreenIs(2,
+                emphasisColors, "ec",
+                TokenClassification.Command, "ho",
+                TokenClassification.None, " ",
+                TokenClassification.None, "abc",
+                emphasisColors, "d",
+                TokenClassification.None, "e",
+                NextLine,
+                statusColors, "bck-i-search: ec d_"))
+        ));
+    }
+
+}
 
 
     [SkippableFact]
