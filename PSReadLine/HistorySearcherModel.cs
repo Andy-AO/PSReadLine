@@ -180,15 +180,20 @@ public class HistorySearcherModel
     public EmphasisRange[] MultiKeyword(string line)
     {
         var keywords = GetKeywords(toMatch.ToString());
-        return keywords.Select(k =>
+        var matchFailed = false;
+        var result = keywords.Select(k =>
         {
             var i = line.IndexOf(k, _rl.Options.HistoryStringComparison);
             if (i > -1)
             {
                 return new EmphasisRange(i, k.Length);
             }
+            matchFailed = true;
             return EmphasisRange.Empty;
-        }).Where(r => !r.IsEmpty).ToArray();
+        }).ToArray();
+        if (matchFailed)
+            return Array.Empty<EmphasisRange>();
+        return result;
     }
     public EmphasisRange[] SingleKeyword(string line)
     {
