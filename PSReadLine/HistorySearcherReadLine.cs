@@ -51,6 +51,12 @@ public class HistorySearcherReadLine
     /// </summary>
     public static void ReverseSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
     {
+        _rl.Options.InteractiveHistorySearchStrategy = SearchStrategy.SingleKeyword;
+        Singleton.InteractiveHistorySearch(-1);
+    }
+    public static void ReverseSearchHistoryMultiKeyword(ConsoleKeyInfo? key = null, object arg = null)
+    {
+        _rl.Options.InteractiveHistorySearchStrategy = SearchStrategy.MultiKeyword;
         Singleton.InteractiveHistorySearch(-1);
     }
 
@@ -59,6 +65,12 @@ public class HistorySearcherReadLine
     /// </summary>
     public static void ForwardSearchHistory(ConsoleKeyInfo? key = null, object arg = null)
     {
+        _rl.Options.InteractiveHistorySearchStrategy = SearchStrategy.SingleKeyword;
+        Singleton.InteractiveHistorySearch(+1);
+    }
+    public static void ForwardSearchHistoryMultiKeyword(ConsoleKeyInfo? key = null, object arg = null)
+    {
+        _rl.Options.InteractiveHistorySearchStrategy = SearchStrategy.MultiKeyword;
         Singleton.InteractiveHistorySearch(+1);
     }
 
@@ -100,11 +112,26 @@ public class HistorySearcherReadLine
 
             if (function == ReverseSearchHistory)
             {
+                _rl.Options.InteractiveHistorySearchStrategy = SearchStrategy.SingleKeyword;
+                _model.direction = -1;
+                UpdateHistory();
+            }
+
+            else if(function == ReverseSearchHistoryMultiKeyword)
+            {
+                _rl.Options.InteractiveHistorySearchStrategy = SearchStrategy.MultiKeyword;
                 _model.direction = -1;
                 UpdateHistory();
             }
             else if (function == ForwardSearchHistory)
             {
+                _rl.Options.InteractiveHistorySearchStrategy = SearchStrategy.SingleKeyword;
+                _model.direction = 1;
+                UpdateHistory();
+            }
+            else if (function == ForwardSearchHistoryMultiKeyword)
+            {
+                _rl.Options.InteractiveHistorySearchStrategy = SearchStrategy.MultiKeyword;
                 _model.direction = 1;
                 UpdateHistory();
             }

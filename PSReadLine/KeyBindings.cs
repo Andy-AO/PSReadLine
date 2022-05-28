@@ -520,11 +520,13 @@ namespace Microsoft.PowerShell
                 case nameof(History.ClearHistory):
                 case nameof(History.EndOfHistory):
                 case nameof(HistorySearcherReadLine.ForwardSearchHistory):
+                case nameof(HistorySearcherReadLine.ForwardSearchHistoryMultiKeyword):
                 case nameof(History.HistorySearchBackward):
                 case nameof(History.HistorySearchForward):
                 case nameof(History.NextHistory):
                 case nameof(History.PreviousHistory):
                 case nameof(HistorySearcherReadLine.ReverseSearchHistory):
+                case nameof(HistorySearcherReadLine.ReverseSearchHistoryMultiKeyword):
                 case nameof(ViSearchHistoryBackward):
                     return KeyHandlerGroup.History;
 

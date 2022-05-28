@@ -850,6 +850,9 @@ namespace Microsoft.PowerShell
         private readonly Lazy<RuntimeDefinedParameterDictionary>
             _dynamicParameters = new(CreateDynamicParametersResult);
 
+        public static Type[] _functionProvider = { typeof(PSConsoleReadLine), typeof(HistorySearcherReadLine), typeof(History)
+        };
+
         [Parameter(Position = 1, Mandatory = true, ParameterSetName = "ScriptBlock")]
         [ValidateNotNull]
         public ScriptBlock ScriptBlock { get; set; }
@@ -874,8 +877,10 @@ namespace Microsoft.PowerShell
                 if (ParameterSetName.Equals(FunctionParameterSet))
                 {
                     var function = (string)_dynamicParameters.Value[FunctionParameter].Value;
-                    var mi = typeof(PSConsoleReadLine).GetMethod(function,
-                        BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase);
+
+                    MethodInfo mi = _functionProvider.Select(t => t.GetMethod(function,
+                        BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase)).First(f => f is not null);
+
                     var keyHandler = (Action<ConsoleKeyInfo?, object>)
                         mi.CreateDelegate(typeof(Action<ConsoleKeyInfo?, object>));
                     var functionName = mi.Name;
@@ -892,8 +897,16 @@ namespace Microsoft.PowerShell
 
         private static RuntimeDefinedParameterDictionary CreateDynamicParametersResult()
         {
-            var bindableFunctions = typeof(PSConsoleReadLine).GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .Where(method =>
+
+            List<MethodInfo> Methods = new List<MethodInfo>();
+            
+            foreach (var type in _functionProvider)
+            {
+                Methods.AddRange(type.GetMethods(BindingFlags.Public | BindingFlags.Static));
+            }
+
+
+            var bindableFunctions = Methods.Where(method =>
                 {
                     var parameters = method.GetParameters();
                     return parameters.Length == 2
