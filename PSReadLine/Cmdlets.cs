@@ -22,6 +22,17 @@ namespace Microsoft.PowerShell
 {
 #pragma warning disable 1591
 
+    class DeBugMode
+    {
+
+        public static bool IsDeBugMode()
+        {
+            return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PSReadlineDebug"));
+        }
+    }
+
+
+
     public enum EditMode
     {
         Windows,
@@ -219,7 +230,8 @@ namespace Microsoft.PowerShell
             PredictionViewStyle = DefaultPredictionViewStyle;
             MaximumHistoryCount = 0;
 
-            var historyFileName = hostName + "_history.txt";
+            var debug = DeBugMode.IsDeBugMode() ? "_debug_mode" : string.Empty;
+            var historyFileName = hostName + $"_history{debug}.txt";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 HistorySavePath = Path.Combine(
@@ -585,7 +597,7 @@ namespace Microsoft.PowerShell
         }
     }
 
-    public enum SearchStrategy { SingleKeyword = 0, MultiKeyword = 1};
+    public enum SearchStrategy { SingleKeyword = 0, MultiKeyword = 1 };
 
     [Cmdlet("Get", "PSReadLineOption", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=528808")]
     [OutputType(typeof(PSConsoleReadLineOptions))]
@@ -633,7 +645,7 @@ namespace Microsoft.PowerShell
             set => _editMode = value;
         }
 
-        [Parameter] [AllowEmptyString] public string ContinuationPrompt { get; set; }
+        [Parameter][AllowEmptyString] public string ContinuationPrompt { get; set; }
 
         [Parameter]
         public SwitchParameter HistoryNoDuplicates
@@ -762,7 +774,7 @@ namespace Microsoft.PowerShell
             set => _ansiEscapeTimeout = value;
         }
 
-        [Parameter] [ValidateNotNull] public string[] PromptText { get; set; }
+        [Parameter][ValidateNotNull] public string[] PromptText { get; set; }
 
         [Parameter]
         public ViModeStyle ViModeIndicator
@@ -861,7 +873,7 @@ namespace Microsoft.PowerShell
             {
                 if (ParameterSetName.Equals(FunctionParameterSet))
                 {
-                    var function = (string) _dynamicParameters.Value[FunctionParameter].Value;
+                    var function = (string)_dynamicParameters.Value[FunctionParameter].Value;
                     var mi = typeof(PSConsoleReadLine).GetMethod(function,
                         BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase);
                     var keyHandler = (Action<ConsoleKeyInfo?, object>)
@@ -902,7 +914,7 @@ namespace Microsoft.PowerShell
                 new ValidateSetAttribute(bindableFunctions.ToArray())
             };
             var parameter = new RuntimeDefinedParameter(FunctionParameter, typeof(string), attributes);
-            var result = new RuntimeDefinedParameterDictionary {{FunctionParameter, parameter}};
+            var result = new RuntimeDefinedParameterDictionary { { FunctionParameter, parameter } };
             return result;
         }
     }
@@ -986,27 +998,27 @@ namespace Microsoft.PowerShell
         internal const string DefaultBackground = "\x1b[49m";
         internal const string DefaultColor = "\x1b[39;49m";
 
-        public const ConsoleColor UnknownColor = (ConsoleColor) (-1);
+        public const ConsoleColor UnknownColor = (ConsoleColor)(-1);
 
         private static readonly Dictionary<string, ConsoleColor> ConsoleColors =
             new(StringComparer.OrdinalIgnoreCase)
             {
-                {"Black", ConsoleColor.Black},
-                {"DarkBlue", ConsoleColor.DarkBlue},
-                {"DarkGreen", ConsoleColor.DarkGreen},
-                {"DarkCyan", ConsoleColor.DarkCyan},
-                {"DarkRed", ConsoleColor.DarkRed},
-                {"DarkMagenta", ConsoleColor.DarkMagenta},
-                {"DarkYellow", ConsoleColor.DarkYellow},
-                {"Gray", ConsoleColor.Gray},
-                {"DarkGray", ConsoleColor.DarkGray},
-                {"Blue", ConsoleColor.Blue},
-                {"Green", ConsoleColor.Green},
-                {"Cyan", ConsoleColor.Cyan},
-                {"Red", ConsoleColor.Red},
-                {"Magenta", ConsoleColor.Magenta},
-                {"Yellow", ConsoleColor.Yellow},
-                {"White", ConsoleColor.White}
+                { "Black", ConsoleColor.Black },
+                { "DarkBlue", ConsoleColor.DarkBlue },
+                { "DarkGreen", ConsoleColor.DarkGreen },
+                { "DarkCyan", ConsoleColor.DarkCyan },
+                { "DarkRed", ConsoleColor.DarkRed },
+                { "DarkMagenta", ConsoleColor.DarkMagenta },
+                { "DarkYellow", ConsoleColor.DarkYellow },
+                { "Gray", ConsoleColor.Gray },
+                { "DarkGray", ConsoleColor.DarkGray },
+                { "Blue", ConsoleColor.Blue },
+                { "Green", ConsoleColor.Green },
+                { "Cyan", ConsoleColor.Cyan },
+                { "Red", ConsoleColor.Red },
+                { "Magenta", ConsoleColor.Magenta },
+                { "Yellow", ConsoleColor.Yellow },
+                { "White", ConsoleColor.White }
             };
 
         private static readonly string[] BackgroundColorMap =
@@ -1132,9 +1144,9 @@ namespace Microsoft.PowerShell
 
         public static string AsEscapeSequence(ConsoleColor fg, ConsoleColor bg)
         {
-            if (fg < 0 || fg >= (ConsoleColor) ForegroundColorMap.Length)
+            if (fg < 0 || fg >= (ConsoleColor)ForegroundColorMap.Length)
                 throw new ArgumentOutOfRangeException(nameof(fg));
-            if (bg < 0 || bg >= (ConsoleColor) ForegroundColorMap.Length)
+            if (bg < 0 || bg >= (ConsoleColor)ForegroundColorMap.Length)
                 throw new ArgumentOutOfRangeException(nameof(bg));
 
             string ExtractCode(string s)
@@ -1142,13 +1154,13 @@ namespace Microsoft.PowerShell
                 return s.Substring(2).TrimEnd('m');
             }
 
-            return "\x1b[" + ExtractCode(ForegroundColorMap[(int) fg]) + ";" +
-                   ExtractCode(BackgroundColorMap[(int) bg]) + "m";
+            return "\x1b[" + ExtractCode(ForegroundColorMap[(int)fg]) + ";" +
+                   ExtractCode(BackgroundColorMap[(int)bg]) + "m";
         }
 
         internal static string MapColorToEscapeSequence(ConsoleColor color, bool isBackground)
         {
-            var index = (int) color;
+            var index = (int)color;
             if (index < 0)
             {
                 // TODO: light vs. dark
@@ -1158,7 +1170,7 @@ namespace Microsoft.PowerShell
                     // look weird.
                     return "";
 
-                return ForegroundColorMap[(int) ConsoleColor.Gray];
+                return ForegroundColorMap[(int)ConsoleColor.Gray];
             }
 
             if (index > ForegroundColorMap.Length) return "";

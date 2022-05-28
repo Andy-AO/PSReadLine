@@ -9,6 +9,14 @@
       "commandName": "Executable",
       "executablePath": "pwsh",
       "commandLineArgs": "-NoProfile -NonInteractive -NoExit -Command Import-Module .\\PSReadLine.psd1"
+    },
+    "PSReadLine-net461-DebugMode": {
+      "commandName": "Executable",
+      "executablePath": "powershell",
+      "commandLineArgs": "-NoProfile -NonInteractive -NoExit -Command Import-Module .\\PSReadLine.psd1",
+      "environmentVariables": {
+        "PSReadlineDebug": "1"
+      }
     }
   }
 }
