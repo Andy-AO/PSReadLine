@@ -12,7 +12,7 @@ public partial class ReadLine
         return str.Select(c => new ConsoleKeyInfo(c, 0, false, false, false)).ToArray();
     }
 
-    [Fact]
+    [SkippableFact]
     public void MapControlChars()
     {
         var map = new WindowsAnsiCharMap();
@@ -55,9 +55,10 @@ public partial class ReadLine
         Assert.Equal(intended, processedKey);
     }
 
-    [Fact]
+    [SkippableFact]
     public void ValidEscapeSequences()
     {
+        TestSetup(KeyMode.Cmd);
         // Use a high timeout value so there's no way it will try to convert
         // part of a sequence to Alt+something.
         var map = new WindowsAnsiCharMap(1000);
@@ -99,7 +100,7 @@ public partial class ReadLine
         );
     }
 
-    [Fact]
+    [SkippableFact]
     public void AltSequences()
     {
         var map = new WindowsAnsiCharMap(1000);
@@ -185,7 +186,7 @@ public partial class ReadLine
         map.EscapeTimeout = escapeTimeout;
     }
 
-    [Fact]
+    [SkippableFact]
     public void PartialEscapeSequences()
     {
         var map = new WindowsAnsiCharMap(1000);
