@@ -767,9 +767,8 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
 
     private void Initialize(Runspace runspace, EngineIntrinsics engineIntrinsics)
     {
-        var previousRender = _renderer;
-        _renderer = new Renderer();
-        _renderer.PreviousRenderData.initialY = _renderer.InitialY + previousRender.InitialY;
+        
+        _renderer = Renderer.GetInstance();
 
         _engineIntrinsics = engineIntrinsics;
         _runspace = runspace;

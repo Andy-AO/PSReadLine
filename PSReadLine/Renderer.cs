@@ -32,7 +32,15 @@ public partial class Renderer
             : new VirtualTerminal();
     }
 
-    public Renderer()
+    private static Renderer _previousRender;
+    public static Renderer GetInstance()
+    {
+        Renderer result = new(_previousRender);
+        _previousRender = result;
+        return result;
+    }
+
+    private Renderer(Renderer previousRender = null)
     {
         EP.EmphasisInit();
 
@@ -41,11 +49,12 @@ public partial class Renderer
 
         InitialX = Console.CursorLeft;
         InitialY = Console.CursorTop;
+        if (previousRender != null)
+            PreviousRenderData.initialY = InitialY + previousRender.InitialY;
     }
 
-
     private List<StringBuilder> ConsoleBufferLines { get; } = new(1)
-        {new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth)};
+    { new StringBuilder(PSConsoleReadLineOptions.CommonWidestConsoleWidth) };
 
     internal string StatusLinePrompt { get; set; }
 
@@ -169,7 +178,7 @@ public partial class Renderer
     {
         if (offset.LogicalLineIndex == 0 && offset.VisibleCharIndex == -1)
             // (0, -1) means the cursor should be right at the initial coordinate.
-            return new Point {X = initialX, Y = initialY};
+            return new Point { X = initialX, Y = initialY };
 
         var x = initialX;
         var y = initialY;
@@ -212,7 +221,7 @@ public partial class Renderer
 
         if (offset.VisibleCharIndex == int.MaxValue)
             // The cursor is right at the end of the logical line.
-            return new Point {X = x, Y = y};
+            return new Point { X = x, Y = y };
 
         if (limit > 0)
             // The logical line we are going to scan character by character is not the first logical line,
@@ -267,7 +276,7 @@ public partial class Renderer
             y++;
         }
 
-        return new Point {X = x, Y = y};
+        return new Point { X = x, Y = y };
     }
 
     internal void Render()
@@ -972,7 +981,7 @@ public partial class Renderer
     {
         var x = initialX;
         var y = initialY;
-        var point = new Point {X = renderData.cursorLeft, Y = renderData.cursorTop};
+        var point = new Point { X = renderData.cursorLeft, Y = renderData.cursorTop };
 
         if (point.Y == y && point.X == x)
             // The given cursor is the same as the initial coordinate, return (0, -1) in this case.
@@ -1208,7 +1217,7 @@ public partial class Renderer
             }
         }
 
-        return new Point {X = x, Y = y};
+        return new Point { X = x, Y = y };
     }
 
     /// <summary>

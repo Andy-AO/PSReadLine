@@ -14,7 +14,7 @@ public static class Singletons
 
     public static Renderer _renderer
     {
-        get => __renderer ??= new Renderer();
+        get => __renderer ??= Renderer.GetInstance();
         set => __renderer = value;
     }
 
