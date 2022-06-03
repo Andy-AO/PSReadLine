@@ -236,7 +236,6 @@ public class HistorySearcherReadLine
         {
             UpdateStatusLinePrompt(_model.direction);
             SetRenderData(ranges, CursorPosition.Start);
-            _model.SaveSearchFromPoint();
             UpdateBufferFromHistory(_moveCursor);
         }, whenNotFound);
     }

@@ -75,7 +75,7 @@ public class HistorySearcherModel
                         _hs.HashedHistory.Add(line, searchFromPoint);
                     else if (index != searchFromPoint) continue;
                 }
-
+                SaveSearchFromPoint();
                 whenFound?.Invoke(ranges);
                 return;
             }
@@ -153,7 +153,7 @@ public class HistorySearcherModel
         _savedCurrentLine._editGroupStart = -1;
     }
 
-    public void SaveSearchFromPoint()
+    private void SaveSearchFromPoint()
     {
         CurrentHistoryIndex = searchFromPoint;
     }
