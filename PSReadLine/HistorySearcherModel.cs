@@ -165,7 +165,7 @@ public class HistorySearcherModel
         return SingleKeyword(line);
     }
 
-    public IEnumerable<EmphasisRange> MultiKeyword(string line)
+    private IEnumerable<EmphasisRange> MultiKeyword(string line)
     {
         var keywords = GetKeywords(toMatch.ToString());
         var result = keywords.Select(k =>
@@ -179,7 +179,7 @@ public class HistorySearcherModel
         return result;
     }
 
-    public IEnumerable<EmphasisRange> SingleKeyword(string line)
+    private IEnumerable<EmphasisRange> SingleKeyword(string line)
     {
         var keywords = new[] {toMatch.ToString()};
         return keywords.Select(k =>
