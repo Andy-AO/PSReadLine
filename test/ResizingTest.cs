@@ -85,9 +85,11 @@ namespace Test
             return _rl;
         }
 
-        [Fact]
+        [SkippableFact]
         public void ConvertPointToRenderDataOffset_ShouldWork()
         {
+            TestSetup(KeyMode.Cmd);
+
             InitializeTestData();
             var instance = GetPSConsoleReadLineSingleton();
 
@@ -119,9 +121,10 @@ namespace Test
             }
         }
 
-        [Fact]
+        [SkippableFact]
         public void ConvertRenderDataOffsetToPoint_ShouldWork()
         {
+            TestSetup(KeyMode.Cmd);
             InitializeTestData();
             var instance = GetPSConsoleReadLineSingleton();
 
@@ -156,9 +159,10 @@ namespace Test
             }
         }
 
-        [Fact]
+        [SkippableFact]
         public void PhysicalLineCountMethod_ShouldWork()
         {
+            TestSetup(KeyMode.Cmd);
             var path = Path.Combine("assets", "resizing", "physical-line-count.json");
             var text = File.ReadAllText(path);
             var testDataList = JsonConvert.DeserializeObject<List<LogicalToPhysicalLineTestData>>(text);

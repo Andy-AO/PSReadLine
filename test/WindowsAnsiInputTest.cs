@@ -58,6 +58,7 @@ public partial class ReadLine
     [Fact]
     public void ValidEscapeSequences()
     {
+        TestSetup(KeyMode.Cmd);
         // Use a high timeout value so there's no way it will try to convert
         // part of a sequence to Alt+something.
         var map = new WindowsAnsiCharMap(1000);
