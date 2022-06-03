@@ -118,6 +118,7 @@ public class History
 
     private void HistorySearch(int direction)
     {
+        SearcherReadLine.SaveCurrentLine();
         if (SearchHistoryCommandCount == 0)
         {
             if (_renderer.LineIsMultiLine())
@@ -192,7 +193,6 @@ public class History
         RL.TryGetArgAsInt(arg, out var numericArg, -1);
         if (numericArg > 0) numericArg = -numericArg;
         if (RL.UpdateListSelection(numericArg)) return;
-        SearcherReadLine.SaveCurrentLine();
         Singleton.HistorySearch(numericArg);
     }
 
@@ -206,7 +206,6 @@ public class History
 
         if (RL.UpdateListSelection(numericArg)) return;
 
-        SearcherReadLine.SaveCurrentLine();
         Singleton.HistoryRecall(numericArg);
     }
 
@@ -218,7 +217,6 @@ public class History
         RL.TryGetArgAsInt(arg, out var numericArg, +1);
         if (RL.UpdateListSelection(numericArg)) return;
 
-        SearcherReadLine.SaveCurrentLine();
         Singleton.HistoryRecall(numericArg);
     }
 
@@ -234,6 +232,11 @@ public class History
     ///     Move to the first item in the history.
     /// </summary>
     public static void BeginningOfHistory(ConsoleKeyInfo? key = null, object arg = null)
+    {
+        GoToBeginningOfHistory();
+    }
+
+    private static void GoToBeginningOfHistory()
     {
         SearcherReadLine.SaveCurrentLine();
         SearcherReadLine.ResetCurrentHistoryIndex(true);
@@ -256,7 +259,6 @@ public class History
     /// </summary>
     public static void EndOfHistory(ConsoleKeyInfo? key = null, object arg = null)
     {
-        SearcherReadLine.SaveCurrentLine();
         GoToEndOfHistory();
     }
 
@@ -521,6 +523,7 @@ public class History
 
     private void HistoryRecall(int direction)
     {
+        SearcherReadLine.SaveCurrentLine();
         if (RecallHistoryCommandCount == 0 && _renderer.LineIsMultiLine())
         {
             _rl.MoveToLine(direction);
@@ -809,12 +812,12 @@ public class History
     {
         PSConsoleReadLine.TryGetArgAsInt(arg, out var numericArg, +1);
         if (RL.UpdateListSelection(numericArg)) return;
-        SearcherReadLine.SaveCurrentLine();
         Singleton.HistorySearch(numericArg);
     }
 
     private static void GoToEndOfHistory()
     {
+        SearcherReadLine.SaveCurrentLine();
         SearcherReadLine.ResetCurrentHistoryIndex();
         SearcherReadLine.UpdateBufferFromHistory(HistorySearcherReadLine.HistoryMoveCursor.ToEnd);
     }

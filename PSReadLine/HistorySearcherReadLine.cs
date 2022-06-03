@@ -196,7 +196,6 @@ public class HistorySearcherReadLine
     public void UpdateBufferFromHistory(HistoryMoveCursor moveCursor)
     {
         _model.SaveToBuffer();
-
         _renderer.Current = moveCursor switch
         {
             HistoryMoveCursor.ToEnd => Math.Max(0, _rl.buffer.Length + PSConsoleReadLine.ViEndOfLineFactor),
@@ -291,7 +290,7 @@ public class HistorySearcherReadLine
 
     private static void GoToEndOfHistory()
     {
-        _model.ResetCurrentHistoryIndex(false);
+        _model.ResetCurrentHistoryIndex();
         SearcherReadLine.UpdateBufferFromHistory(HistoryMoveCursor.ToEnd);
     }
 }

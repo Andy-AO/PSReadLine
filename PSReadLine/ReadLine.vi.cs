@@ -814,7 +814,6 @@ public partial class PSConsoleReadLine
     /// </summary>
     public static void ViSearchHistoryBackward(ConsoleKeyInfo? key = null, object arg = null)
     {
-        SearcherReadLine.SaveCurrentLine();
         Singleton.StartSearch(true);
     }
 
@@ -823,7 +822,6 @@ public partial class PSConsoleReadLine
     /// </summary>
     public static void SearchForward(ConsoleKeyInfo? key = null, object arg = null)
     {
-        SearcherReadLine.SaveCurrentLine();
         Singleton.StartSearch(false);
     }
 
@@ -901,6 +899,7 @@ public partial class PSConsoleReadLine
     /// </summary>
     private void HistorySearch()
     {
+        SearcherReadLine.SaveCurrentLine();
         _hs.SearchHistoryCommandCount++;
 
         var incr = _searchHistoryBackward ? -1 : +1;

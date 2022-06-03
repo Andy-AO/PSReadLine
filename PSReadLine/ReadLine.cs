@@ -428,7 +428,6 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
             // line to be restored next time ReadLine is called, clear the buffer and throw an
             // exception so we can return an empty string.
             Singleton._queuedKeys.Dequeue();
-            SearcherReadLine.SaveCurrentLine();
             _hs.GetNextHistoryIndex = _hs.Historys.Count;
             _renderer.Current = 0;
             Singleton.buffer.Clear();
@@ -810,8 +809,7 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
         _hs.HashedHistory = null;
         if (_hs.GetNextHistoryIndex > 0)
         {
-            var val = _hs.GetNextHistoryIndex;
-            SearcherReadLine.CurrentHistoryIndex = val;
+            SearcherReadLine.CurrentHistoryIndex = _hs.GetNextHistoryIndex;
             SearcherReadLine.UpdateBufferFromHistory(HistorySearcherReadLine.HistoryMoveCursor.ToEnd);
             _hs.GetNextHistoryIndex = 0;
             if (_hs.SearchHistoryCommandCount > 0)
