@@ -16,6 +16,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.PowerShell.PSReadLine;
+using Microsoft.PowerShell.PSReadLine.History;
 using AllowNull = System.Management.Automation.AllowNullAttribute;
 
 namespace Microsoft.PowerShell
@@ -181,7 +182,7 @@ namespace Microsoft.PowerShell
             : EditMode.Emacs;
 
         public static readonly Func<string, object> DefaultAddToHistoryHandler =
-            s => History.GetDefaultAddToHistoryOption(s);
+            s => Manager.GetDefaultAddToHistoryOption(s);
 
         private static Dictionary<string, Action<PSConsoleReadLineOptions, object>> ColorSetters;
         internal string _commandColor;

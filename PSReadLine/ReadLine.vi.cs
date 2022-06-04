@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.PowerShell.PSReadLine;
+using Microsoft.PowerShell.PSReadLine.History;
 
 namespace Microsoft.PowerShell;
 
@@ -899,13 +900,13 @@ public partial class PSConsoleReadLine
     /// </summary>
     private void HistorySearch()
     {
-        SearcherReadLine.SaveCurrentLine();
+        CurrentLineCache.Cache();
         _hs.SearchHistoryCommandCount++;
 
         var incr = _searchHistoryBackward ? -1 : +1;
         var moveCursor = Options.HistorySearchCursorMovesToEnd
-            ? HistorySearcherReadLine.HistoryMoveCursor.ToEnd
-            : HistorySearcherReadLine.HistoryMoveCursor.DontMove;
+            ? InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd
+            : InteractiveSearcherReadLine.HistoryMoveCursor.DontMove;
         for (var i = SearcherReadLine.CurrentHistoryIndex + incr; i >= 0 && i < _hs.Historys.Count; i += incr)
             if (Options.HistoryStringComparison.HasFlag(StringComparison.OrdinalIgnoreCase))
             {

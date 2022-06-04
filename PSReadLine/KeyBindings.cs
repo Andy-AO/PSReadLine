@@ -10,6 +10,7 @@ using System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.PowerShell.PSReadLine;
+using Microsoft.PowerShell.PSReadLine.History;
 
 namespace Microsoft.PowerShell;
 
@@ -169,8 +170,8 @@ public partial class PSConsoleReadLine
             {Keys.ShiftRightArrow, MakeKeyHandler(SelectForwardChar, "SelectForwardChar")},
             {Keys.CtrlShiftLeftArrow, MakeKeyHandler(SelectBackwardWord, "SelectBackwardWord")},
             {Keys.CtrlShiftRightArrow, MakeKeyHandler(SelectNextWord, "SelectNextWord")},
-            {Keys.UpArrow, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
-            {Keys.DownArrow, MakeKeyHandler(History.NextHistory, "NextHistory")},
+            {Keys.UpArrow, MakeKeyHandler(Manager.PreviousHistory, "PreviousHistory")},
+            {Keys.DownArrow, MakeKeyHandler(Manager.NextHistory, "NextHistory")},
             {Keys.Home, MakeKeyHandler(BeginningOfLine, "BeginningOfLine")},
             {Keys.End, MakeKeyHandler(EndOfLine, "EndOfLine")},
             {Keys.ShiftHome, MakeKeyHandler(SelectBackwardsLine, "SelectBackwardsLine")},
@@ -183,8 +184,8 @@ public partial class PSConsoleReadLine
             {Keys.CtrlC, MakeKeyHandler(CopyOrCancelLine, "CopyOrCancelLine")},
             {Keys.CtrlShiftC, MakeKeyHandler(Copy, "Copy")},
             {Keys.CtrlL, MakeKeyHandler(ClearScreen, "ClearScreen")},
-            {Keys.CtrlR, MakeKeyHandler(HistorySearcherReadLine.ReverseSearchHistory, "ReverseSearchHistory")},
-            {Keys.CtrlS, MakeKeyHandler(HistorySearcherReadLine.ForwardSearchHistory, "ForwardSearchHistory")},
+            {Keys.CtrlR, MakeKeyHandler(InteractiveSearcherReadLine.ReverseSearchHistory, "ReverseSearchHistory")},
+            {Keys.CtrlS, MakeKeyHandler(InteractiveSearcherReadLine.ForwardSearchHistory, "ForwardSearchHistory")},
             {Keys.CtrlV, MakeKeyHandler(Paste, "Paste")},
             {Keys.ShiftInsert, MakeKeyHandler(Paste, "Paste")},
             {Keys.CtrlX, MakeKeyHandler(Cut, "Cut")},
@@ -211,8 +212,8 @@ public partial class PSConsoleReadLine
             {Keys.F2, MakeKeyHandler(SwitchPredictionView, "SwitchPredictionView")},
             {Keys.F3, MakeKeyHandler(CharacterSearch, "CharacterSearch")},
             {Keys.ShiftF3, MakeKeyHandler(CharacterSearchBackward, "CharacterSearchBackward")},
-            {Keys.F8, MakeKeyHandler(History.HistorySearchBackward, "HistorySearchBackward")},
-            {Keys.ShiftF8, MakeKeyHandler(History.HistorySearchForward, "HistorySearchForward")},
+            {Keys.F8, MakeKeyHandler(Manager.HistorySearchBackward, "HistorySearchBackward")},
+            {Keys.ShiftF8, MakeKeyHandler(Manager.HistorySearchForward, "HistorySearchForward")},
             // Added for xtermjs-based terminals that send different key combinations.
             {Keys.AltD, MakeKeyHandler(KillWord, "KillWord")},
             {Keys.CtrlAt, MakeKeyHandler(MenuComplete, "MenuComplete")},
@@ -225,7 +226,7 @@ public partial class PSConsoleReadLine
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             _dispatchTable.Add(Keys.CtrlSpace, MakeKeyHandler(MenuComplete, "MenuComplete"));
-            _dispatchTable.Add(Keys.AltF7, MakeKeyHandler(History.ClearHistory, "ClearHistory"));
+            _dispatchTable.Add(Keys.AltF7, MakeKeyHandler(Manager.ClearHistory, "ClearHistory"));
             _dispatchTable.Add(Keys.CtrlDelete, MakeKeyHandler(KillWord, "KillWord"));
             _dispatchTable.Add(Keys.CtrlEnd, MakeKeyHandler(ForwardDeleteInput, "ForwardDeleteInput"));
             _dispatchTable.Add(Keys.CtrlH, MakeKeyHandler(BackwardDeleteChar, "BackwardDeleteChar"));
@@ -255,10 +256,10 @@ public partial class PSConsoleReadLine
             {Keys.RightArrow, MakeKeyHandler(ForwardChar, "ForwardChar")},
             {Keys.ShiftLeftArrow, MakeKeyHandler(SelectBackwardChar, "SelectBackwardChar")},
             {Keys.ShiftRightArrow, MakeKeyHandler(SelectForwardChar, "SelectForwardChar")},
-            {Keys.UpArrow, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
-            {Keys.DownArrow, MakeKeyHandler(History.NextHistory, "NextHistory")},
-            {Keys.AltLess, MakeKeyHandler(History.BeginningOfHistory, "BeginningOfHistory")},
-            {Keys.AltGreater, MakeKeyHandler(History.EndOfHistory, "EndOfHistory")},
+            {Keys.UpArrow, MakeKeyHandler(Manager.PreviousHistory, "PreviousHistory")},
+            {Keys.DownArrow, MakeKeyHandler(Manager.NextHistory, "NextHistory")},
+            {Keys.AltLess, MakeKeyHandler(Manager.BeginningOfHistory, "BeginningOfHistory")},
+            {Keys.AltGreater, MakeKeyHandler(Manager.EndOfHistory, "EndOfHistory")},
             {Keys.Home, MakeKeyHandler(BeginningOfLine, "BeginningOfLine")},
             {Keys.End, MakeKeyHandler(EndOfLine, "EndOfLine")},
             {Keys.ShiftHome, MakeKeyHandler(SelectBackwardsLine, "SelectBackwardsLine")},
@@ -276,11 +277,11 @@ public partial class PSConsoleReadLine
             {Keys.CtrlL, MakeKeyHandler(ClearScreen, "ClearScreen")},
             {Keys.CtrlK, MakeKeyHandler(KillLine, "KillLine")},
             {Keys.CtrlM, MakeKeyHandler(ValidateAndAcceptLine, "ValidateAndAcceptLine")},
-            {Keys.CtrlN, MakeKeyHandler(History.NextHistory, "NextHistory")},
+            {Keys.CtrlN, MakeKeyHandler(Manager.NextHistory, "NextHistory")},
             {Keys.CtrlO, MakeKeyHandler(AcceptAndGetNext, "AcceptAndGetNext")},
-            {Keys.CtrlP, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
-            {Keys.CtrlR, MakeKeyHandler(HistorySearcherReadLine.ReverseSearchHistory, "ReverseSearchHistory")},
-            {Keys.CtrlS, MakeKeyHandler(HistorySearcherReadLine.ForwardSearchHistory, "ForwardSearchHistory")},
+            {Keys.CtrlP, MakeKeyHandler(Manager.PreviousHistory, "PreviousHistory")},
+            {Keys.CtrlR, MakeKeyHandler(InteractiveSearcherReadLine.ReverseSearchHistory, "ReverseSearchHistory")},
+            {Keys.CtrlS, MakeKeyHandler(InteractiveSearcherReadLine.ForwardSearchHistory, "ForwardSearchHistory")},
             {Keys.CtrlT, MakeKeyHandler(SwapCharacters, "SwapCharacters")},
             {Keys.CtrlU, MakeKeyHandler(BackwardKillInput, "BackwardKillInput")},
             {Keys.CtrlX, MakeKeyHandler(Chord, "ChordFirstKey")},
@@ -515,17 +516,17 @@ public partial class PSConsoleReadLine
             case nameof(ViNextWord):
                 return KeyHandlerGroup.CursorMovement;
 
-            case nameof(History.BeginningOfHistory):
-            case nameof(History.ClearHistory):
-            case nameof(History.EndOfHistory):
-            case nameof(HistorySearcherReadLine.ForwardSearchHistory):
-            case nameof(HistorySearcherReadLine.ForwardSearchHistoryMultiKeyword):
-            case nameof(History.HistorySearchBackward):
-            case nameof(History.HistorySearchForward):
-            case nameof(History.NextHistory):
-            case nameof(History.PreviousHistory):
-            case nameof(HistorySearcherReadLine.ReverseSearchHistory):
-            case nameof(HistorySearcherReadLine.ReverseSearchHistoryMultiKeyword):
+            case nameof(Manager.BeginningOfHistory):
+            case nameof(Manager.ClearHistory):
+            case nameof(Manager.EndOfHistory):
+            case nameof(InteractiveSearcherReadLine.ForwardSearchHistory):
+            case nameof(InteractiveSearcherReadLine.ForwardSearchHistoryMultiKeyword):
+            case nameof(Manager.HistorySearchBackward):
+            case nameof(Manager.HistorySearchForward):
+            case nameof(Manager.NextHistory):
+            case nameof(Manager.PreviousHistory):
+            case nameof(InteractiveSearcherReadLine.ReverseSearchHistory):
+            case nameof(InteractiveSearcherReadLine.ReverseSearchHistoryMultiKeyword):
             case nameof(ViSearchHistoryBackward):
                 return KeyHandlerGroup.History;
 

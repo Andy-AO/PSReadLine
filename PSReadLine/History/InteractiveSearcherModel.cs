@@ -3,19 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.PowerShell.PSReadLine;
+namespace Microsoft.PowerShell.PSReadLine.History;
 
-public class HistorySearcherModel
+public class InteractiveSearcherModel
 {
-    // When cycling through history, the current line (not yet added to history)
-    // is saved here so it can be restored.
-    private readonly HistoryItem _savedCurrentLine = new();
     private int _searchFromPoint;
     public int direction;
 
-    static HistorySearcherModel()
+    static InteractiveSearcherModel()
     {
-        Singleton = new HistorySearcherModel();
+        Singleton = new InteractiveSearcherModel();
     }
 
     private int searchFromPoint
@@ -36,7 +33,7 @@ public class HistorySearcherModel
     public Stack<int> searchPositions { get; private set; }
     public StringBuilder toMatch { get; private set; }
 
-    public static HistorySearcherModel Singleton { get; }
+    public static InteractiveSearcherModel Singleton { get; }
 
     public int CurrentHistoryIndex { get; set; }
 
@@ -84,20 +81,6 @@ public class HistorySearcherModel
         whenNotFound?.Invoke();
     }
 
-    public void SaveToBuffer()
-    {
-        var historyItem = CurrentHistoryIndex == _hs.Historys.Count
-            ? _savedCurrentLine
-            : _hs.Historys[CurrentHistoryIndex];
-
-        _rl._edits = new List<EditItem>(historyItem._edits);
-        _rl._undoEditIndex = historyItem._undoEditIndex;
-        _rl._editGroupStart = historyItem._editGroupStart;
-
-        _rl.buffer.Clear();
-        _rl.buffer.Append(historyItem.CommandLine);
-    }
-
     public void Backward(Action whenSuccessful, Action whenFailed)
     {
         if (toMatch.Length > 0)
@@ -127,30 +110,6 @@ public class HistorySearcherModel
     private void RecoverSearchFromPoint()
     {
         searchFromPoint = CurrentHistoryIndex;
-    }
-
-    public void SaveCurrentLine()
-    {
-        // We're called before any history operation - so it's convenient
-        // to check if we need to load history from another sessions now.
-        _hs.MaybeReadHistoryFile();
-
-        _hs.AnyHistoryCommandCount += 1;
-        if (_savedCurrentLine.CommandLine == null)
-        {
-            _savedCurrentLine.CommandLine = _rl.buffer.ToString();
-            _savedCurrentLine._edits = _rl._edits;
-            _savedCurrentLine._undoEditIndex = _rl._undoEditIndex;
-            _savedCurrentLine._editGroupStart = _rl._editGroupStart;
-        }
-    }
-
-    public void ClearSavedCurrentLine()
-    {
-        _savedCurrentLine.CommandLine = null;
-        _savedCurrentLine._edits = null;
-        _savedCurrentLine._undoEditIndex = 0;
-        _savedCurrentLine._editGroupStart = -1;
     }
 
     private void SaveSearchFromPoint()

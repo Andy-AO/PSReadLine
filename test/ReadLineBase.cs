@@ -6,7 +6,7 @@ using System.Linq;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using Microsoft.PowerShell;
-using Microsoft.PowerShell.PSReadLine;
+using Microsoft.PowerShell.PSReadLine.History;
 using Test;
 using Xunit;
 using Xunit.Abstractions;
@@ -92,8 +92,8 @@ public abstract class ReadLineBase
 
     public void SetHistory(params string[] historyItems)
     {
-        History.ClearHistory();
-        foreach (var item in historyItems) History.AddToHistory(item);
+        Manager.ClearHistory();
+        foreach (var item in historyItems) Manager.AddToHistory(item);
     }
 
     protected void AssertCursorLeftTopIs(int left, int top)
@@ -425,7 +425,7 @@ public abstract class ReadLineBase
 
         _emptyLine ??= new string(' ', _console.BufferWidth);
 
-        History.ClearHistory();
+        Manager.ClearHistory();
         PSConsoleReadLine.ClearKillRing();
 
         var options = new SetPSReadLineOption

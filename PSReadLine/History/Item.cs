@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Microsoft.PowerShell.PSReadLine;
+namespace Microsoft.PowerShell.PSReadLine.History;
 
 /// <summary>
 ///     History details including the command line, source, and start and approximate execution time.
 /// </summary>
 [DebuggerDisplay("{" + nameof(CommandLine) + "}")]
-public class HistoryItem
+public class LineInfo
 {
     internal int _editGroupStart;
     internal List<EditItem> _edits;

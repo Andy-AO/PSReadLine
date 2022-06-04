@@ -7,14 +7,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.PowerShell;
+namespace Microsoft.PowerShell.PSReadLine.History;
 
 [ExcludeFromCodeCoverage]
 internal sealed class QueueDebugView<T>
 {
-    private readonly HistoryQueue<T> _queue;
+    private readonly Queue<T> _queue;
 
-    public QueueDebugView(HistoryQueue<T> queue)
+    public QueueDebugView(Queue<T> queue)
     {
         _queue = queue ?? throw new ArgumentNullException(nameof(queue));
     }
@@ -25,13 +25,13 @@ internal sealed class QueueDebugView<T>
 
 [DebuggerDisplay("Count = {" + nameof(Count) + "}")]
 [DebuggerTypeProxy(typeof(QueueDebugView<>))]
-public class HistoryQueue<T>
+public class Queue<T>
 {
     private readonly T[] _array;
     private int _head;
     private int _tail;
 
-    public HistoryQueue(int capacity)
+    public Queue(int capacity)
     {
         Debug.Assert(capacity > 0);
         _array = new T[capacity];

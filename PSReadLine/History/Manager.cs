@@ -11,23 +11,23 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.PowerShell.Commands;
 
-namespace Microsoft.PowerShell.PSReadLine;
+namespace Microsoft.PowerShell.PSReadLine.History;
 
-public class History
+public class Manager
 {
-    static History()
+    static Manager()
     {
-        Singleton = new History();
+        Singleton = new Manager();
     }
 
-    private History()
+    private Manager()
     {
-        RecentHistory = new HistoryQueue<string>(5);
+        RecentHistory = new Queue<string>(5);
     }
 
     // When cycling through history, the current line (not yet added to history)
     // is saved here so it can be restored.
-    public static History Singleton { get; }
+    public static Manager Singleton { get; }
 
     // Pattern used to check for sensitive inputs.
     private static Regex SensitivePattern { get; } = new(
@@ -51,7 +51,7 @@ public class History
     public int AnyHistoryCommandCount { get; set; }
 
     // History state
-    public HistoryQueue<HistoryItem> Historys { get; set; }
+    public Queue<LineInfo> Historys { get; set; }
 
     public int GetNextHistoryIndex { get; set; }
 
@@ -61,11 +61,11 @@ public class History
 
     public Mutex HistoryFileMutex { get; set; }
 
-    public HistoryItem PreviousHistoryItem { get; private set; }
+    public LineInfo PreviousLine { get; private set; }
 
     public int RecallHistoryCommandCount { get; set; }
 
-    public HistoryQueue<string> RecentHistory { get; set; }
+    public Queue<string> RecentHistory { get; set; }
 
     public int SearchHistoryCommandCount { get; set; }
 
@@ -75,7 +75,7 @@ public class History
 
     public void DelayedInit()
     {
-        Historys = new HistoryQueue<HistoryItem>(_rl.Options.MaximumHistoryCount);
+        Historys = new Queue<LineInfo>(_rl.Options.MaximumHistoryCount);
         HistoryFileMutex = new Mutex(false, GetHistorySaveFileMutexName());
         ReadHistoryFile1();
 
@@ -118,7 +118,7 @@ public class History
 
     private void HistorySearch(int direction)
     {
-        SearcherReadLine.SaveCurrentLine();
+        CurrentLineCache.Cache();
         if (SearchHistoryCommandCount == 0)
         {
             if (_renderer.LineIsMultiLine())
@@ -175,10 +175,10 @@ public class History
             // _renderer.Current = HistorySearcherReadLine.EmphasisLength;
             SearcherReadLine.CurrentHistoryIndex = newHistoryIndex;
             var moveCursor = RL.InViCommandMode()
-                ? HistorySearcherReadLine.HistoryMoveCursor.ToBeginning
+                ? InteractiveSearcherReadLine.HistoryMoveCursor.ToBeginning
                 : _rl.Options.HistorySearchCursorMovesToEnd
-                    ? HistorySearcherReadLine.HistoryMoveCursor.ToEnd
-                    : HistorySearcherReadLine.HistoryMoveCursor.DontMove;
+                    ? InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd
+                    : InteractiveSearcherReadLine.HistoryMoveCursor.DontMove;
             SearcherReadLine.UpdateBufferFromHistory(moveCursor);
         }
     }
@@ -223,7 +223,7 @@ public class History
     /// <summary>
     ///     Return a collection of history items.
     /// </summary>
-    public static HistoryItem[] GetHistoryItems()
+    public static LineInfo[] GetHistoryItems()
     {
         return Singleton.Historys.ToArray();
     }
@@ -238,9 +238,9 @@ public class History
 
     private static void GoToBeginningOfHistory()
     {
-        SearcherReadLine.SaveCurrentLine();
+        CurrentLineCache.Cache();
         SearcherReadLine.ResetCurrentHistoryIndex(true);
-        SearcherReadLine.UpdateBufferFromHistory(HistorySearcherReadLine.HistoryMoveCursor.ToEnd);
+        SearcherReadLine.UpdateBufferFromHistory(InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd);
     }
 
 
@@ -523,7 +523,7 @@ public class History
 
     private void HistoryRecall(int direction)
     {
-        SearcherReadLine.SaveCurrentLine();
+        CurrentLineCache.Cache();
         if (RecallHistoryCommandCount == 0 && _renderer.LineIsMultiLine())
         {
             _rl.MoveToLine(direction);
@@ -567,8 +567,8 @@ public class History
         {
             SearcherReadLine.CurrentHistoryIndex = newHistoryIndex;
             var moveCursor = RL.InViCommandMode() && !_rl.Options.HistorySearchCursorMovesToEnd
-                ? HistorySearcherReadLine.HistoryMoveCursor.ToBeginning
-                : HistorySearcherReadLine.HistoryMoveCursor.ToEnd;
+                ? InteractiveSearcherReadLine.HistoryMoveCursor.ToBeginning
+                : InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd;
             SearcherReadLine.UpdateBufferFromHistory(moveCursor);
         }
     }
@@ -726,7 +726,7 @@ public class History
         if (addToHistoryOption != AddToHistoryOption.SkipAdding)
         {
             var fromHistoryFile = fromDifferentSession || fromInitialRead;
-            PreviousHistoryItem = new HistoryItem
+            PreviousLine = new LineInfo
             {
                 CommandLine = result,
                 _edits = edits,
@@ -742,11 +742,11 @@ public class History
                 // Add to the recent history queue, which is used when querying for prediction.
                 RecentHistory.Enqueue(result);
                 // 'MemoryOnly' indicates sensitive content in the command line
-                PreviousHistoryItem._sensitive = addToHistoryOption == AddToHistoryOption.MemoryOnly;
-                PreviousHistoryItem.StartTime = DateTime.UtcNow;
+                PreviousLine._sensitive = addToHistoryOption == AddToHistoryOption.MemoryOnly;
+                PreviousLine.StartTime = DateTime.UtcNow;
             }
 
-            Historys.Enqueue(PreviousHistoryItem);
+            Historys.Enqueue(PreviousLine);
 
             SearcherReadLine.ResetCurrentHistoryIndex();
 
@@ -755,13 +755,13 @@ public class History
         }
         else
         {
-            PreviousHistoryItem = null;
+            PreviousLine = null;
         }
 
         // Clear the saved line unless we used AcceptAndGetNext in which
         // case we're really still in middle of history and might want
         // to recall the saved line.
-        if (GetNextHistoryIndex == 0) SearcherReadLine.ClearSavedCurrentLine();
+        if (GetNextHistoryIndex == 0) CurrentLineCache.Clear();
         return result;
     }
 
@@ -817,9 +817,9 @@ public class History
 
     private static void GoToEndOfHistory()
     {
-        SearcherReadLine.SaveCurrentLine();
+        CurrentLineCache.Cache();
         SearcherReadLine.ResetCurrentHistoryIndex();
-        SearcherReadLine.UpdateBufferFromHistory(HistorySearcherReadLine.HistoryMoveCursor.ToEnd);
+        SearcherReadLine.UpdateBufferFromHistory(InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd);
     }
 
     //class start

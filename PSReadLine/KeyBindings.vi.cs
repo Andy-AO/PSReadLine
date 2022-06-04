@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.PowerShell.PSReadLine;
+using Microsoft.PowerShell.PSReadLine.History;
 
 namespace Microsoft.PowerShell;
 
@@ -64,8 +65,8 @@ public partial class PSConsoleReadLine
             {Keys.RightArrow, MakeKeyHandler(ViForwardChar, "ViForwardChar")},
             {Keys.CtrlLeftArrow, MakeKeyHandler(BackwardWord, "BackwardWord")},
             {Keys.CtrlRightArrow, MakeKeyHandler(NextWord, "NextWord")},
-            {Keys.UpArrow, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
-            {Keys.DownArrow, MakeKeyHandler(History.NextHistory, "NextHistory")},
+            {Keys.UpArrow, MakeKeyHandler(Manager.PreviousHistory, "PreviousHistory")},
+            {Keys.DownArrow, MakeKeyHandler(Manager.NextHistory, "NextHistory")},
             {Keys.Home, MakeKeyHandler(BeginningOfLine, "BeginningOfLine")},
             {Keys.End, MakeKeyHandler(EndOfLine, "EndOfLine")},
             {Keys.Delete, MakeKeyHandler(DeleteChar, "DeleteChar")},
@@ -87,8 +88,8 @@ public partial class PSConsoleReadLine
             {Keys.F3, MakeKeyHandler(CharacterSearch, "CharacterSearch")},
             {Keys.ShiftF3, MakeKeyHandler(CharacterSearchBackward, "CharacterSearchBackward")},
             {Keys.CtrlAltQuestion, MakeKeyHandler(ShowKeyBindings, "ShowKeyBindings")},
-            {Keys.CtrlR, MakeKeyHandler(HistorySearcherReadLine.ReverseSearchHistory, "ReverseSearchHistory")},
-            {Keys.CtrlS, MakeKeyHandler(HistorySearcherReadLine.ForwardSearchHistory, "ForwardSearchHistory")},
+            {Keys.CtrlR, MakeKeyHandler(InteractiveSearcherReadLine.ReverseSearchHistory, "ReverseSearchHistory")},
+            {Keys.CtrlS, MakeKeyHandler(InteractiveSearcherReadLine.ForwardSearchHistory, "ForwardSearchHistory")},
             {Keys.CtrlG, MakeKeyHandler(Abort, "Abort")},
             {Keys.AltH, MakeKeyHandler(ShowParameterHelp, "ShowParameterHelp")},
             {Keys.F1, MakeKeyHandler(ShowCommandHelp, "ShowCommandHelp")}
@@ -109,8 +110,8 @@ public partial class PSConsoleReadLine
             {Keys.Space, MakeKeyHandler(ViForwardChar, "ViForwardChar")},
             {Keys.CtrlLeftArrow, MakeKeyHandler(BackwardWord, "BackwardWord")},
             {Keys.CtrlRightArrow, MakeKeyHandler(NextWord, "NextWord")},
-            {Keys.UpArrow, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
-            {Keys.DownArrow, MakeKeyHandler(History.NextHistory, "NextHistory")},
+            {Keys.UpArrow, MakeKeyHandler(Manager.PreviousHistory, "PreviousHistory")},
+            {Keys.DownArrow, MakeKeyHandler(Manager.NextHistory, "NextHistory")},
             {Keys.Home, MakeKeyHandler(BeginningOfLine, "BeginningOfLine")},
             {Keys.End, MakeKeyHandler(MoveToEndOfLine, "MoveToEndOfLine")},
             {Keys.Delete, MakeKeyHandler(DeleteChar, "DeleteChar")},
@@ -141,8 +142,8 @@ public partial class PSConsoleReadLine
             {Keys.G, MakeKeyHandler(ViChord, "ChordFirstKey")},
             {Keys.H, MakeKeyHandler(ViBackwardChar, "ViBackwardChar")},
             {Keys.I, MakeKeyHandler(ViInsertMode, "ViInsertMode")},
-            {Keys.J, MakeKeyHandler(History.NextHistory, "NextHistory")},
-            {Keys.K, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
+            {Keys.J, MakeKeyHandler(Manager.NextHistory, "NextHistory")},
+            {Keys.K, MakeKeyHandler(Manager.PreviousHistory, "PreviousHistory")},
             {Keys.L, MakeKeyHandler(ViForwardChar, "ViForwardChar")},
             {Keys.M, MakeKeyHandler(Ding, "Ignore")},
             {Keys.N, MakeKeyHandler(RepeatSearch, "RepeatSearch")},
@@ -204,12 +205,12 @@ public partial class PSConsoleReadLine
 
             {Keys.Slash, MakeKeyHandler(ViSearchHistoryBackward, "ViSearchHistoryBackward")},
             {Keys.Question, MakeKeyHandler(SearchForward, "SearchForward")},
-            {Keys.CtrlR, MakeKeyHandler(HistorySearcherReadLine.ReverseSearchHistory, "ReverseSearchHistory")},
-            {Keys.CtrlS, MakeKeyHandler(HistorySearcherReadLine.ForwardSearchHistory, "ForwardSearchHistory")},
+            {Keys.CtrlR, MakeKeyHandler(InteractiveSearcherReadLine.ReverseSearchHistory, "ReverseSearchHistory")},
+            {Keys.CtrlS, MakeKeyHandler(InteractiveSearcherReadLine.ForwardSearchHistory, "ForwardSearchHistory")},
             {Keys.CtrlG, MakeKeyHandler(Abort, "Abort")},
 
-            {Keys.Plus, MakeKeyHandler(History.NextHistory, "NextHistory")},
-            {Keys.Minus, MakeKeyHandler(History.PreviousHistory, "PreviousHistory")},
+            {Keys.Plus, MakeKeyHandler(Manager.NextHistory, "NextHistory")},
+            {Keys.Minus, MakeKeyHandler(Manager.PreviousHistory, "PreviousHistory")},
             {Keys.Period, MakeKeyHandler(RepeatLastCommand, "RepeatLastCommand")},
             {Keys.Semicolon, MakeKeyHandler(RepeatLastCharSearch, "RepeatLastCharSearch")},
             {Keys.Comma, MakeKeyHandler(RepeatLastCharSearchBackwards, "RepeatLastCharSearchBackwards")},

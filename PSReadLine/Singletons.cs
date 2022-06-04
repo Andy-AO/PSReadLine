@@ -2,15 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.PowerShell.PSReadLine.History;
 
 namespace Microsoft.PowerShell.PSReadLine;
 
 public static class Singletons
 {
     private static Renderer __renderer;
-    public static History _hs => History.Singleton;
+    public static Manager _hs => Manager.Singleton;
     public static PSConsoleReadLine _rl => PSConsoleReadLine.Singleton;
-    public static HistorySearcherReadLine SearcherReadLine => HistorySearcherReadLine.Singleton;
+    public static InteractiveSearcherReadLine SearcherReadLine => InteractiveSearcherReadLine.Singleton;
 
     public static Renderer _renderer
     {
@@ -18,7 +19,7 @@ public static class Singletons
         set => __renderer = value;
     }
 
-    public static Type[] FunctionProvider = { typeof(PSConsoleReadLine), typeof(HistorySearcherReadLine), typeof(History) };
+    public static Type[] FunctionProvider = { typeof(PSConsoleReadLine), typeof(InteractiveSearcherReadLine), typeof(Manager) };
 
     private static IEnumerable<MethodInfo> _bindableFunctions;
     private static IOrderedEnumerable<string> _bindableFunctionNames;

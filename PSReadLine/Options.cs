@@ -6,10 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
-using System.Reflection;
 using System.Threading;
-using Microsoft.PowerShell.Internal;
 using Microsoft.PowerShell.PSReadLine;
+using Microsoft.PowerShell.PSReadLine.History;
 
 namespace Microsoft.PowerShell
 {
@@ -31,7 +30,7 @@ namespace Microsoft.PowerShell
                 Options.MaximumHistoryCount = options.MaximumHistoryCount;
                 if (_hs.Historys != null)
                 {
-                    var newHistory = new HistoryQueue<HistoryItem>(Options.MaximumHistoryCount);
+                    var newHistory = new PSReadLine.History.Queue<LineInfo>(Options.MaximumHistoryCount);
                     while (_hs.Historys.Count > Options.MaximumHistoryCount) _hs.Historys.Dequeue();
                     while (_hs.Historys.Count > 0) newHistory.Enqueue(_hs.Historys.Dequeue());
                     _hs.Historys = newHistory;

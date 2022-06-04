@@ -7,6 +7,7 @@ using Microsoft.PowerShell;
 using Microsoft.PowerShell.PSReadLine;
 using UnitTestPSReadLine;
 using Xunit;
+using Microsoft.PowerShell.PSReadLine.History;
 using Xunit.Abstractions;
 
 namespace Test;
@@ -85,7 +86,7 @@ public abstract class HistoryTest : MyReadLine
             file.WriteLine("cd Downloads");
         }
 
-        Microsoft.PowerShell.PSReadLine.History.AddToHistory("cd Documents");
+        Manager.AddToHistory("cd Documents");
 
         string[] expectedSavedLines = {"gcm help", "dir ~", "cd Downloads", "cd Documents"};
         text = File.ReadAllLines(historySavingFile);
@@ -93,7 +94,7 @@ public abstract class HistoryTest : MyReadLine
         for (var i = 0; i < text.Length; i++) Assert.Equal(expectedSavedLines[i], text[i]);
 
         string[] expectedHistoryItems = {"dir ~", "cd Documents", "cd Downloads"};
-        var historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+        var historyItems = Manager.GetHistoryItems();
         Assert.Equal(expectedHistoryItems.Length, historyItems.Length);
         for (var i = 0; i < historyItems.Length; i++)
             Assert.Equal(expectedHistoryItems[i], historyItems[i].CommandLine);
@@ -151,7 +152,7 @@ public abstract class HistoryTest : MyReadLine
             SetHistory(expectedHistoryItems);
 
             // Sensitive input history should be kept in the internal history queue.
-            var historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+            var historyItems = Manager.GetHistoryItems();
             Assert.Equal(expectedHistoryItems.Length, historyItems.Length);
             for (var i = 0; i < expectedHistoryItems.Length; i++)
                 Assert.Equal(expectedHistoryItems[i], historyItems[i].CommandLine);
@@ -234,7 +235,7 @@ public abstract class HistoryTest : MyReadLine
             SetHistory(expectedHistoryItems);
 
             // Sensitive input history should be kept in the internal history queue.
-            var historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+            var historyItems = Manager.GetHistoryItems();
             Assert.Equal(expectedHistoryItems.Length, historyItems.Length);
             for (var i = 0; i < expectedHistoryItems.Length; i++)
                 Assert.Equal(expectedHistoryItems[i], historyItems[i].CommandLine);
@@ -310,7 +311,7 @@ public abstract class HistoryTest : MyReadLine
             SetHistory(commandInputs);
 
             // All commands should be kept in the internal history queue.
-            var historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+            var historyItems = Manager.GetHistoryItems();
             Assert.Equal(commandInputs.Length, historyItems.Length);
             for (var i = 0; i < commandInputs.Length; i++) Assert.Equal(commandInputs[i], historyItems[i].CommandLine);
 
@@ -329,7 +330,7 @@ public abstract class HistoryTest : MyReadLine
             File.WriteAllText(newHistoryFilePath, string.Empty);
             SetHistory(commandInputs);
 
-            historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+            historyItems = Manager.GetHistoryItems();
             Assert.Single(historyItems);
             Assert.Equal("gal dir", historyItems[0].CommandLine);
 
@@ -344,7 +345,7 @@ public abstract class HistoryTest : MyReadLine
             File.WriteAllText(newHistoryFilePath, string.Empty);
             SetHistory(commandInputs);
 
-            historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+            historyItems = Manager.GetHistoryItems();
             Assert.Equal(expectedQueuedItems.Length, historyItems.Length);
             for (var i = 0; i < expectedQueuedItems.Length; i++)
                 Assert.Equal(expectedQueuedItems[i], historyItems[i].CommandLine);
@@ -361,7 +362,7 @@ public abstract class HistoryTest : MyReadLine
             File.WriteAllText(newHistoryFilePath, string.Empty);
             SetHistory(commandInputs);
 
-            historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+            historyItems = Manager.GetHistoryItems();
             Assert.Equal(commandInputs.Length, historyItems.Length);
             for (var i = 0; i < commandInputs.Length; i++) Assert.Equal(commandInputs[i], historyItems[i].CommandLine);
 
@@ -447,7 +448,7 @@ public abstract class HistoryTest : MyReadLine
             SetHistory(commandInputs);
 
             // All commands should be kept in the internal history queue.
-            var historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+            var historyItems = Manager.GetHistoryItems();
             Assert.Equal(commandInputs.Length, historyItems.Length);
             for (var i = 0; i < commandInputs.Length; i++) Assert.Equal(commandInputs[i], historyItems[i].CommandLine);
 
@@ -466,7 +467,7 @@ public abstract class HistoryTest : MyReadLine
             File.WriteAllText(newHistoryFilePath, string.Empty);
             SetHistory(commandInputs);
 
-            historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+            historyItems = Manager.GetHistoryItems();
             Assert.Single(historyItems);
             Assert.Equal("gal dir", historyItems[0].CommandLine);
 
@@ -481,7 +482,7 @@ public abstract class HistoryTest : MyReadLine
             File.WriteAllText(newHistoryFilePath, string.Empty);
             SetHistory(commandInputs);
 
-            historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+            historyItems = Manager.GetHistoryItems();
             Assert.Equal(expectedQueuedItems.Length, historyItems.Length);
             for (var i = 0; i < expectedQueuedItems.Length; i++)
                 Assert.Equal(expectedQueuedItems[i], historyItems[i].CommandLine);
@@ -498,7 +499,7 @@ public abstract class HistoryTest : MyReadLine
             File.WriteAllText(newHistoryFilePath, string.Empty);
             SetHistory(commandInputs);
 
-            historyItems = Microsoft.PowerShell.PSReadLine.History.GetHistoryItems();
+            historyItems = Manager.GetHistoryItems();
             Assert.Equal(commandInputs.Length, historyItems.Length);
             for (var i = 0; i < commandInputs.Length; i++) Assert.Equal(commandInputs[i], historyItems[i].CommandLine);
 
@@ -561,8 +562,8 @@ public abstract class HistoryTest : MyReadLine
     public void HistorySearchCurrentLine()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("UpArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchBackward),
-            new KeyHandler("DownArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchForward));
+            new KeyHandler("UpArrow", Manager.HistorySearchBackward),
+            new KeyHandler("DownArrow", Manager.HistorySearchForward));
 
         // Search history backward and forward.
         SetHistory("echo foo", "echo bar");
@@ -610,8 +611,8 @@ public abstract class HistoryTest : MyReadLine
     public void HistorySavedCurrentLine()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("F3", (key, arg) => Microsoft.PowerShell.PSReadLine.History.BeginningOfHistory(key, arg)),
-            new KeyHandler("Shift+F3", Microsoft.PowerShell.PSReadLine.History.EndOfHistory));
+            new KeyHandler("F3", (key, arg) => Manager.BeginningOfHistory(key, arg)),
+            new KeyHandler("Shift+F3", Manager.EndOfHistory));
 
         // Mix different history commands to verify that the saved current line and
         // the history index stay the same while in a series of history commands.
@@ -685,8 +686,8 @@ public abstract class HistoryTest : MyReadLine
     public void SearchHistory()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("UpArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchBackward),
-            new KeyHandler("DownArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchForward));
+            new KeyHandler("UpArrow", Manager.HistorySearchBackward),
+            new KeyHandler("DownArrow", Manager.HistorySearchForward));
 
         CleanHistory();
 
@@ -749,8 +750,8 @@ public abstract class HistoryTest : MyReadLine
     public void HistorySearchCursorMovesToEnd()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("UpArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchBackward),
-            new KeyHandler("DownArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchForward));
+            new KeyHandler("UpArrow", Manager.HistorySearchBackward),
+            new KeyHandler("DownArrow", Manager.HistorySearchForward));
 
         PSConsoleReadLine.SetOptions(new SetPSReadLineOption {HistorySearchCursorMovesToEnd = true});
         var emphasisColors = Tuple.Create(PSConsoleReadLineOptions.DefaultEmphasisColor, _console.BackgroundColor);
@@ -1090,7 +1091,7 @@ public abstract class HistoryTest : MyReadLine
     {
         var promptSuffix = "(MultiKeyword)";
         //Only the parts different from InteractiveHistorySearch need to be tested
-        TestSetup(KeyMode.Emacs, new KeyHandler("Ctrl+o", HistorySearcherReadLine.ReverseSearchHistoryMultiKeyword));
+        TestSetup(KeyMode.Emacs, new KeyHandler("Ctrl+o", InteractiveSearcherReadLine.ReverseSearchHistoryMultiKeyword));
         CleanHistory();
         Test("", Keys(_.UpArrow, _.DownArrow));
 
@@ -1159,7 +1160,7 @@ public abstract class HistoryTest : MyReadLine
         PSConsoleReadLine.SetOptions(new SetPSReadLineOption {HistoryNoDuplicates = false});
 
         SetHistory("zzzz", "aaaa", "bbbb", "bbbb", "cccc");
-        Assert.Equal(5, Microsoft.PowerShell.PSReadLine.History.GetHistoryItems().Length);
+        Assert.Equal(5, Manager.GetHistoryItems().Length);
         Test("aaaa", Keys(Enumerable.Repeat(_.UpArrow, 4)));
 
         // Changing the option should affect existing history.
@@ -1167,7 +1168,7 @@ public abstract class HistoryTest : MyReadLine
         Test("zzzz", Keys(Enumerable.Repeat(_.UpArrow, 4)));
 
         SetHistory("aaaa", "bbbb", "bbbb", "cccc");
-        Assert.Equal(3, Microsoft.PowerShell.PSReadLine.History.GetHistoryItems().Length);
+        Assert.Equal(3, Manager.GetHistoryItems().Length);
         Test("aaaa", Keys(Enumerable.Repeat(_.UpArrow, 3)));
 
         SetHistory("aaaa", "bbbb", "bbbb", "cccc");
@@ -1190,8 +1191,8 @@ public abstract class HistoryTest : MyReadLine
     public void HistorySearchNoDuplicates()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("UpArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchBackward),
-            new KeyHandler("DownArrow", Microsoft.PowerShell.PSReadLine.History.HistorySearchForward));
+            new KeyHandler("UpArrow", Manager.HistorySearchBackward),
+            new KeyHandler("DownArrow", Manager.HistorySearchForward));
 
         PSConsoleReadLine.SetOptions(new SetPSReadLineOption {HistoryNoDuplicates = true});
         SetHistory("0000", "echo aaaa", "1111", "echo bbbb", "2222", "echo bbbb", "3333", "echo cccc", "4444");

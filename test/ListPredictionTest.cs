@@ -1,6 +1,6 @@
 using System;
 using Microsoft.PowerShell;
-using Microsoft.PowerShell.PSReadLine;
+using Microsoft.PowerShell.PSReadLine.History;
 using Xunit;
 
 namespace Test;
@@ -71,8 +71,8 @@ public partial class ReadLine
     public void List_RenderSuggestion_NoMatching_HistorySearchBackwardForward()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("Ctrl+p", History.HistorySearchBackward),
-            new KeyHandler("Ctrl+l", History.HistorySearchForward));
+            new KeyHandler("Ctrl+p", Manager.HistorySearchBackward),
+            new KeyHandler("Ctrl+l", Manager.HistorySearchForward));
         using var disp = SetPrediction(PredictionSource.History, PredictionViewStyle.ListView);
 
         // No matching history entry

@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace Microsoft.PowerShell.PSReadLine;
+namespace Microsoft.PowerShell.PSReadLine.History;
 
-public class HistorySearcherReadLine
+public class InteractiveSearcherReadLine
 {
     public enum HistoryMoveCursor
     {
@@ -19,12 +18,12 @@ public class HistorySearcherReadLine
     private const string _failedForwardISearchPrompt = "failed-fwd-i-search";
     private const string _failedBackwardISearchPrompt = "failed-bck-i-search";
 
-    static HistorySearcherReadLine()
+    static InteractiveSearcherReadLine()
     {
-        Singleton = new HistorySearcherReadLine();
+        Singleton = new InteractiveSearcherReadLine();
     }
 
-    private static HistorySearcherModel _model => HistorySearcherModel.Singleton;
+    private static InteractiveSearcherModel _model => InteractiveSearcherModel.Singleton;
 
     private HistoryMoveCursor _moveCursor => _rl.Options.HistorySearchCursorMovesToEnd
         ? HistoryMoveCursor.ToEnd
@@ -32,7 +31,7 @@ public class HistorySearcherReadLine
 
     private PSKeyInfo key { get; set; }
 
-    public static HistorySearcherReadLine Singleton { get; }
+    public static InteractiveSearcherReadLine Singleton { get; }
     private Action<ConsoleKeyInfo?, object> function { get; set; }
 
     public int CurrentHistoryIndex
@@ -101,7 +100,7 @@ public class HistorySearcherReadLine
     private void InteractiveHistorySearch(int direction)
     {
         using var _ = _rl._Prediction.DisableScoped();
-        _model.SaveCurrentLine();
+        CurrentLineCache.Cache();
         _model.direction = direction;
         UpdateStatusLinePrompt(direction, AppendUnderline: true);
         _renderer.Render(); // Render prompt
@@ -183,19 +182,9 @@ public class HistorySearcherReadLine
         }
     }
 
-    public void SaveCurrentLine()
-    {
-        _model.SaveCurrentLine();
-    }
-
-    public void ClearSavedCurrentLine()
-    {
-        _model.ClearSavedCurrentLine();
-    }
-
     public void UpdateBufferFromHistory(HistoryMoveCursor moveCursor)
     {
-        _model.SaveToBuffer();
+        SaveToBuffer();
         _renderer.Current = moveCursor switch
         {
             HistoryMoveCursor.ToEnd => Math.Max(0, _rl.buffer.Length + PSConsoleReadLine.ViEndOfLineFactor),
@@ -207,6 +196,14 @@ public class HistorySearcherReadLine
 
         using var _ = _rl._Prediction.DisableScoped();
         _renderer.Render();
+    }
+
+    private void SaveToBuffer()
+    {
+        if (SearcherReadLine.CurrentHistoryIndex == _hs.Historys.Count)
+            CurrentLineCache.Restore();
+        else
+            CurrentLineCache.Restore(_hs.Historys[SearcherReadLine.CurrentHistoryIndex]);
     }
 
     private void HandleBackward()

@@ -18,6 +18,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.PowerShell.Internal;
 using Microsoft.PowerShell.PSReadLine;
+using Microsoft.PowerShell.PSReadLine.History;
 
 [module: SuppressMessage("Microsoft.Design", "CA1014:MarkAssembliesWithClsCompliant")]
 [module: SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
@@ -43,7 +44,7 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
     private static readonly Stopwatch _readkeyStopwatch = new();
 
     // Save a fixed # of keys so we can reconstruct a repro after a crash
-    private static readonly HistoryQueue<PSKeyInfo> _lastNKeys = new(200);
+    private static readonly PSReadLine.History.Queue<PSKeyInfo> _lastNKeys = new(200);
 
     // *must* be initialized in the static ctor
     // because the static member _clipboard depends upon it
@@ -51,7 +52,7 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
     internal static PSConsoleReadLine Singleton;
 
     private readonly IPSConsoleReadLineMockableMethods _mockableMethods;
-    internal readonly Queue<PSKeyInfo> _queuedKeys;
+    internal readonly System.Collections.Generic.Queue<PSKeyInfo> _queuedKeys;
 
     public readonly StringBuilder buffer;
     private string _acceptedCommandLine;
@@ -87,7 +88,7 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
         _mockableMethods = this;
         _charMap = new DotNetCharMap();
         buffer = new StringBuilder(8 * 1024);
-        _queuedKeys = new Queue<PSKeyInfo>();
+        _queuedKeys = new System.Collections.Generic.Queue<PSKeyInfo>();
         string hostName = null;
         // This works mostly by luck - we're not doing anything to guarantee the constructor for our
         // _s is called on a thread with a runspace, but it is happening by coincidence.
@@ -670,7 +671,7 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
             {
                 if (_hs.AnyHistoryCommandCount > 0)
                 {
-                    SearcherReadLine.ClearSavedCurrentLine();
+                    CurrentLineCache.Clear();
                     _hs.HashedHistory = null;
                     SearcherReadLine.ResetCurrentHistoryIndex();
                 }
@@ -810,7 +811,7 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
         if (_hs.GetNextHistoryIndex > 0)
         {
             SearcherReadLine.CurrentHistoryIndex = _hs.GetNextHistoryIndex;
-            SearcherReadLine.UpdateBufferFromHistory(HistorySearcherReadLine.HistoryMoveCursor.ToEnd);
+            SearcherReadLine.UpdateBufferFromHistory(InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd);
             _hs.GetNextHistoryIndex = 0;
             if (_hs.SearchHistoryCommandCount > 0)
             {
@@ -824,8 +825,8 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
             _hs.SearchHistoryCommandCount = 0;
         }
 
-        if (_hs.PreviousHistoryItem != null)
-            _hs.PreviousHistoryItem.ApproximateElapsedTime = DateTime.UtcNow - _hs.PreviousHistoryItem.StartTime;
+        if (_hs.PreviousLine != null)
+            _hs.PreviousLine.ApproximateElapsedTime = DateTime.UtcNow - _hs.PreviousLine.StartTime;
     }
 
     private void DelayedOneTimeInitialize()
