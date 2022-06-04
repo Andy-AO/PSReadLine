@@ -907,12 +907,12 @@ public partial class PSConsoleReadLine
         var moveCursor = Options.HistorySearchCursorMovesToEnd
             ? InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd
             : InteractiveSearcherReadLine.HistoryMoveCursor.DontMove;
-        for (var i = SearcherReadLine.CurrentHistoryIndex + incr; i >= 0 && i < _hs.Historys.Count; i += incr)
+        for (var i = _hs.CurrentHistoryIndex + incr; i >= 0 && i < _hs.Historys.Count; i += incr)
             if (Options.HistoryStringComparison.HasFlag(StringComparison.OrdinalIgnoreCase))
             {
                 if (_hs.Historys[i].CommandLine.ToLower().Contains(_hs.SearchHistoryPrefix.ToLower()))
                 {
-                    SearcherReadLine.CurrentHistoryIndex = i;
+                    _hs.CurrentHistoryIndex = i;
                     SearcherReadLine.UpdateBufferFromHistory(moveCursor);
                     return;
                 }
@@ -921,7 +921,7 @@ public partial class PSConsoleReadLine
             {
                 if (_hs.Historys[i].CommandLine.Contains(_hs.SearchHistoryPrefix))
                 {
-                    SearcherReadLine.CurrentHistoryIndex = i;
+                    _hs.CurrentHistoryIndex = i;
                     SearcherReadLine.UpdateBufferFromHistory(moveCursor);
                     return;
                 }

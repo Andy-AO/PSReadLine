@@ -275,7 +275,7 @@ public partial class PSConsoleReadLine
         var yankLastArgState = new YankLastArgState
         {
             argument = arg as int? ?? 1,
-            historyIndex = SearcherReadLine.CurrentHistoryIndex - 1
+            historyIndex = _hs.CurrentHistoryIndex - 1
         };
         Singleton.YankArgImpl(yankLastArgState);
     }
@@ -302,7 +302,7 @@ public partial class PSConsoleReadLine
             {
                 argument = (int?) arg ?? -1,
                 historyIncrement = -1,
-                historyIndex = SearcherReadLine.CurrentHistoryIndex - 1
+                historyIndex = _hs.CurrentHistoryIndex - 1
             };
 
             Singleton.YankArgImpl(Singleton._yankLastArgState);

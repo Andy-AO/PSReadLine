@@ -86,7 +86,7 @@ public partial class PSConsoleReadLine
 
         Singleton.buffer.Clear(); // Clear so we don't actually run the input
         _renderer.Current = 0; // If Render is called, _current must be correct.
-        SearcherReadLine.ResetCurrentHistoryIndex();
+        _hs.ResetCurrentHistoryIndex(false);
         Singleton._inputAccepted = true;
     }
 
@@ -423,8 +423,8 @@ public partial class PSConsoleReadLine
     {
         if (Singleton.AcceptLineImpl(false))
         {
-            if (SearcherReadLine.CurrentHistoryIndex < _hs.Historys.Count - 1)
-                _hs.GetNextHistoryIndex = SearcherReadLine.CurrentHistoryIndex + 1;
+            if (_hs.CurrentHistoryIndex < _hs.Historys.Count - 1)
+                _hs.GetNextHistoryIndex = _hs.CurrentHistoryIndex + 1;
             else
                 Ding();
         }

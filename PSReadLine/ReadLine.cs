@@ -673,7 +673,7 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
                 {
                     CurrentLineCache.Clear();
                     _hs.HashedHistory = null;
-                    SearcherReadLine.ResetCurrentHistoryIndex();
+                    _hs.ResetCurrentHistoryIndex(false);
                 }
 
                 _hs.AnyHistoryCommandCount = 0;
@@ -810,7 +810,8 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
         _hs.HashedHistory = null;
         if (_hs.GetNextHistoryIndex > 0)
         {
-            SearcherReadLine.CurrentHistoryIndex = _hs.GetNextHistoryIndex;
+            int val = _hs.GetNextHistoryIndex;
+            _hs.CurrentHistoryIndex = val;
             SearcherReadLine.UpdateBufferFromHistory(InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd);
             _hs.GetNextHistoryIndex = 0;
             if (_hs.SearchHistoryCommandCount > 0)
@@ -821,7 +822,7 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
         }
         else
         {
-            SearcherReadLine.ResetCurrentHistoryIndex();
+            _hs.ResetCurrentHistoryIndex(false);
             _hs.SearchHistoryCommandCount = 0;
         }
 

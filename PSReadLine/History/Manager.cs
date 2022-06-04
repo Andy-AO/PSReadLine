@@ -60,6 +60,16 @@ public class Manager
     public long HistoryFileLastSavedSize { get; set; }
 
     public Mutex HistoryFileMutex { get; set; }
+    public void ResetCurrentHistoryIndex(bool ToBegin = false)
+    {
+        const int InitialValue = 0;
+        if (ToBegin)
+            CurrentHistoryIndex = InitialValue;
+        else
+            CurrentHistoryIndex = Historys?.Count ?? InitialValue;
+    }
+
+    public int CurrentHistoryIndex { get; set; }
 
     public LineInfo PreviousLine { get; private set; }
 
@@ -138,7 +148,7 @@ public class Manager
 
         var count = Math.Abs(direction);
         direction = direction < 0 ? -1 : +1;
-        var newHistoryIndex = SearcherReadLine.CurrentHistoryIndex;
+        var newHistoryIndex = _hs.CurrentHistoryIndex;
         while (count > 0)
         {
             newHistoryIndex += direction;
@@ -173,7 +183,7 @@ public class Manager
             // Set '_current' back to where it was when starting the first search, because
             // it might be changed during the rendering of the last matching history command.
             // _renderer.Current = HistorySearcherReadLine.EmphasisLength;
-            SearcherReadLine.CurrentHistoryIndex = newHistoryIndex;
+            _hs.CurrentHistoryIndex = newHistoryIndex;
             var moveCursor = RL.InViCommandMode()
                 ? InteractiveSearcherReadLine.HistoryMoveCursor.ToBeginning
                 : _rl.Options.HistorySearchCursorMovesToEnd
@@ -239,7 +249,7 @@ public class Manager
     private static void GoToBeginningOfHistory()
     {
         CurrentLineCache.Cache();
-        SearcherReadLine.ResetCurrentHistoryIndex(true);
+        _hs.ResetCurrentHistoryIndex(true);
         SearcherReadLine.UpdateBufferFromHistory(InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd);
     }
 
@@ -251,7 +261,7 @@ public class Manager
     {
         Singleton.Historys?.Clear();
         Singleton.RecentHistory?.Clear();
-        SearcherReadLine.ResetCurrentHistoryIndex();
+        _hs.ResetCurrentHistoryIndex(false);
     }
 
     /// <summary>
@@ -535,7 +545,7 @@ public class Manager
 
         var count = Math.Abs(direction);
         direction = direction < 0 ? -1 : +1;
-        var newHistoryIndex = SearcherReadLine.CurrentHistoryIndex;
+        var newHistoryIndex = _hs.CurrentHistoryIndex;
         while (count > 0)
         {
             newHistoryIndex += direction;
@@ -565,7 +575,7 @@ public class Manager
         RecallHistoryCommandCount = RecallHistoryCommandCount + 1;
         if (newHistoryIndex >= 0 && newHistoryIndex <= Historys.Count)
         {
-            SearcherReadLine.CurrentHistoryIndex = newHistoryIndex;
+            _hs.CurrentHistoryIndex = newHistoryIndex;
             var moveCursor = RL.InViCommandMode() && !_rl.Options.HistorySearchCursorMovesToEnd
                 ? InteractiveSearcherReadLine.HistoryMoveCursor.ToBeginning
                 : InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd;
@@ -705,7 +715,7 @@ public class Manager
 
     private void IncrementalHistoryWrite()
     {
-        var i = SearcherReadLine.CurrentHistoryIndex - 1;
+        var i = _hs.CurrentHistoryIndex - 1;
         while (i >= 0)
         {
             if (Historys[i]._saved) break;
@@ -748,7 +758,7 @@ public class Manager
 
             Historys.Enqueue(PreviousLine);
 
-            SearcherReadLine.ResetCurrentHistoryIndex();
+            _hs.ResetCurrentHistoryIndex(false);
 
             if (_rl.Options.HistorySaveStyle == HistorySaveStyle.SaveIncrementally && !fromHistoryFile)
                 IncrementalHistoryWrite();
@@ -818,7 +828,7 @@ public class Manager
     private static void GoToEndOfHistory()
     {
         CurrentLineCache.Cache();
-        SearcherReadLine.ResetCurrentHistoryIndex();
+        _hs.ResetCurrentHistoryIndex(false);
         SearcherReadLine.UpdateBufferFromHistory(InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd);
     }
 

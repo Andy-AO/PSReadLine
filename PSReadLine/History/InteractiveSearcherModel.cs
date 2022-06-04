@@ -35,22 +35,12 @@ public class InteractiveSearcherModel
 
     public static InteractiveSearcherModel Singleton { get; }
 
-    public int CurrentHistoryIndex { get; set; }
-
-    public void ResetCurrentHistoryIndex(bool ToBegin = false)
-    {
-        const int InitialValue = 0;
-        if (ToBegin)
-            SearcherReadLine.CurrentHistoryIndex = InitialValue;
-        else
-            SearcherReadLine.CurrentHistoryIndex = _hs?.Historys?.Count ?? InitialValue;
-    }
 
     public void InitData()
     {
         RecoverSearchFromPoint();
         searchPositions = new Stack<int>();
-        searchPositions.Push(CurrentHistoryIndex);
+        searchPositions.Push(_hs.CurrentHistoryIndex);
         if (_rl.Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
         toMatch = new StringBuilder(64);
     }
@@ -109,12 +99,12 @@ public class InteractiveSearcherModel
 
     private void RecoverSearchFromPoint()
     {
-        searchFromPoint = CurrentHistoryIndex;
+        searchFromPoint = _hs.CurrentHistoryIndex;
     }
 
     private void SaveSearchFromPoint()
     {
-        CurrentHistoryIndex = searchFromPoint;
+        _hs.CurrentHistoryIndex = searchFromPoint;
     }
 
     public IEnumerable<EmphasisRange> GetRanges(string line)

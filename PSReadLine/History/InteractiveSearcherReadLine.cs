@@ -34,12 +34,6 @@ public class InteractiveSearcherReadLine
     public static InteractiveSearcherReadLine Singleton { get; }
     private Action<ConsoleKeyInfo?, object> function { get; set; }
 
-    public int CurrentHistoryIndex
-    {
-        get => _model.CurrentHistoryIndex;
-        set => _model.CurrentHistoryIndex = value;
-    }
-
     private static string ForwardISearchPrompt => _forwardISearchPrompt + PromptSuffix;
 
     private static string PromptSuffix
@@ -60,11 +54,6 @@ public class InteractiveSearcherReadLine
     private static string FailedForwardISearchPrompt => _failedForwardISearchPrompt + PromptSuffix;
 
     private static string FailedBackwardISearchPrompt => _failedBackwardISearchPrompt + PromptSuffix;
-
-    public void ResetCurrentHistoryIndex(bool ToBegin = false)
-    {
-        _model.ResetCurrentHistoryIndex(ToBegin);
-    }
 
     /// <summary>
     ///     Perform an incremental backward search through history.
@@ -200,10 +189,10 @@ public class InteractiveSearcherReadLine
 
     private void SaveToBuffer()
     {
-        if (SearcherReadLine.CurrentHistoryIndex == _hs.Historys.Count)
+        if (_hs.CurrentHistoryIndex == _hs.Historys.Count)
             CurrentLineCache.Restore();
         else
-            CurrentLineCache.Restore(_hs.Historys[SearcherReadLine.CurrentHistoryIndex]);
+            CurrentLineCache.Restore(_hs.Historys[_hs.CurrentHistoryIndex]);
     }
 
     private void HandleBackward()
@@ -258,7 +247,7 @@ public class InteractiveSearcherReadLine
             UpdateBuffer(ranges);
         else
             UpdateHistory();
-        _model.searchPositions.Push(_model.CurrentHistoryIndex);
+        _model.searchPositions.Push(_hs.CurrentHistoryIndex);
     }
 
     private void UpdateBuffer(IEnumerable<EmphasisRange> ranges)
@@ -287,7 +276,7 @@ public class InteractiveSearcherReadLine
 
     private static void GoToEndOfHistory()
     {
-        _model.ResetCurrentHistoryIndex();
+        _hs.ResetCurrentHistoryIndex(false);
         SearcherReadLine.UpdateBufferFromHistory(HistoryMoveCursor.ToEnd);
     }
 }
