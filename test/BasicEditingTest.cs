@@ -288,8 +288,8 @@ public partial class ReadLine
     public void AcceptAndGetNextWithHistorySearch()
     {
         TestSetup(KeyMode.Emacs,
-            new KeyHandler("UpArrow", Manager.HistorySearchBackward),
-            new KeyHandler("DownArrow", Manager.HistorySearchForward));
+            new KeyHandler("UpArrow", Searcher.HistorySearchBackward),
+            new KeyHandler("DownArrow", Searcher.HistorySearchForward));
 
         // Test that after AcceptAndGetNext, the previous search is not applied
         SetHistory("echo 1", "echo 2", "zzz");

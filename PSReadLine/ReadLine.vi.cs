@@ -831,7 +831,7 @@ public partial class PSConsoleReadLine
     /// </summary>
     public static void RepeatSearch(ConsoleKeyInfo? key = null, object arg = null)
     {
-        if (string.IsNullOrEmpty(_hs.SearchHistoryPrefix))
+        if (string.IsNullOrEmpty(searcher.SearchHistoryPrefix))
         {
             Ding();
             return;
@@ -866,7 +866,7 @@ public partial class PSConsoleReadLine
             var nextKey = ReadKey();
             if (nextKey == Keys.Enter || nextKey == Keys.Tab)
             {
-                _hs.SearchHistoryPrefix = argBuffer.ToString();
+                searcher.SearchHistoryPrefix = argBuffer.ToString();
                 _searchHistoryBackward = backward;
                 HistorySearch();
                 break;
@@ -901,7 +901,7 @@ public partial class PSConsoleReadLine
     private void HistorySearch()
     {
         CurrentLineCache.Cache();
-        _hs.SearchHistoryCommandCount++;
+        searcher.SearchHistoryCommandCount++;
 
         var incr = _searchHistoryBackward ? -1 : +1;
         var moveCursor = Options.HistorySearchCursorMovesToEnd
@@ -910,7 +910,7 @@ public partial class PSConsoleReadLine
         for (var i = _hs.CurrentHistoryIndex + incr; i >= 0 && i < _hs.Historys.Count; i += incr)
             if (Options.HistoryStringComparison.HasFlag(StringComparison.OrdinalIgnoreCase))
             {
-                if (_hs.Historys[i].CommandLine.ToLower().Contains(_hs.SearchHistoryPrefix.ToLower()))
+                if (_hs.Historys[i].CommandLine.ToLower().Contains(searcher.SearchHistoryPrefix.ToLower()))
                 {
                     _hs.CurrentHistoryIndex = i;
                     SearcherReadLine.UpdateBufferFromHistory(moveCursor);
@@ -919,7 +919,7 @@ public partial class PSConsoleReadLine
             }
             else
             {
-                if (_hs.Historys[i].CommandLine.Contains(_hs.SearchHistoryPrefix))
+                if (_hs.Historys[i].CommandLine.Contains(searcher.SearchHistoryPrefix))
                 {
                     _hs.CurrentHistoryIndex = i;
                     SearcherReadLine.UpdateBufferFromHistory(moveCursor);

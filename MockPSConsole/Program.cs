@@ -63,8 +63,8 @@ namespace MockPSConsole
                 "ShellBackwardWord", "");
             PSConsoleReadLine.SetKeyHandler(new[] {"Ctrl+RightArrow"}, PSConsoleReadLine.ShellNextWord, "ShellNextWord",
                 "");
-            PSConsoleReadLine.SetKeyHandler(new[] {"F4"}, Manager.HistorySearchBackward, "HistorySearchBackward", "");
-            PSConsoleReadLine.SetKeyHandler(new[] {"F5"}, Manager.HistorySearchForward, "HistorySearchForward", "");
+            PSConsoleReadLine.SetKeyHandler(new[] {"F4"}, Searcher.HistorySearchBackward, "HistorySearchBackward", "");
+            PSConsoleReadLine.SetKeyHandler(new[] {"F5"}, Searcher.HistorySearchForward, "HistorySearchForward", "");
             PSConsoleReadLine.SetKeyHandler(new[] {"Ctrl+d,Ctrl+c"}, PSConsoleReadLine.CaptureScreen, "CaptureScreen",
                 "");
             PSConsoleReadLine.SetKeyHandler(new[] {"Ctrl+d,Ctrl+p"}, PSConsoleReadLine.InvokePrompt, "InvokePrompt",

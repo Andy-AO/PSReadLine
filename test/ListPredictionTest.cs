@@ -71,8 +71,8 @@ public partial class ReadLine
     public void List_RenderSuggestion_NoMatching_HistorySearchBackwardForward()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("Ctrl+p", Manager.HistorySearchBackward),
-            new KeyHandler("Ctrl+l", Manager.HistorySearchForward));
+            new KeyHandler("Ctrl+p", Searcher.HistorySearchBackward),
+            new KeyHandler("Ctrl+l", Searcher.HistorySearchForward));
         using var disp = SetPrediction(PredictionSource.History, PredictionViewStyle.ListView);
 
         // No matching history entry

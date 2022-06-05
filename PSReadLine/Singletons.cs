@@ -12,6 +12,7 @@ public static class Singletons
     public static Manager _hs => Manager.Singleton;
     public static PSConsoleReadLine _rl => PSConsoleReadLine.Singleton;
     public static InteractiveSearcherReadLine SearcherReadLine => InteractiveSearcherReadLine.Singleton;
+    public static Searcher searcher => Searcher.Singleton;
 
     public static Renderer _renderer
     {
@@ -19,7 +20,10 @@ public static class Singletons
         set => __renderer = value;
     }
 
-    public static Type[] FunctionProvider = { typeof(PSConsoleReadLine), typeof(InteractiveSearcherReadLine), typeof(Manager) };
+    public static Type[] FunctionProvider =
+    {
+        typeof(PSConsoleReadLine), typeof(InteractiveSearcherReadLine), typeof(Manager),typeof(Searcher)
+    };
 
     private static IEnumerable<MethodInfo> _bindableFunctions;
     private static IOrderedEnumerable<string> _bindableFunctionNames;

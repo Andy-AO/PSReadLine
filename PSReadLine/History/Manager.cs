@@ -75,11 +75,7 @@ public class Manager
 
     public int RecallHistoryCommandCount { get; set; }
 
-    public Queue<string> RecentHistory { get; set; }
-
-    public int SearchHistoryCommandCount { get; set; }
-
-    public string SearchHistoryPrefix { get; set; }
+    public Queue<string> RecentHistory { get; }
 
     private int HistoryErrorReportedCount { get; set; }
 
@@ -114,97 +110,7 @@ public class Manager
         }
     }
 
-    public static void SetRenderData(int startIndex, int length, CursorPosition p)
-    {
-        EP.SetEmphasisData(new EmphasisRange[] {new(startIndex, length)});
-        var endIndex = startIndex + length;
-        _renderer.Current = p switch
-        {
-            CursorPosition.Start => startIndex,
-            CursorPosition.End => endIndex,
-            _ => throw new ArgumentException(@"Invalid enum value for CursorPosition", nameof(p))
-        };
-    }
 
-    private void HistorySearch(int direction)
-    {
-        CurrentLineCache.Cache();
-        if (SearchHistoryCommandCount == 0)
-        {
-            if (_renderer.LineIsMultiLine())
-            {
-                _rl.MoveToLine(direction);
-                return;
-            }
-
-            SearchHistoryPrefix = _rl.buffer.ToString(0, _renderer.Current);
-
-            SetRenderData(0, _renderer.Current, CursorPosition.End);
-
-            if (_rl.Options.HistoryNoDuplicates) HashedHistory = new Dictionary<string, int>();
-        }
-
-        SearchHistoryCommandCount += 1;
-
-        var count = Math.Abs(direction);
-        direction = direction < 0 ? -1 : +1;
-        var newHistoryIndex = _hs.CurrentHistoryIndex;
-        while (count > 0)
-        {
-            newHistoryIndex += direction;
-            if (newHistoryIndex < 0 || newHistoryIndex >= Historys.Count) break;
-
-            if (Historys[newHistoryIndex].FromOtherSession && SearchHistoryPrefix.Length == 0) continue;
-
-            var line = Historys[newHistoryIndex].CommandLine;
-            if (line.StartsWith(SearchHistoryPrefix, _rl.Options.HistoryStringComparison))
-            {
-                if (_rl.Options.HistoryNoDuplicates)
-                {
-                    if (!HashedHistory.TryGetValue(line, out var index))
-                    {
-                        HashedHistory.Add(line, newHistoryIndex);
-                        --count;
-                    }
-                    else if (index == newHistoryIndex)
-                    {
-                        --count;
-                    }
-                }
-                else
-                {
-                    --count;
-                }
-            }
-        }
-
-        if (newHistoryIndex >= 0 && newHistoryIndex <= Historys.Count)
-        {
-            // Set '_current' back to where it was when starting the first search, because
-            // it might be changed during the rendering of the last matching history command.
-            // _renderer.Current = HistorySearcherReadLine.EmphasisLength;
-            _hs.CurrentHistoryIndex = newHistoryIndex;
-            var moveCursor = RL.InViCommandMode()
-                ? InteractiveSearcherReadLine.HistoryMoveCursor.ToBeginning
-                : _rl.Options.HistorySearchCursorMovesToEnd
-                    ? InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd
-                    : InteractiveSearcherReadLine.HistoryMoveCursor.DontMove;
-            SearcherReadLine.UpdateBufferFromHistory(moveCursor);
-        }
-    }
-
-
-    /// <summary>
-    ///     Replace the current input with the 'previous' item from PSReadLine history
-    ///     that matches the characters between the start and the input and the cursor.
-    /// </summary>
-    public static void HistorySearchBackward(ConsoleKeyInfo? key = null, object arg = null)
-    {
-        RL.TryGetArgAsInt(arg, out var numericArg, -1);
-        if (numericArg > 0) numericArg = -numericArg;
-        if (RL.UpdateListSelection(numericArg)) return;
-        Singleton.HistorySearch(numericArg);
-    }
 
     /// <summary>
     ///     Replace the current input with the 'previous' item from PSReadLine history.
@@ -812,17 +718,6 @@ public class Manager
         }
 
         return null;
-    }
-
-    /// <summary>
-    ///     Replace the current input with the 'next' item from PSReadLine history
-    ///     that matches the characters between the start and the input and the cursor.
-    /// </summary>
-    public static void HistorySearchForward(ConsoleKeyInfo? key = null, object arg = null)
-    {
-        PSConsoleReadLine.TryGetArgAsInt(arg, out var numericArg, +1);
-        if (RL.UpdateListSelection(numericArg)) return;
-        Singleton.HistorySearch(numericArg);
     }
 
     private static void GoToEndOfHistory()

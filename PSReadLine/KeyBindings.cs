@@ -212,8 +212,8 @@ public partial class PSConsoleReadLine
             {Keys.F2, MakeKeyHandler(SwitchPredictionView, "SwitchPredictionView")},
             {Keys.F3, MakeKeyHandler(CharacterSearch, "CharacterSearch")},
             {Keys.ShiftF3, MakeKeyHandler(CharacterSearchBackward, "CharacterSearchBackward")},
-            {Keys.F8, MakeKeyHandler(Manager.HistorySearchBackward, "HistorySearchBackward")},
-            {Keys.ShiftF8, MakeKeyHandler(Manager.HistorySearchForward, "HistorySearchForward")},
+            {Keys.F8, MakeKeyHandler(Searcher.HistorySearchBackward, "HistorySearchBackward")},
+            {Keys.ShiftF8, MakeKeyHandler(Searcher.HistorySearchForward, "HistorySearchForward")},
             // Added for xtermjs-based terminals that send different key combinations.
             {Keys.AltD, MakeKeyHandler(KillWord, "KillWord")},
             {Keys.CtrlAt, MakeKeyHandler(MenuComplete, "MenuComplete")},
@@ -521,8 +521,8 @@ public partial class PSConsoleReadLine
             case nameof(Manager.EndOfHistory):
             case nameof(InteractiveSearcherReadLine.ForwardSearchHistory):
             case nameof(InteractiveSearcherReadLine.ForwardSearchHistoryMultiKeyword):
-            case nameof(Manager.HistorySearchBackward):
-            case nameof(Manager.HistorySearchForward):
+            case nameof(Searcher.HistorySearchBackward):
+            case nameof(Searcher.HistorySearchForward):
             case nameof(Manager.NextHistory):
             case nameof(Manager.PreviousHistory):
             case nameof(InteractiveSearcherReadLine.ReverseSearchHistory):

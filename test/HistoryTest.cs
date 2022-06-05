@@ -562,8 +562,8 @@ public abstract class HistoryTest : MyReadLine
     public void HistorySearchCurrentLine()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("UpArrow", Manager.HistorySearchBackward),
-            new KeyHandler("DownArrow", Manager.HistorySearchForward));
+            new KeyHandler("UpArrow", Searcher.HistorySearchBackward),
+            new KeyHandler("DownArrow", Searcher.HistorySearchForward));
 
         // Search history backward and forward.
         SetHistory("echo foo", "echo bar");
@@ -686,8 +686,8 @@ public abstract class HistoryTest : MyReadLine
     public void SearchHistory()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("UpArrow", Manager.HistorySearchBackward),
-            new KeyHandler("DownArrow", Manager.HistorySearchForward));
+            new KeyHandler("UpArrow", Searcher.HistorySearchBackward),
+            new KeyHandler("DownArrow", Searcher.HistorySearchForward));
 
         CleanHistory();
 
@@ -750,8 +750,8 @@ public abstract class HistoryTest : MyReadLine
     public void HistorySearchCursorMovesToEnd()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("UpArrow", Manager.HistorySearchBackward),
-            new KeyHandler("DownArrow", Manager.HistorySearchForward));
+            new KeyHandler("UpArrow", Searcher.HistorySearchBackward),
+            new KeyHandler("DownArrow", Searcher.HistorySearchForward));
 
         PSConsoleReadLine.SetOptions(new SetPSReadLineOption {HistorySearchCursorMovesToEnd = true});
         var emphasisColors = Tuple.Create(PSConsoleReadLineOptions.DefaultEmphasisColor, _console.BackgroundColor);
@@ -1191,8 +1191,8 @@ public abstract class HistoryTest : MyReadLine
     public void HistorySearchNoDuplicates()
     {
         TestSetup(KeyMode.Cmd,
-            new KeyHandler("UpArrow", Manager.HistorySearchBackward),
-            new KeyHandler("DownArrow", Manager.HistorySearchForward));
+            new KeyHandler("UpArrow", Searcher.HistorySearchBackward),
+            new KeyHandler("DownArrow", Searcher.HistorySearchForward));
 
         PSConsoleReadLine.SetOptions(new SetPSReadLineOption {HistoryNoDuplicates = true});
         SetHistory("0000", "echo aaaa", "1111", "echo bbbb", "2222", "echo bbbb", "3333", "echo cccc", "4444");

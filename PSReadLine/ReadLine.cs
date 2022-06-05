@@ -609,7 +609,7 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
             var killCommandCount = _killCommandCount;
             var yankCommandCount = _yankCommandCount;
             var tabCommandCount = _tabCommandCount;
-            var searchHistoryCommandCount = _hs.SearchHistoryCommandCount;
+            var searchHistoryCommandCount = searcher.SearchHistoryCommandCount;
             var recallHistoryCommandCount = _hs.RecallHistoryCommandCount;
             var anyHistoryCommandCount = _hs.AnyHistoryCommandCount;
             var yankLastArgCommandCount = _yankLastArgCommandCount;
@@ -653,16 +653,16 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
                 _tabCompletions = null;
             }
 
-            if (searchHistoryCommandCount == _hs.SearchHistoryCommandCount)
+            if (searchHistoryCommandCount == searcher.SearchHistoryCommandCount)
             {
-                if (_hs.SearchHistoryCommandCount > 0)
+                if (searcher.SearchHistoryCommandCount > 0)
                 {
                     EP.EmphasisInit();
                     _renderer.RenderWithPredictionQueryPaused();
                 }
 
-                _hs.SearchHistoryCommandCount = 0;
-                _hs.SearchHistoryPrefix = null;
+                searcher.SearchHistoryCommandCount = 0;
+                searcher.SearchHistoryPrefix = null;
             }
 
             if (recallHistoryCommandCount == _hs.RecallHistoryCommandCount) _hs.RecallHistoryCommandCount = 0;
@@ -814,16 +814,16 @@ public partial class PSConsoleReadLine : IPSConsoleReadLineMockableMethods
             _hs.CurrentHistoryIndex = val;
             SearcherReadLine.UpdateBufferFromHistory(InteractiveSearcherReadLine.HistoryMoveCursor.ToEnd);
             _hs.GetNextHistoryIndex = 0;
-            if (_hs.SearchHistoryCommandCount > 0)
+            if (searcher.SearchHistoryCommandCount > 0)
             {
-                _hs.SearchHistoryPrefix = "";
+                searcher.SearchHistoryPrefix = "";
                 if (Options.HistoryNoDuplicates) _hs.HashedHistory = new Dictionary<string, int>();
             }
         }
         else
         {
             _hs.ResetCurrentHistoryIndex(false);
-            _hs.SearchHistoryCommandCount = 0;
+            searcher.SearchHistoryCommandCount = 0;
         }
 
         if (_hs.PreviousLine != null)
